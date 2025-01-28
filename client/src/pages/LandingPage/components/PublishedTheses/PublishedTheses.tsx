@@ -1,5 +1,5 @@
 import { DataTable } from 'mantine-datatable'
-import { ActionIcon, Anchor, Center, Group, Modal, Stack, Title } from '@mantine/core'
+import { ActionIcon, Anchor, Center, Group, Modal, MultiSelect, Stack, Title } from '@mantine/core'
 import React, { useEffect, useState } from 'react'
 import { PaginationResponse } from '../../../../requests/responses/pagination'
 import { IPublishedThesis } from '../../../../requests/responses/thesis'
@@ -19,6 +19,7 @@ const PublishedTheses = () => {
 
   const [theses, setTheses] = useState<PaginationResponse<IPublishedThesis>>()
   const [openedThesis, setOpenedThesis] = useState<IPublishedThesis>()
+  const [selectedChairs, setSelectedChairs] = useState<string[]>([])
 
   useEffect(() => {
     return doRequest<PaginationResponse<IPublishedThesis>>(
@@ -29,6 +30,7 @@ const PublishedTheses = () => {
         params: {
           page,
           limit,
+          chairs: selectedChairs,
         },
       },
       (response) => {
@@ -39,7 +41,7 @@ const PublishedTheses = () => {
         }
       },
     )
-  }, [page, limit])
+  }, [page, limit, selectedChairs])
 
   if (page === 0 && !theses?.content.length) {
     return null
@@ -48,6 +50,15 @@ const PublishedTheses = () => {
   return (
     <Stack gap='xs'>
       <Title order={2}>Published Theses</Title>
+      <MultiSelect
+        label="Filter by Chair"
+        placeholder="Select chairs"
+        data={Array.from(new Set(theses?.content.flatMap(thesis => thesis.chairs.map(chair => chair.fullName)) ?? [])).map(name => ({ value: name, label: name }))}
+        value={selectedChairs}
+        onChange={setSelectedChairs}
+        clearable
+        searchable
+      />
       <DataTable
         fetching={!theses}
         withTableBorder={false}
