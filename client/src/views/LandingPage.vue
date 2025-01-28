@@ -7,7 +7,7 @@
           <ChairFilter
             v-model="selectedChairs"
             :chairs="chairs"
-            :loading="isLoadingChairs"
+            :loading="isLoading"
           />
         </div>
       </div>
@@ -20,12 +20,6 @@
       role="alert"
     >
       <span class="block sm:inline">{{ error }}</span>
-      <button
-        @click="fetchData"
-        class="ml-4 text-sm underline hover:no-underline"
-      >
-        Retry
-      </button>
     </div>
 
     <!-- Loading State -->
@@ -63,9 +57,8 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+<script lang="ts">
+import { defineComponent, ref, computed } from 'vue'
 import ChairFilter from '../components/filters/ChairFilter.vue'
 
 interface Chair {
@@ -79,86 +72,53 @@ interface Topic {
   chairId: number
 }
 
-const router = useRouter()
-const route = useRoute()
+export default defineComponent({
+  name: 'LandingPage',
+  components: {
+    ChairFilter
+  },
+  setup() {
+    const isLoading = ref(false)
+    const error = ref<string | null>(null)
 
-const isLoading = ref(false)
-const isLoadingChairs = ref(false)
-const error = ref<string | null>(null)
+    const chairs = ref<Chair[]>([
+      { id: 1, name: 'Chair A' },
+      { id: 2, name: 'Chair B' },
+      { id: 3, name: 'Chair C' },
+    ])
 
-const chairs = ref<Chair[]>([])
-const topics = ref<Topic[]>([])
-const selectedChairs = ref<Chair[]>([])
-
-// Initialize selected chairs from URL
-onMounted(() => {
-  const chairIds = route.query.chairs
-  if (chairIds) {
-    const ids = Array.isArray(chairIds) 
-      ? chairIds.map(id => parseInt(id)) 
-      : [parseInt(chairIds)]
-    selectedChairs.value = chairs.value.filter(chair => ids.includes(chair.id))
-  }
-  fetchData()
-})
-
-// Update URL when selection changes
-watch(selectedChairs, (newChairs) => {
-  const query = { ...route.query }
-  if (newChairs.length > 0) {
-    query.chairs = newChairs.map(chair => chair.id.toString())
-  } else {
-    delete query.chairs
-  }
-  router.replace({ query })
-})
-
-const filteredTopics = computed(() => {
-  if (selectedChairs.value.length === 0) {
-    return topics.value
-  }
-  
-  return topics.value.filter((topic) =>
-    selectedChairs.value.some((chair) => chair.id === topic.chairId)
-  )
-})
-
-const getChairName = (chairId: number): string => {
-  const chair = chairs.value.find(c => c.id === chairId)
-  return chair?.name || 'Unknown Chair'
-}
-
-const fetchData = async () => {
-  try {
-    isLoading.value = true
-    isLoadingChairs.value = true
-    error.value = null
-
-    // Fetch chairs first
-    try {
-      // const chairsResponse = await api.getChairs()
-      // chairs.value = chairsResponse.data
-      chairs.value = [
-        { id: 1, name: 'Chair A' },
-        { id: 2, name: 'Chair B' },
-        { id: 3, name: 'Chair C' },
-      ]
-    } finally {
-      isLoadingChairs.value = false
-    }
-
-    // Then fetch topics
-    // const topicsResponse = await api.getTopics()
-    // topics.value = topicsResponse.data
-    topics.value = [
+    const topics = ref<Topic[]>([
       { id: 1, title: 'Topic 1', chairId: 1 },
       { id: 2, title: 'Topic 2', chairId: 2 },
       { id: 3, title: 'Topic 3', chairId: 1 },
-    ]
-  } catch (e) {
-    error.value = 'Failed to load data. Please try again later.'
-  } finally {
-    isLoading.value = false
+    ])
+
+    const selectedChairs = ref<Chair[]>([])
+
+    const filteredTopics = computed(() => {
+      if (selectedChairs.value.length === 0) {
+        return topics.value
+      }
+      
+      return topics.value.filter((topic) =>
+        selectedChairs.value.some((chair) => chair.id === topic.chairId)
+      )
+    })
+
+    const getChairName = (chairId: number): string => {
+      const chair = chairs.value.find(c => c.id === chairId)
+      return chair?.name || 'Unknown Chair'
+    }
+
+    return {
+      chairs,
+      topics,
+      selectedChairs,
+      filteredTopics,
+      isLoading,
+      error,
+      getChairName
+    }
   }
-}
+})
 </script>
