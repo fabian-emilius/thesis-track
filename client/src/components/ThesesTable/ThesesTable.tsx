@@ -23,6 +23,7 @@ type ThesisColumn =
 interface IThesesTableProps {
   columns?: ThesisColumn[]
   extraColumns?: Record<string, DataTableColumn<IThesis>>
+  groupId?: string
 }
 
 const ThesesTable = (props: IThesesTableProps) => {
@@ -31,7 +32,8 @@ const ThesesTable = (props: IThesesTableProps) => {
     extraColumns = {},
   } = props
 
-  const { theses, sort, setSort, page, setPage, limit } = useThesesContext()
+  const { theses, sort, setSort, page, setPage, limit, loading } = useThesesContext()
+const { columns = ['state', 'title', 'type', 'students', 'advisors', 'start_date', 'end_date'], extraColumns = {}, groupId } = props
 
   const navigate = useNavigate()
 
@@ -106,7 +108,7 @@ const ThesesTable = (props: IThesesTableProps) => {
 
   return (
     <DataTable
-      fetching={!theses}
+      fetching={loading || !theses}
       withTableBorder
       minHeight={200}
       noRecordsText='No theses to show'
@@ -128,7 +130,7 @@ const ThesesTable = (props: IThesesTableProps) => {
           direction: newSort.direction,
         })
       }}
-      records={theses?.content}
+      records={theses?.content?.filter(thesis => !groupId || thesis.groupId === groupId)}
       idAccessor='thesisId'
       columns={columns.map((column) => columnConfig[column])}
       onRowClick={({ record: thesis }) => onThesisClick(thesis)}

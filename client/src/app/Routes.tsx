@@ -4,6 +4,8 @@ import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
 import PageLoader from '../components/PageLoader/PageLoader'
 
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
+const GroupOverviewPage = lazy(() => import('../pages/GroupOverviewPage/GroupOverviewPage'))
+const GroupDetailPage = lazy(() => import('../pages/GroupDetailPage/GroupDetailPage'))
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage'))
 const ImprintPage = lazy(() => import('../pages/ImprintPage/ImprintPage'))
 const AboutPage = lazy(() => import('../pages/AboutPage/AboutPage'))
@@ -140,7 +142,23 @@ const AppRoutes = () => {
           <Route path='/imprint' element={<ImprintPage />} />
           <Route path='/privacy' element={<PrivacyPage />} />
           <Route path='/logout' element={<LogoutPage />} />
-          <Route path='/' element={<LandingPage />} />
+          <Route
+            path='/groups/:groupId'
+            element={
+              <AuthenticatedArea size='md' requireAuthentication={false}>
+                <GroupDetailPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea requireAuthentication={false}>
+                <GroupOverviewPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route path='/' element={<Navigate to='/groups' replace />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>

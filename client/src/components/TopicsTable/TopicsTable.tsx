@@ -13,6 +13,7 @@ interface ITopicsTableProps {
   columns?: TopicColumn[]
   extraColumns?: Record<string, DataTableColumn<ITopic>>
   noBorder?: boolean
+  groupId?: string
 }
 
 const TopicsTable = (props: ITopicsTableProps) => {
@@ -20,11 +21,12 @@ const TopicsTable = (props: ITopicsTableProps) => {
     extraColumns = {},
     columns = ['title', 'types', 'supervisor', 'advisor'],
     noBorder = false,
+    groupId,
   } = props
 
   const navigate = useNavigate()
 
-  const { topics, page, setPage, limit } = useTopicsContext()
+  const { topics, page, setPage, limit, loading } = useTopicsContext({ groupId })
 
   const columnConfig: Record<TopicColumn, DataTableColumn<ITopic>> = {
     state: {
@@ -88,7 +90,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
 
   return (
     <DataTable
-      fetching={!topics}
+      fetching={loading || !topics}
       withTableBorder={!noBorder}
       minHeight={200}
       noRecordsText='No topics to show'
