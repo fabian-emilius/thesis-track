@@ -68,6 +68,11 @@ public class Thesis {
     @JoinColumn(name = "application_id")
     private Application application;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
     @Column(name = "final_grade")
     private String finalGrade;
 

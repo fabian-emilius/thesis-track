@@ -1,51 +1,76 @@
 package de.tum.cit.aet.thesis.exception;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import de.tum.cit.aet.thesis.dto.ErrorDto;
-import de.tum.cit.aet.thesis.exception.request.AccessDeniedException;
 import de.tum.cit.aet.thesis.exception.request.ResourceAlreadyExistsException;
 import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 
+/**
+ * Global exception handler for the application.
+ * Provides consistent error responses across all endpoints.
+ */
 @ControllerAdvice
-public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler({ ResourceNotFoundException.class })
-    protected ResponseEntity<Object> handleNotFound(RuntimeException ex, WebRequest request) {
-        return handleExceptionInternal(ex, ErrorDto.fromRuntimeException(ex), new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+public class ResponseExceptionHandler {
+    private static final Logger logger = LoggerFactory.getLogger(ResponseExceptionHandler.class);
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleResourceNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorDto(ex.getMessage()));
     }
 
-    @ExceptionHandler({ ResourceAlreadyExistsException.class })
-    protected ResponseEntity<Object> handleAlreadyExists(RuntimeException ex, WebRequest request) {
-        return handleExceptionInternal(ex, ErrorDto.fromRuntimeException(ex), new HttpHeaders(), HttpStatus.CONFLICT, request);
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ErrorDto> handleResourceAlreadyExists(ResourceAlreadyExistsException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorDto(ex.getMessage()));
     }
 
-    @ExceptionHandler({
-            ParseException.class,
-            ResourceInvalidParametersException.class,
-            JsonParseException.class,
-            JsonProcessingException.class,
-    })
-    protected ResponseEntity<Object> handleBadRequest(RuntimeException ex, WebRequest request) {
-        return handleExceptionInternal(ex, ErrorDto.fromRuntimeException(ex), new HttpHeaders(), HttpStatus.BAD_REQUEST, request);
+    @ExceptionHandler(ResourceInvalidParametersException.class)
+    public ResponseEntity<ErrorDto> handleInvalidParameters(ResourceInvalidParametersException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorDto(ex.getMessage()));
     }
 
-    @ExceptionHandler({ AccessDeniedException.class })
-    protected ResponseEntity<Object> handleAccessDenied(RuntimeException ex, WebRequest request) {
-        return handleExceptionInternal(ex, ErrorDto.fromRuntimeException(ex), new HttpHeaders(), HttpStatus.FORBIDDEN, request);
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorDto> handleAccessDenied(AccessDeniedException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorDto("Access denied"));
     }
 
-    @ExceptionHandler({ MailingException.class, UploadException.class })
-    protected ResponseEntity<Object> handleServerError(RuntimeException ex, WebRequest request) {
-        return handleExceptionInternal(ex, ErrorDto.fromRuntimeException(ex), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errors);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDto> handleGenericException(Exception ex) {
+        logger.error("Unexpected error", ex);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorDto("An unexpected error occurred"));
     }
 }

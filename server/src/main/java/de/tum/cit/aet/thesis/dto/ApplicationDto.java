@@ -23,7 +23,8 @@ public record ApplicationDto (
     ApplicationRejectReason rejectReason,
     Instant createdAt,
     List<ApplicationReviewerDto> reviewers,
-    Instant reviewedAt
+    Instant reviewedAt,
+    GroupDto group
 ) {
     public record ApplicationReviewerDto (
             LightUserDto user,
@@ -61,7 +62,8 @@ public record ApplicationDto (
                 application.getRejectReason(),
                 application.getCreatedAt(),
                 protectedData ? application.getReviewers().stream().map(ApplicationReviewerDto::fromApplicationReviewerEntity).toList() : null,
-                application.getReviewedAt()
+                application.getReviewedAt(),
+                GroupDto.from(application.getGroup())
         );
     }
 }

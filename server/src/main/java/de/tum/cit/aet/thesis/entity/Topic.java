@@ -64,6 +64,11 @@ public class Topic {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
     @OneToMany(mappedBy = "topic", fetch = FetchType.EAGER)
     @OrderBy("position ASC")
     private List<TopicRole> roles = new ArrayList<>();

@@ -1,83 +1,70 @@
 package de.tum.cit.aet.thesis.utility;
 
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
 import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
+import org.springframework.util.StringUtils;
 
-import java.util.Set;
-
+/**
+ * Utility class for validating request parameters.
+ * Provides centralized validation logic for common parameters.
+ */
 public class RequestValidator {
-    public static String validateStringMaxLength(String value, int maxLength) {
-        if (value == null) {
-            throw new ResourceInvalidParametersException("Required string is null");
-        }
+    private static final int MAX_SEARCH_QUERY_LENGTH = 255;
+    private static final int MAX_TITLE_LENGTH = 255;
+    private static final int MAX_DESCRIPTION_LENGTH = 1000;
 
-        if (value.length() > maxLength) {
-            throw new ResourceInvalidParametersException("String exceeds maximum length of " + maxLength + " characters");
-        }
-
-        return value;
-    }
-
-    public static String validateStringMaxLengthAllowNull(String value, int maxLength) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-
-        return validateStringMaxLength(value, maxLength);
-    }
-
-    public static Set<String> validateStringSetItemMaxLength(Set<String> value, int maxLength) {
-        if (value == null) {
-            throw new ResourceInvalidParametersException("Required set is null");
-        }
-
-        for (String s : value) {
-            if (s.length() > maxLength) {
-                throw new ResourceInvalidParametersException("String exceeds maximum length of " + maxLength + " characters");
+    /**
+     * Validates a search query parameter.
+     *
+     * @param searchQuery The search query to validate
+     * @return The validated and sanitized search query
+     * @throws ResourceInvalidParametersException if the query is invalid
+     */
+    public static String validateSearchQuery(String searchQuery) {
+        if (searchQuery != null) {
+            if (searchQuery.length() > MAX_SEARCH_QUERY_LENGTH) {
+                throw new ResourceInvalidParametersException("Search query is too long");
             }
+            return sanitizeSearchQuery(searchQuery);
         }
-
-        return value;
+        return null;
     }
 
-    public static Set<String> validateStringSetItemMaxLengthAllowNull(Set<String> value, int maxLength) {
-        if (value == null) {
-            return null;
+    /**
+     * Validates a title parameter.
+     *
+     * @param title The title to validate
+     * @throws ResourceInvalidParametersException if the title is invalid
+     */
+    public static void validateTitle(String title) {
+        if (!StringUtils.hasText(title)) {
+            throw new ResourceInvalidParametersException("Title is required");
         }
-
-        return validateStringSetItemMaxLength(value, maxLength);
-    }
-
-    public static String validateEmail(String value) {
-        if (value == null || value.length() > 200) {
-            throw new ResourceInvalidParametersException("Required email is missing");
-        }
-
-        try {
-            InternetAddress emailAddr = new InternetAddress(value);
-
-            emailAddr.validate();
-
-            return value;
-        } catch (AddressException ex) {
-            throw new ResourceInvalidParametersException("Invalid email address");
+        if (title.length() > MAX_TITLE_LENGTH) {
+            throw new ResourceInvalidParametersException("Title is too long");
         }
     }
 
-    public static String validateEmailAllowNull(String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
+    /**
+     * Validates a description parameter.
+     *
+     * @param description The description to validate
+     * @throws ResourceInvalidParametersException if the description is invalid
+     */
+    public static void validateDescription(String description) {
+        if (description != null && description.length() > MAX_DESCRIPTION_LENGTH) {
+            throw new ResourceInvalidParametersException("Description is too long");
         }
-
-        return validateEmail(value);
     }
 
-    public static <T> T validateNotNull(T value) {
-        if (value == null) {
-            throw new ResourceInvalidParametersException("Required value is null");
-        }
-
-        return value;
+    /**
+     * Sanitizes a search query to prevent SQL injection and other attacks.
+     *
+     * @param query The query to sanitize
+     * @return The sanitized query
+     */
+    private static String sanitizeSearchQuery(String query) {
+        if (query == null) return null;
+        // Remove any SQL injection attempts or special characters
+        return query.replaceAll("[%;\\\\/'\"\\[\\]\\{\\}]+", "");
     }
 }

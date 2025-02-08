@@ -17,8 +17,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
@@ -48,8 +46,11 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v2/published-presentations/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v2/calendar/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v2/avatars/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v2/groups/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/info").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v2/groups/**").hasRole("admin")
+                        .requestMatchers(HttpMethod.PUT, "/v2/groups/**").hasRole("admin")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(server -> {
