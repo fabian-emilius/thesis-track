@@ -6,16 +6,21 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.*;
+import de.tum.cit.aet.thesis.entity.UserGroup;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "topics")
+@Table(name = "topics", indexes = {
+    @Index(name = "idx_topics_group_id", columnList = "group_id")
+})
 public class Topic {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -67,4 +72,9 @@ public class Topic {
     @OneToMany(mappedBy = "topic", fetch = FetchType.EAGER)
     @OrderBy("position ASC")
     private List<TopicRole> roles = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private UserGroup group;
 }

@@ -1,94 +1,115 @@
 package de.tum.cit.aet.thesis.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.*;
-import de.tum.cit.aet.thesis.dto.LightUserDto;
+import de.tum.cit.aet.thesis.dto.UserGroupDto;
 import de.tum.cit.aet.thesis.dto.PaginationDto;
-import de.tum.cit.aet.thesis.entity.User;
-import de.tum.cit.aet.thesis.service.AuthenticationService;
+import de.tum.cit.aet.thesis.entity.UserGroup;
 import de.tum.cit.aet.thesis.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@Slf4j
 @RestController
-@RequestMapping("/v2/users")
+@RequestMapping("/v2/groups")
+@RequiredArgsConstructor
+@Validated
+@Tag(name = "User Groups", description = "APIs for managing user groups")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
     private final UserService userService;
-    private final AuthenticationService authenticationService;
 
-    @Autowired
-    public UserController(UserService userService, AuthenticationService authenticationService) {
-        this.userService = userService;
-        this.authenticationService = authenticationService;
-    }
-
+    @Operation(summary = "Get all user groups", description = "Retrieves a paginated list of all user groups")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved groups")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @GetMapping
-    @PreAuthorize("hasAnyRole('admin', 'advisor', 'supervisor')")
-    public ResponseEntity<PaginationDto<LightUserDto>> getUsers(
-            @RequestParam(required = false) String searchQuery,
-            @RequestParam(required = false) String[] groups,
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "50") Integer limit,
-            @RequestParam(required = false, defaultValue = "joinedAt") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String sortOrder
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<PaginationDto<UserGroupDto>> getAllGroups(Pageable pageable) {
+        Page<UserGroup> groups = userService.getAllGroups(pageable);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .body(PaginationDto.from(groups.map(UserGroupDto::from)));
+    }
+
+    @Operation(summary = "Get topics for a group", description = "Retrieves a paginated list of topics associated with a group")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved topics")
+    @ApiResponse(responseCode = "403", description = "Access denied")
+    @ApiResponse(responseCode = "404", description = "Group not found")
+    @GetMapping("/{groupId}/topics")
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<PaginationDto<TopicDto>> getGroupTopics(
+            @PathVariable UUID groupId,
+            Pageable pageable
     ) {
-        Page<User> users = userService.getAll(searchQuery, groups, page, limit, sortBy, sortOrder);
-
-        return ResponseEntity.ok(PaginationDto.fromSpringPage(users.map(LightUserDto::fromUserEntity)));
+        Page<Topic> topics = userService.getGroupTopics(groupId, pageable);
+        return PaginationDto.from(topics.map(TopicDto::from));
     }
 
-    @GetMapping("/{userId}/examination-report")
-    public ResponseEntity<Resource> getExaminationReport(@PathVariable UUID userId, JwtAuthenticationToken jwt) {
-        User authenticatedUser = authenticationService.getAuthenticatedUser(jwt);
-        User user = userService.findById(userId);
-
-        if (!user.hasFullAccess(authenticatedUser)) {
-            throw new AccessDeniedException("You are not allowed to access data from this user");
-        }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=examination_report_%s.pdf", userId))
-                .body(userService.getExaminationReport(user));
+    @Operation(summary = "Get a user group by ID", description = "Retrieves details of a specific user group")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved group")
+    @ApiResponse(responseCode = "403", description = "Access denied")
+    @ApiResponse(responseCode = "404", description = "Group not found")
+    @GetMapping("/{groupId}")
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<UserGroupDto> getGroup(@PathVariable UUID groupId) {
+        return UserGroupDto.from(userService.getGroupById(groupId));
     }
 
-    @GetMapping("/{userId}/cv")
-    public ResponseEntity<Resource> getCV(@PathVariable UUID userId, JwtAuthenticationToken jwt) {
-        User authenticatedUser = authenticationService.getAuthenticatedUser(jwt);
-        User user = userService.findById(userId);
-
-        if (!user.hasFullAccess(authenticatedUser)) {
-            throw new AccessDeniedException("You are not allowed to access data from this user");
-        }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=cv_%s.pdf", userId))
-                .body(userService.getCV(user));
+    @Operation(summary = "Create a new user group", description = "Creates a new user group with the provided details")
+    @ApiResponse(responseCode = "200", description = "Group successfully created")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "403", description = "Access denied")
+    @PostMapping
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<UserGroupDto> createGroup(@Valid @RequestBody CreateGroupRequest request) {
+        UserGroup group = userService.createGroup(request.getName(), request.getDescription());
+        return UserGroupDto.from(group);
     }
 
-    @GetMapping("/{userId}/degree-report")
-    public ResponseEntity<Resource> getDegreeReport(@PathVariable UUID userId, JwtAuthenticationToken jwt) {
-        User authenticatedUser = authenticationService.getAuthenticatedUser(jwt);
-        User user = userService.findById(userId);
+    @Operation(summary = "Update a user group", description = "Updates an existing user group with the provided details")
+    @ApiResponse(responseCode = "200", description = "Group successfully updated")
+    @ApiResponse(responseCode = "400", description = "Invalid input")
+    @ApiResponse(responseCode = "403", description = "Access denied")
+    @ApiResponse(responseCode = "404", description = "Group not found")
+    @PutMapping("/{groupId}")
+    @PreAuthorize("hasRole('admin')")
+    public ResponseEntity<UserGroupDto> updateGroup(
+            @PathVariable UUID groupId,
+            @RequestBody UpdateGroupRequest request
+    ) {
+        UserGroup group = userService.updateGroup(groupId, request.getName(), request.getDescription());
+        return UserGroupDto.from(group);
+    }
 
-        if (!user.hasFullAccess(authenticatedUser)) {
-            throw new AccessDeniedException("You are not allowed to access data from this user");
-        }
+    @Data
+    public static class CreateGroupRequest {
+        @NotBlank(message = "Group name is required")
+        @Size(min = 3, max = 50, message = "Group name must be between 3 and 50 characters")
+        private String name;
+        
+        @Size(max = 255, message = "Description cannot exceed 255 characters")
+        private String description;
+    }
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=degree_report_%s.pdf", userId))
-                .body(userService.getDegreeReport(user));
+    @Data
+    public static class UpdateGroupRequest {
+        @NotBlank(message = "Group name is required")
+        @Size(min = 3, max = 50, message = "Group name must be between 3 and 50 characters")
+        private String name;
+        
+        @Size(max = 255, message = "Description cannot exceed 255 characters")
+        private String description;
     }
 }

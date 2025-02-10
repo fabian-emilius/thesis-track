@@ -10,12 +10,14 @@ import de.tum.cit.aet.thesis.constants.ThesisRoleName;
 import de.tum.cit.aet.thesis.entity.Topic;
 import de.tum.cit.aet.thesis.entity.TopicRole;
 import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.entity.UserGroup;
 import de.tum.cit.aet.thesis.entity.key.TopicRoleId;
 import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
 import de.tum.cit.aet.thesis.repository.TopicRepository;
 import de.tum.cit.aet.thesis.repository.TopicRoleRepository;
 import de.tum.cit.aet.thesis.repository.UserRepository;
+import de.tum.cit.aet.thesis.repository.UserGroupRepository;
 import de.tum.cit.aet.thesis.utility.HibernateHelper;
 
 import java.time.Instant;
@@ -26,15 +28,19 @@ public class TopicService {
     private final TopicRepository topicRepository;
     private final TopicRoleRepository topicRoleRepository;
     private final UserRepository userRepository;
+    private final UserGroupRepository userGroupRepository;
 
     @Autowired
-    public TopicService(TopicRepository topicRepository, TopicRoleRepository topicRoleRepository, UserRepository userRepository) {
+    public TopicService(TopicRepository topicRepository, TopicRoleRepository topicRoleRepository, 
+                       UserRepository userRepository, UserGroupRepository userGroupRepository) {
         this.topicRepository = topicRepository;
         this.topicRoleRepository = topicRoleRepository;
         this.userRepository = userRepository;
+        this.userGroupRepository = userGroupRepository;
     }
 
     public Page<Topic> getAll(
+            UUID groupId,
             String[] types,
             boolean includeClosed,
             String searchQuery,
@@ -52,6 +58,7 @@ public class TopicService {
         String[] typesFilter = types == null || types.length == 0 ? null : types;
 
         return topicRepository.searchTopics(
+                groupId,
                 typesFilter,
                 includeClosed,
                 searchQueryFilter,
@@ -62,6 +69,7 @@ public class TopicService {
     @Transactional
     public Topic createTopic(
             User creator,
+            UUID groupId,
             String title,
             Set<String> thesisTypes,
             String problemStatement,
@@ -71,8 +79,11 @@ public class TopicService {
             List<UUID> supervisorIds,
             List<UUID> advisorIds
     ) {
-        Topic topic = new Topic();
+        UserGroup group = userGroupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
 
+        Topic topic = new Topic();
+        topic.setGroup(group);
         topic.setTitle(title);
         topic.setThesisTypes(thesisTypes);
         topic.setProblemStatement(problemStatement);

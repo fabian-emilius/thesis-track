@@ -1,55 +1,91 @@
 package de.tum.cit.aet.thesis.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.entity.Topic;
+import de.tum.cit.aet.thesis.entity.UserGroup;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
-import de.tum.cit.aet.thesis.repository.UserRepository;
+import de.tum.cit.aet.thesis.exception.request.UnauthorizedAccessException;
+import de.tum.cit.aet.thesis.repository.TopicRepository;
+import de.tum.cit.aet.thesis.repository.UserGroupRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepository;
-    private final UploadService uploadService;
+    private final UserGroupRepository userGroupRepository;
+    private final TopicRepository topicRepository;
+    private final GroupAccessService groupAccessService;
+    private final GroupValidator groupValidator;
 
-    @Autowired
-    public UserService(UserRepository userRepository, UploadService uploadService) {
-        this.userRepository = userRepository;
-        this.uploadService = uploadService;
+    @Transactional(readOnly = true)
+    public Page<UserGroup> getAllGroups(Pageable pageable) {
+        return userGroupRepository.findAllByUserHasAccess(groupAccessService.getCurrentUserId(), pageable);
     }
 
-    public Page<User> getAll(String searchQuery, String[] groups, Integer page, Integer limit, String sortBy, String sortOrder) {
-        Sort.Order order = new Sort.Order(sortOrder.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-
-        String searchQueryFilter = searchQuery == null || searchQuery.isEmpty() ? null : searchQuery.toLowerCase();
-        Set<String> groupsFilter = groups == null || groups.length == 0 ? null : new HashSet<>(Arrays.asList(groups));
-
-        return userRepository
-                .searchUsers(searchQueryFilter, groupsFilter, PageRequest.of(page, limit, Sort.by(order)));
+    @Transactional(readOnly = true)
+    public UserGroup getGroupById(UUID id) {
+        UserGroup group = userGroupRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+        if (!groupAccessService.hasAccess(group)) {
+            throw new UnauthorizedAccessException("No access to this group");
+        }
+        return group;
     }
 
-    public Resource getExaminationReport(User user) {
-        return uploadService.load(user.getExaminationFilename());
+    @Transactional
+    public UserGroup createGroup(String name, String description) {
+        if (!groupAccessService.canCreateGroup()) {
+            throw new UnauthorizedAccessException("No permission to create groups");
+        }
+        groupValidator.validateGroupName(name);
+        groupValidator.validateGroupDescription(description);
+        UserGroup group = new UserGroup();
+        group.setName(name);
+        group.setDescription(description);
+        group.setCreatedBy(groupAccessService.getCurrentUserId());
+        return userGroupRepository.save(group);
     }
 
-    public Resource getCV(User user) {
-        return uploadService.load(user.getCvFilename());
+    @Transactional
+    public UserGroup updateGroup(UUID id, String name, String description) {
+        UserGroup group = getGroupById(id);
+        if (!groupAccessService.canModifyGroup(group)) {
+            throw new UnauthorizedAccessException("No permission to modify this group");
+        }
+        groupValidator.validateGroupName(name);
+        groupValidator.validateGroupDescription(description);
+        group.setName(name);
+        group.setDescription(description);
+        return userGroupRepository.save(group);
     }
 
-    public Resource getDegreeReport(User user) {
-        return uploadService.load(user.getDegreeFilename());
+    @Transactional
+    public void deleteGroup(UUID id) {
+        UserGroup group = getGroupById(id);
+        if (!groupAccessService.canDeleteGroup(group)) {
+            throw new UnauthorizedAccessException("No permission to delete this group");
+        }
+        userGroupRepository.delete(group);
     }
 
-    public User findById(UUID userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("User with id %s not found.", userId)));
+    public boolean hasAccessToGroup(UUID groupId) {
+        groupValidator.validateGroupId(groupId);
+        return userGroupRepository.findById(groupId)
+                .map(groupAccessService::hasAccess)
+                .orElse(false);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Topic> getGroupTopics(UUID groupId, Pageable pageable) {
+        UserGroup group = getGroupById(groupId);
+        if (!groupAccessService.hasAccess(group)) {
+            throw new UnauthorizedAccessException("No access to group topics");
+        }
+        return topicRepository.findByGroupId(groupId, pageable);
     }
 }

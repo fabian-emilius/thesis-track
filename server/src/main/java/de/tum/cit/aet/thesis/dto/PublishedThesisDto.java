@@ -1,40 +1,27 @@
 package de.tum.cit.aet.thesis.dto;
 
-import de.tum.cit.aet.thesis.constants.ThesisState;
-import de.tum.cit.aet.thesis.entity.Thesis;
+import de.tum.cit.aet.thesis.entity.PublishedThesis;
+import lombok.Data;
 
-import java.time.Instant;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
-public record PublishedThesisDto(
-        UUID thesisId,
-        ThesisState state,
-        String title,
-        String type,
-        Instant startDate,
-        Instant endDate,
-        String abstractText,
-        List<LightUserDto> students,
-        List<LightUserDto> advisors,
-        List<LightUserDto> supervisors
-) {
-    public static PublishedThesisDto fromThesisEntity(Thesis thesis) {
-        if (thesis == null) {
-            return null;
-        }
+@Data
+public class PublishedThesisDto {
+    private UUID id;
+    private ThesisDto thesis;
+    private Set<UUID> visibilityGroups;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-        return new PublishedThesisDto(
-                thesis.getId(),
-                thesis.getState(),
-                thesis.getTitle(),
-                thesis.getType(),
-                thesis.getStartDate(),
-                thesis.getEndDate(),
-                thesis.getAbstractField(),
-                thesis.getStudents().stream().map(LightUserDto::fromUserEntity).toList(),
-                thesis.getAdvisors().stream().map(LightUserDto::fromUserEntity).toList(),
-                thesis.getSupervisors().stream().map(LightUserDto::fromUserEntity).toList()
-        );
+    public static PublishedThesisDto from(PublishedThesis publishedThesis) {
+        PublishedThesisDto dto = new PublishedThesisDto();
+        dto.setId(publishedThesis.getId());
+        dto.setThesis(ThesisDto.from(publishedThesis.getThesis()));
+        dto.setVisibilityGroups(publishedThesis.getVisibilityGroups());
+        dto.setCreatedAt(publishedThesis.getCreatedAt());
+        dto.setUpdatedAt(publishedThesis.getUpdatedAt());
+        return dto;
     }
 }

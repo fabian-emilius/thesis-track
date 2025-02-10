@@ -1,91 +1,137 @@
 package de.tum.cit.aet.thesis.service;
 
+import de.tum.cit.aet.thesis.entity.UserGroup;
+import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
+import de.tum.cit.aet.thesis.exception.request.UnauthorizedAccessException;
+import de.tum.cit.aet.thesis.repository.TopicRepository;
+import de.tum.cit.aet.thesis.repository.UserGroupRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import de.tum.cit.aet.thesis.entity.User;
-import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
-import de.tum.cit.aet.thesis.mock.EntityMockFactory;
-import de.tum.cit.aet.thesis.repository.UserRepository;
+import org.springframework.data.domain.Pageable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
     @Mock
-    private UserRepository userRepository;
+    private UserGroupRepository userGroupRepository;
+
+    @Mock
+    private TopicRepository topicRepository;
+
+    @Mock
+    private GroupAccessService groupAccessService;
 
     @InjectMocks
     private UserService userService;
 
-    private User testUser;
+    private UserGroup testGroup;
+    private UUID groupId;
 
     @BeforeEach
     void setUp() {
-        testUser = EntityMockFactory.createUser("Test");
+        MockitoAnnotations.openMocks(this);
+
+        groupId = UUID.randomUUID();
+        testGroup = new UserGroup();
+        testGroup.setId(groupId);
+        testGroup.setName("Test Group");
+        testGroup.setDescription("Test Description");
+
+        when(groupAccessService.canCreateGroup()).thenReturn(true);
+        when(groupAccessService.canModifyGroup(any())).thenReturn(true);
+        when(groupAccessService.canDeleteGroup(any())).thenReturn(true);
+        when(groupAccessService.hasAccess(any(UserGroup.class))).thenReturn(true);
     }
 
     @Test
-    void getAll_WithNoFilters_ReturnsAllUsers() {
-        List<User> users = Collections.singletonList(testUser);
-        Page<User> expectedPage = new PageImpl<>(users);
-        when(userRepository.searchUsers(
-                any(),
-                any(),
-                any(PageRequest.class)
-        )).thenReturn(expectedPage);
+    void getAllGroupsReturnsPagedResults() {
+        Page<UserGroup> groupPage = new PageImpl<>(List.of(testGroup));
+        when(userGroupRepository.findAllByUserHasAccess(any(), any(Pageable.class))).thenReturn(groupPage);
 
-        Page<User> result = userService.getAll(
-                null,
-                null,
-                0,
-                10,
-                "id",
-                "asc"
-        );
+        Page<UserGroup> result = userService.getAllGroups(Pageable.unpaged());
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
-        assertEquals(testUser, result.getContent().getFirst());
-        verify(userRepository).searchUsers(
-                any(),
-                any(),
-                eq(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id")))
-        );
+        assertEquals(testGroup.getName(), result.getContent().get(0).getName());
     }
 
     @Test
-    void findById_WithExistingUser_ReturnsUser() {
-        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
+    void getGroupByIdReturnsGroup() {
+        when(userGroupRepository.findById(groupId)).thenReturn(Optional.of(testGroup));
 
-        User result = userService.findById(testUser.getId());
+        UserGroup result = userService.getGroupById(groupId);
 
         assertNotNull(result);
-        assertEquals(testUser.getId(), result.getId());
-        assertEquals(testUser.getFirstName(), result.getFirstName());
-        assertEquals(testUser.getLastName(), result.getLastName());
-        assertEquals(testUser.getEmail(), result.getEmail());
-        verify(userRepository).findById(testUser.getId());
+        assertEquals(testGroup.getName(), result.getName());
     }
 
     @Test
-    void findById_WithNonExistingUser_ThrowsResourceNotFoundException() {
-        when(userRepository.findById(testUser.getId())).thenReturn(Optional.empty());
+    void getGroupByIdThrowsWhenNotFound() {
+        when(userGroupRepository.findById(any())).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () ->
-                userService.findById(testUser.getId())
+            userService.getGroupById(UUID.randomUUID())
         );
-        verify(userRepository).findById(testUser.getId());
+    }
+
+    @Test
+    void createGroupSucceeds() {
+        when(userGroupRepository.save(any())).thenReturn(testGroup);
+
+        UserGroup result = userService.createGroup("Test Group", "Test Description");
+
+        assertNotNull(result);
+        assertEquals(testGroup.getName(), result.getName());
+        verify(userGroupRepository).save(any());
+    }
+
+    @Test
+    void createGroupThrowsWhenUnauthorized() {
+        when(groupAccessService.canCreateGroup()).thenReturn(false);
+
+        assertThrows(UnauthorizedAccessException.class, () ->
+            userService.createGroup("Test Group", "Test Description")
+        );
+    }
+
+    @Test
+    void updateGroupSucceeds() {
+        when(userGroupRepository.findById(groupId)).thenReturn(Optional.of(testGroup));
+        when(userGroupRepository.save(any())).thenReturn(testGroup);
+
+        UserGroup result = userService.updateGroup(groupId, "Updated Name", "Updated Description");
+
+        assertNotNull(result);
+        verify(userGroupRepository).save(any());
+    }
+
+    @Test
+    void deleteGroupSucceeds() {
+        when(userGroupRepository.findById(groupId)).thenReturn(Optional.of(testGroup));
+
+        assertDoesNotThrow(() -> userService.deleteGroup(groupId));
+
+        verify(userGroupRepository).delete(testGroup);
+    }
+
+    @Test
+    void deleteGroupThrowsWhenUnauthorized() {
+        when(userGroupRepository.findById(groupId)).thenReturn(Optional.of(testGroup));
+        when(groupAccessService.canDeleteGroup(any())).thenReturn(false);
+
+        assertThrows(UnauthorizedAccessException.class, () ->
+            userService.deleteGroup(groupId)
+        );
     }
 }

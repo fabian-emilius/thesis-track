@@ -3,24 +3,30 @@ package de.tum.cit.aet.thesis.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "groups")
+@Table(name = "published_theses")
 @Getter
 @Setter
-public class UserGroup {
+public class PublishedThesis {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @Column(nullable = false)
-    private String name;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "thesis_id", nullable = false)
+    private Thesis thesis;
 
-    @Column
-    private String description;
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "visibility_groups", columnDefinition = "uuid[]")
+    private Set<UUID> visibilityGroups = new HashSet<>();
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
