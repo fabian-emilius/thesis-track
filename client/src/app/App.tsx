@@ -4,6 +4,7 @@ import { Notifications } from '@mantine/notifications'
 import '../../public/favicon.svg'
 import AppRoutes from './Routes'
 import AuthenticationProvider from '../providers/AuthenticationContext/AuthenticationProvider'
+import GroupProvider from '../providers/GroupContext/GroupProvider'
 
 import '@mantine/core/styles.layer.css'
 import '@mantine/dates/styles.layer.css'
@@ -42,10 +43,12 @@ const theme = createTheme({
 const App = () => {
   return (
     <MantineProvider defaultColorScheme='dark' theme={theme}>
-      <AuthenticationProvider>
-        <AppRoutes />
-        <Notifications limit={5} position='top-right' />
-      </AuthenticationProvider>
+      <GroupProvider>
+        <AuthenticationProvider>
+          <AppRoutes />
+          <Notifications limit={5} position='top-right' />
+        </AuthenticationProvider>
+      </GroupProvider>
     </MantineProvider>
   )
 }

@@ -10,7 +10,10 @@ import {
   Stack,
   Text,
   Tooltip,
+  Box,
 } from '@mantine/core'
+import { useGroupContext } from '../../../hooks/group'
+import GroupSelector from '../../../components/GroupSelector/GroupSelector'
 import * as classes from './AuthenticatedArea.module.css'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks'
@@ -51,6 +54,7 @@ const links: Array<{
   label: string
   icon: any
   groups: string[] | undefined
+  requiresGroup?: boolean
 }> = [
   { link: '/dashboard', label: 'Dashboard', icon: NewspaperClipping, groups: undefined },
   {
@@ -70,6 +74,7 @@ const links: Array<{
     label: 'Review Applications',
     icon: Scroll,
     groups: ['admin', 'advisor', 'supervisor'],
+    requiresGroup: true,
   },
   {
     link: '/topics',
@@ -102,6 +107,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
 
   const navigate = useNavigate()
   const user = useUser()
+  const { selectedGroup } = useGroupContext()
   const [opened, { toggle, close }] = useDisclosure()
 
   const minimizeAnimationDuration = 200
@@ -193,10 +199,14 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
               <ColorSchemeToggleButton />
             </Center>
           )}
+          <Box mb="md">
+            <GroupSelector compact={minimized} />
+          </Box>
           {links
             .filter(
               (item) =>
-                !item.groups || item.groups.some((role) => auth.user?.groups.includes(role)),
+                (!item.groups || item.groups.some((role) => auth.user?.groups.includes(role))) &&
+                (!item.requiresGroup || selectedGroup),
             )
             .map((item) => (
               <Link
