@@ -15,7 +15,7 @@ import {
 import { useGroupContext } from '../../../hooks/group'
 import GroupSelector from '../../../components/GroupSelector/GroupSelector'
 import * as classes from './AuthenticatedArea.module.css'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks'
 import {
   CaretDoubleLeft,
@@ -31,7 +31,7 @@ import {
 } from 'phosphor-react'
 import { useIsSmallerBreakpoint } from '../../../hooks/theme'
 import { useAuthenticationContext, useUser } from '../../../hooks/authentication'
-import { useNavigationType } from 'react-router'
+import { useNavigationType } from 'react-router-dom'
 import ScrollToTop from '../ScrollToTop/ScrollToTop'
 import PageLoader from '../../../components/PageLoader/PageLoader'
 import { useLocalStorage } from '../../../hooks/local-storage'

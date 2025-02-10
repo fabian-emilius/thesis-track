@@ -1,7 +1,7 @@
 import React from 'react'
 import { SimpleGrid, Card, Text, Title, Group, Button, Skeleton } from '@mantine/core'
-import { useGroupContext } from '../../providers/GroupContext/GroupProvider'
-import { useNavigate } from 'react-router'
+import { useGroupContext } from '../../hooks/useGroupContext'
+import { useNavigate } from 'react-router-dom'
 
 const GroupOverview = () => {
   const { groups, loading, setCurrentGroup } = useGroupContext()

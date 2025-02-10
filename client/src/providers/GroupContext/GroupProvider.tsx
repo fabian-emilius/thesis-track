@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, PropsWithChildren } from 'react'
+import React, { createContext, useState, PropsWithChildren } from 'react'
 import { useLocalStorage } from '../../../hooks/local-storage'
+import { useGroupContext } from './hooks'
 
 /**
  * Represents a group entity in the system.
@@ -49,18 +50,7 @@ interface GroupContextType {
  */
 const GroupContext = createContext<GroupContextType | undefined>(undefined)
 
-/**
- * Custom hook to access group context
- * @throws {GroupContextError} When used outside of GroupProvider
- * @returns {GroupContextType} Group context value
- */
-export const useGroupContext = (): GroupContextType => {
-  const context = useContext(GroupContext)
-  if (!context) {
-    throw new GroupContextError('useGroupContext must be used within a GroupProvider')
-  }
-  return context
-}
+
 
 /**
  * Provider component for group management functionality
@@ -94,4 +84,5 @@ const GroupProvider = ({ children }: PropsWithChildren): JSX.Element => {
   return <GroupContext.Provider value={value}>{children}</GroupContext.Provider>
 }
 
+export { GroupContext }
 export default GroupProvider

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Select, SelectProps } from '@mantine/core'
-import { useGroupContext } from '../../providers/GroupContext/GroupProvider'
+import { useGroupContext } from '../../hooks/useGroupContext'
 
 /**
  * Props for the GroupSelector component, extending Mantine Select props

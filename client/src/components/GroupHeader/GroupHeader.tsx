@@ -1,6 +1,6 @@
 import React from 'react'
 import { Group, Text, Title } from '@mantine/core'
-import { useGroupContext } from '../../providers/GroupContext/GroupProvider'
+import { useGroupContext } from '../../hooks/useGroupContext'
 
 /**
  * Displays the header section for a group, showing the group name and description.
