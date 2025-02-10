@@ -1,13 +1,19 @@
 FROM node:22-alpine as build
 
-WORKDIR /app
-
-COPY . .
-
+# Set working directory
 WORKDIR /app/client
-ENV CI 1
 
+# Copy package files first for better caching
+COPY client/package*.json ./
+
+# Install dependencies
+ENV CI 1
 RUN npm install
+
+# Copy the rest of the client application
+COPY client/ ./
+
+# Build the application
 RUN npm run build
 
 FROM nginx:stable-alpine
