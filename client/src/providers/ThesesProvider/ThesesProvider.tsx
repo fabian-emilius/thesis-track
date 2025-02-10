@@ -1,27 +1,42 @@
-import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react'
+import React, { PropsWithChildren, useEffect, useMemo, useState, ErrorInfo } from 'react'
 import { ThesesContext, IThesesContext, IThesesFilters, IThesesSort } from './context'
 import { IThesis, ThesisState } from '../../requests/responses/thesis'
-import { doRequest } from '../../requests/request'
+import { doRequest, RequestError } from '../../requests/request'
 import { PaginationResponse } from '../../requests/responses/pagination'
+import { ErrorBoundary } from '@mantine/core'
 import { useDebouncedValue } from '@mantine/hooks'
 import { showSimpleError } from '../../utils/notification'
 import { getApiResponseErrorMessage } from '../../requests/handler'
+import { useGroupContext } from '../group/GroupProvider'
 
 interface IThesesProviderProps {
   fetchAll?: boolean
   limit: number
-  defaultStates?: ThesisState[]
+  defaultStates?: readonly ThesisState[]
   hideIfEmpty?: boolean
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
+}
+
+interface IThesesState {
+  theses?: PaginationResponse<IThesis>
+  error?: RequestError
+  isLoading: boolean
 }
 
 const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
   const { children, fetchAll = false, limit, hideIfEmpty = false, defaultStates } = props
+  const { currentGroup } = useGroupContext()
 
-  const [theses, setTheses] = useState<PaginationResponse<IThesis>>()
-  const [page, setPage] = useState(0)
+  const [state, setState] = useState<IThesesState>({
+    theses: undefined,
+    error: undefined,
+    isLoading: false
+  })
+  const [page, setPage] = useState<number>(0)
 
   const [filters, setFilters] = useState<IThesesFilters>({
     states: defaultStates,
+    groupId: currentGroup?.groupId,
   })
   const [sort, setSort] = useState<IThesesSort>({
     column: 'startDate',
@@ -31,7 +46,14 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
   const [debouncedSearch] = useDebouncedValue(filters.search || '', 500)
 
   useEffect(() => {
-    setTheses(undefined)
+    setFilters((prev) => ({
+      ...prev,
+      groupId: currentGroup?.groupId,
+    }))
+  }, [currentGroup])
+
+  useEffect(() => {
+    setState(prev => ({ ...prev, isLoading: true, error: undefined }))
 
     return doRequest<PaginationResponse<IThesis>>(
       `/v2/theses`,
@@ -43,6 +65,7 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
           search: debouncedSearch,
           state: filters.states?.join(',') ?? '',
           type: filters.types?.join(',') ?? '',
+          groupId: filters.groupId ?? '',
           page,
           limit,
           sortBy: sort.column,
@@ -51,9 +74,12 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
       },
       (res) => {
         if (!res.ok) {
-          showSimpleError(getApiResponseErrorMessage(res))
-
-          return setTheses({
+          const error = new RequestError(getApiResponseErrorMessage(res))
+          setState(prev => ({
+            ...prev,
+            error,
+            isLoading: false,
+            theses: {
             content: [],
             totalPages: 0,
             totalElements: 0,
@@ -63,7 +89,11 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
           })
         }
 
-        setTheses(res.data)
+        setState({
+          theses: res.data,
+          error: undefined,
+          isLoading: false
+        })
       },
     )
   }, [
@@ -73,12 +103,15 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
     sort,
     filters.states?.join(','),
     filters.types?.join(','),
+    filters.groupId,
     debouncedSearch,
   ])
 
   const contextState = useMemo<IThesesContext>(() => {
     return {
-      theses,
+      theses: state.theses,
+      isLoading: state.isLoading,
+      error: state.error,
       filters,
       setFilters: (value) => {
         setPage(0)
@@ -92,8 +125,11 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
       page,
       setPage,
       limit,
-      updateThesis: (newThesis) => {
-        setTheses((prev) => {
+      updateThesis: (newThesis: IThesis) => {
+        setState((prev) => {
+          if (!prev.theses) {
+            return prev
+          }
           if (!prev) {
             return undefined
           }
@@ -114,7 +150,13 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
     return <></>
   }
 
-  return <ThesesContext.Provider value={contextState}>{children}</ThesesContext.Provider>
+  return (
+    <ErrorBoundary onError={props.onError}>
+      <ThesesContext.Provider value={contextState}>
+        {children}
+      </ThesesContext.Provider>
+    </ErrorBoundary>
+  )
 }
 
 export default ThesesProvider

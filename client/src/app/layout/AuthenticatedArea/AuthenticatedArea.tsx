@@ -10,7 +10,10 @@ import {
   Stack,
   Text,
   Tooltip,
+  Box,
 } from '@mantine/core'
+import GroupSelector from '../../../components/GroupSelector/GroupSelector'
+import GroupChangeNotification from '../../../components/GroupChangeNotification/GroupChangeNotification'
 import * as classes from './AuthenticatedArea.module.css'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks'
@@ -187,11 +190,21 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
               <ColorSchemeToggleButton ml='auto' />
             </Group>
           )}
+          {!minimized && (
+            <Box my="sm">
+              <GroupSelector />
+            </Box>
+          )}
           {!minimized && <Divider my='sm' />}
           {minimized && (
             <Center mb='md'>
               <ColorSchemeToggleButton />
             </Center>
+          )}
+          {minimized && (
+            <Box mb="md">
+              <GroupSelector compact />
+            </Box>
           )}
           {links
             .filter(
@@ -257,6 +270,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
       </AppShell.Navbar>
 
       <AppShell.Main>
+        <GroupChangeNotification />
         <div className={classes.mainHeight}>
           {auth.user ? (
             <Suspense fallback={<PageLoader />}>

@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
 import PageLoader from '../components/PageLoader/PageLoader'
+import { GroupProvider } from '../providers/GroupProvider'
 
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage'))
@@ -21,6 +22,8 @@ const ReplaceApplicationPage = lazy(
 const ManageTopicsPage = lazy(() => import('../pages/ManageTopicsPage/ManageTopicsPage'))
 const TopicPage = lazy(() => import('../pages/TopicPage/TopicPage'))
 const PresentationPage = lazy(() => import('../pages/PresentationPage/PresentationPage'))
+const GroupsPage = lazy(() => import('../pages/GroupsPage/GroupsPage'))
+const GroupPage = lazy(() => import('../pages/GroupPage/GroupPage'))
 const ReviewApplicationPage = lazy(
   () => import('../pages/ReviewApplicationPage/ReviewApplicationPage'),
 )
@@ -31,7 +34,8 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<PageLoader />}>
       <BrowserRouter>
-        <Routes>
+        <GroupProvider>
+          <Routes>
           <Route
             path='/management/thesis-applications/:applicationId?'
             element={<Navigate to='/applications' replace />}
@@ -141,8 +145,25 @@ const AppRoutes = () => {
           <Route path='/privacy' element={<PrivacyPage />} />
           <Route path='/logout' element={<LogoutPage />} />
           <Route path='/' element={<LandingPage />} />
+          <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea requiredGroups={['admin']}>
+                <GroupsPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/:groupId'
+            element={
+              <AuthenticatedArea requiredGroups={['admin']}>
+                <GroupPage />
+              </AuthenticatedArea>
+            }
+          />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
+        </GroupProvider>
       </BrowserRouter>
     </Suspense>
   )

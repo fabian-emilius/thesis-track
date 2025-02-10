@@ -5,6 +5,7 @@ import { ThesisState } from '../../requests/responses/thesis'
 import { MagnifyingGlass } from 'phosphor-react'
 import { formatThesisState, formatThesisType } from '../../utils/format'
 import { GLOBAL_CONFIG } from '../../config/global'
+import { useGroupContext } from '../../providers/GroupProvider/hooks'
 
 const ThesesFilters = () => {
   const { filters, setFilters, sort, setSort } = useThesesContext()
@@ -70,6 +71,24 @@ const ThesesFilters = () => {
             setFilters((prev) => ({
               ...prev,
               states: x as ThesisState[],
+            }))
+          }
+        />
+      </Grid.Col>
+      <Grid.Col span={6}>
+        <MultiSelect
+          hidePickedOptions
+          label='Groups'
+          placeholder='Select Groups'
+          data={useGroupContext().groups.map((group) => ({
+            value: group.id,
+            label: group.name,
+          }))}
+          value={filters.groups || []}
+          onChange={(x) =>
+            setFilters((prev) => ({
+              ...prev,
+              groups: x,
             }))
           }
         />
