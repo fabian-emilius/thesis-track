@@ -25,6 +25,7 @@ import {
   PaperPlaneTilt,
   Table,
   Presentation,
+  Users,
 } from 'phosphor-react'
 import { useIsSmallerBreakpoint } from '../../../hooks/theme'
 import { useAuthenticationContext, useUser } from '../../../hooks/authentication'
@@ -38,6 +39,8 @@ import CustomAvatar from '../../../components/CustomAvatar/CustomAvatar'
 import { formatUser } from '../../../utils/format'
 import ContentContainer from '../ContentContainer/ContentContainer'
 import Footer from '../../../components/Footer/Footer'
+import GroupSelector from '../../../components/GroupSelector/GroupSelector'
+import { useGroupContext } from '../../../providers/GroupContext/GroupProvider'
 
 export interface IAuthenticatedAreaProps {
   size?: MantineSize
@@ -52,6 +55,7 @@ const links: Array<{
   icon: any
   groups: string[] | undefined
 }> = [
+  { link: '/groups', label: 'Groups', icon: Users, groups: undefined },
   { link: '/dashboard', label: 'Dashboard', icon: NewspaperClipping, groups: undefined },
   {
     link: '/presentations',
@@ -103,6 +107,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
   const navigate = useNavigate()
   const user = useUser()
   const [opened, { toggle, close }] = useDisclosure()
+  const { currentGroup } = useGroupContext()
 
   const minimizeAnimationDuration = 200
   const [minimizedState, setMinimized] = useLocalStorage<boolean>('navigation_minimized', {
@@ -193,6 +198,9 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
               <ColorSchemeToggleButton />
             </Center>
           )}
+          {!minimized && (
+            <GroupSelector mb='md' />
+          )}
           {links
             .filter(
               (item) =>
@@ -262,7 +270,16 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
             <Suspense fallback={<PageLoader />}>
               {!requiredGroups ||
               requiredGroups.some((role) => auth.user?.groups.includes(role)) ? (
-                <ContentContainer size={size}>{children}</ContentContainer>
+                <ContentContainer size={size}>
+                  {currentGroup ? children : (
+                    <Center className={classes.fullHeight}>
+                      <Stack align="center">
+                        <Text>Please select a group to continue</Text>
+                        <Button onClick={() => navigate('/groups')}>Go to Groups</Button>
+                      </Stack>
+                    </Center>
+                  )}
+                </ContentContainer>
               ) : (
                 <Center className={classes.fullHeight}>
                   <h1>403 - Unauthorized</h1>

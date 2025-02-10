@@ -26,6 +26,7 @@ const ReviewApplicationPage = lazy(
 )
 const ThesisPage = lazy(() => import('../pages/ThesisPage/ThesisPage'))
 const LandingPage = lazy(() => import('../pages/LandingPage/LandingPage'))
+const GroupsPage = lazy(() => import('../pages/GroupsPage/GroupsPage'))
 
 const AppRoutes = () => {
   return (
@@ -37,6 +38,14 @@ const AppRoutes = () => {
             element={<Navigate to='/applications' replace />}
           />
           <Route path='/applications/thesis' element={<Navigate to='/' replace />} />
+          <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea>
+                <GroupsPage />
+              </AuthenticatedArea>
+            }
+          />
           <Route
             path='/dashboard'
             element={

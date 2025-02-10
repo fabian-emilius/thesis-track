@@ -6,6 +6,7 @@ import { PaginationResponse } from '../../requests/responses/pagination'
 import { useDebouncedValue } from '@mantine/hooks'
 import { showSimpleError } from '../../utils/notification'
 import { getApiResponseErrorMessage } from '../../requests/handler'
+import { useGroupContext } from '../GroupContext/GroupProvider'
 
 interface IThesesProviderProps {
   fetchAll?: boolean
@@ -16,6 +17,7 @@ interface IThesesProviderProps {
 
 const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
   const { children, fetchAll = false, limit, hideIfEmpty = false, defaultStates } = props
+  const { currentGroup } = useGroupContext()
 
   const [theses, setTheses] = useState<PaginationResponse<IThesis>>()
   const [page, setPage] = useState(0)
@@ -33,6 +35,8 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
   useEffect(() => {
     setTheses(undefined)
 
+    if (!currentGroup) return
+
     return doRequest<PaginationResponse<IThesis>>(
       `/v2/theses`,
       {
@@ -47,6 +51,7 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
           limit,
           sortBy: sort.column,
           sortOrder: sort.direction,
+          groupId: currentGroup.id,
         },
       },
       (res) => {
@@ -74,6 +79,7 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
     filters.states?.join(','),
     filters.types?.join(','),
     debouncedSearch,
+    currentGroup,
   ])
 
   const contextState = useMemo<IThesesContext>(() => {

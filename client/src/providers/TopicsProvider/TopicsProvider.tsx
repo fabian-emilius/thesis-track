@@ -4,6 +4,7 @@ import { showSimpleError } from '../../utils/notification'
 import { ITopic } from '../../requests/responses/topic'
 import { ITopicsContext, ITopicsFilters, TopicsContext } from './context'
 import { PaginationResponse } from '../../requests/responses/pagination'
+import { useGroupContext } from '../GroupContext/GroupProvider'
 
 interface ITopicsProviderProps {
   includeClosedTopics?: boolean
@@ -13,6 +14,7 @@ interface ITopicsProviderProps {
 
 const TopicsProvider = (props: PropsWithChildren<ITopicsProviderProps>) => {
   const { children, includeClosedTopics = false, limit, hideIfEmpty = false } = props
+  const { currentGroup } = useGroupContext()
 
   const [topics, setTopics] = useState<PaginationResponse<ITopic>>()
   const [page, setPage] = useState(0)
@@ -22,6 +24,8 @@ const TopicsProvider = (props: PropsWithChildren<ITopicsProviderProps>) => {
 
   useEffect(() => {
     setTopics(undefined)
+
+    if (!currentGroup) return
 
     return doRequest<PaginationResponse<ITopic>>(
       `/v2/topics`,
@@ -33,6 +37,7 @@ const TopicsProvider = (props: PropsWithChildren<ITopicsProviderProps>) => {
           limit,
           type: filters.types?.join(',') || '',
           includeClosed: filters.includeClosed ? 'true' : 'false',
+          groupId: currentGroup.id,
         },
       },
       (res) => {
@@ -52,7 +57,7 @@ const TopicsProvider = (props: PropsWithChildren<ITopicsProviderProps>) => {
         setTopics(res.data)
       },
     )
-  }, [filters, page, limit])
+  }, [filters, page, limit, currentGroup])
 
   const contextState = useMemo<ITopicsContext>(() => {
     return {
