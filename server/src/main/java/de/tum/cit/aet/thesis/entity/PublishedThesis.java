@@ -27,8 +27,8 @@ public class PublishedThesis {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "text")
-    private String abstract;
+    @Column(name = "abstract", columnDefinition = "text")
+    private String abstractText;
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(name = "visibility_groups", columnDefinition = "uuid[]")
@@ -36,9 +36,4 @@ public class PublishedThesis {
 
     @Column(name = "published_at", nullable = false)
     private LocalDateTime publishedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        publishedAt = LocalDateTime.now();
-    }
 }
