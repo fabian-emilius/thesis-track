@@ -2,8 +2,11 @@ package de.tum.cit.aet.thesis.controller;
 
 import de.tum.cit.aet.thesis.dto.UserGroupDto;
 import de.tum.cit.aet.thesis.dto.PaginationDto;
+import de.tum.cit.aet.thesis.dto.TopicDto;
 import de.tum.cit.aet.thesis.entity.UserGroup;
+import de.tum.cit.aet.thesis.entity.Topic;
 import de.tum.cit.aet.thesis.service.UserService;
+import lombok.Data;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -54,7 +57,9 @@ public class UserController {
             Pageable pageable
     ) {
         Page<Topic> topics = userService.getGroupTopics(groupId, pageable);
-        return PaginationDto.from(topics.map(TopicDto::from));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache")
+                .body(PaginationDto.from(topics.map(TopicDto::from)));
     }
 
     @Operation(summary = "Get a user group by ID", description = "Retrieves details of a specific user group")
@@ -64,7 +69,7 @@ public class UserController {
     @GetMapping("/{groupId}")
     @PreAuthorize("hasRole('admin')")
     public ResponseEntity<UserGroupDto> getGroup(@PathVariable UUID groupId) {
-        return UserGroupDto.from(userService.getGroupById(groupId));
+        return ResponseEntity.ok(UserGroupDto.from(userService.getGroupById(groupId)));
     }
 
     @Operation(summary = "Create a new user group", description = "Creates a new user group with the provided details")
@@ -75,7 +80,7 @@ public class UserController {
     @PreAuthorize("hasRole('admin')")
     public ResponseEntity<UserGroupDto> createGroup(@Valid @RequestBody CreateGroupRequest request) {
         UserGroup group = userService.createGroup(request.getName(), request.getDescription());
-        return UserGroupDto.from(group);
+        return ResponseEntity.ok(UserGroupDto.from(group));
     }
 
     @Operation(summary = "Update a user group", description = "Updates an existing user group with the provided details")
@@ -90,7 +95,7 @@ public class UserController {
             @RequestBody UpdateGroupRequest request
     ) {
         UserGroup group = userService.updateGroup(groupId, request.getName(), request.getDescription());
-        return UserGroupDto.from(group);
+        return ResponseEntity.ok(UserGroupDto.from(group));
     }
 
     @Data

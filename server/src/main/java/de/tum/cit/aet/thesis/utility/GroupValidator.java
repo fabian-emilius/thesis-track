@@ -9,6 +9,7 @@ import java.util.UUID;
 public class GroupValidator {
     private static final int MAX_GROUP_NAME_LENGTH = 255;
     private static final int MAX_GROUP_DESCRIPTION_LENGTH = 1000;
+    private static final String UUID_PATTERN = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
 
     public static void validateGroupName(String name) {
         if (name == null || name.trim().isEmpty()) {
@@ -40,6 +41,15 @@ public class GroupValidator {
     public static void validateGroupExists(UUID groupId, String message) {
         if (groupId == null) {
             throw new ResourceInvalidParametersException(message);
+        }
+    }
+
+    public static void validateGroupId(String groupId) {
+        if (groupId == null || groupId.trim().isEmpty()) {
+            throw new ResourceInvalidParametersException("Group ID cannot be empty");
+        }
+        if (!groupId.matches(UUID_PATTERN)) {
+            throw new ResourceInvalidParametersException("Invalid group ID format");
         }
     }
 }

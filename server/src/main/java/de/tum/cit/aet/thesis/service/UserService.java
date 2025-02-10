@@ -20,7 +20,6 @@ public class UserService {
     private final UserGroupRepository userGroupRepository;
     private final TopicRepository topicRepository;
     private final GroupAccessService groupAccessService;
-    private final GroupValidator groupValidator;
 
     @Transactional(readOnly = true)
     public Page<UserGroup> getAllGroups(Pageable pageable) {
@@ -42,8 +41,8 @@ public class UserService {
         if (!groupAccessService.canCreateGroup()) {
             throw new UnauthorizedAccessException("No permission to create groups");
         }
-        groupValidator.validateGroupName(name);
-        groupValidator.validateGroupDescription(description);
+        GroupValidator.validateGroupName(name);
+        GroupValidator.validateGroupDescription(description);
         UserGroup group = new UserGroup();
         group.setName(name);
         group.setDescription(description);
@@ -57,8 +56,8 @@ public class UserService {
         if (!groupAccessService.canModifyGroup(group)) {
             throw new UnauthorizedAccessException("No permission to modify this group");
         }
-        groupValidator.validateGroupName(name);
-        groupValidator.validateGroupDescription(description);
+        GroupValidator.validateGroupName(name);
+        GroupValidator.validateGroupDescription(description);
         group.setName(name);
         group.setDescription(description);
         return userGroupRepository.save(group);
@@ -74,7 +73,7 @@ public class UserService {
     }
 
     public boolean hasAccessToGroup(UUID groupId) {
-        groupValidator.validateGroupId(groupId);
+        GroupValidator.validateGroupId(groupId);
         return userGroupRepository.findById(groupId)
                 .map(groupAccessService::hasAccess)
                 .orElse(false);
