@@ -1,9 +1,8 @@
-import React, { ErrorBoundary } from 'react'
 import { SimpleGrid, Card, Text, Title, Group, Button, Stack, Skeleton, Alert } from '@mantine/core'
-import { useNavigate } from 'react-router'
-import { useGroupContext } from '../../providers/GroupContext/GroupProvider'
+import { useNavigate } from 'react-router-dom'
+import { useGroupContext } from '@/providers/GroupContext'
 import { IconAlertCircle } from '@tabler/icons-react'
-import { Group as GroupType } from '../../types/group'
+import { Group as GroupType } from '@/types/group'
 
 /**
  * GroupOverview Component
@@ -94,17 +93,4 @@ const GroupOverview: React.FC = () => {
   )
 }
 
-/**
- * Error boundary wrapper for GroupOverview
- */
-const GroupOverviewWithErrorBoundary: React.FC = () => (
-  <ErrorBoundary fallback={
-    <Alert icon={<IconAlertCircle size="1rem" />} title="Error" color="red">
-      An error occurred while loading groups. Please try again later.
-    </Alert>
-  }>
-    <GroupOverview />
-  </ErrorBoundary>
-)
-
-export default GroupOverviewWithErrorBoundary
+export default GroupOverview

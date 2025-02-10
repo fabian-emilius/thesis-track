@@ -1,12 +1,11 @@
-import React, { PropsWithChildren, useEffect, useMemo, useState, ErrorInfo } from 'react'
+import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react'
 import { ThesesContext, IThesesContext, IThesesFilters, IThesesSort } from './context'
-import { IThesis, ThesisState } from '../../requests/responses/thesis'
-import { doRequest, RequestError } from '../../requests/request'
-import { PaginationResponse } from '../../requests/responses/pagination'
-import { ErrorBoundary } from '@mantine/core'
+import { IThesis, ThesisState } from '../../types/thesis'
+import { doRequest, RequestError } from '../../utils/request'
+import { PaginationResponse } from '../../types/pagination'
 import { useDebouncedValue } from '@mantine/hooks'
 import { showSimpleError } from '../../utils/notification'
-import { getApiResponseErrorMessage } from '../../requests/handler'
+import { getApiResponseErrorMessage } from '../../utils/apiHandler'
 import { useGroupContext } from '../group/GroupProvider'
 
 interface IThesesProviderProps {
@@ -14,7 +13,7 @@ interface IThesesProviderProps {
   limit: number
   defaultStates?: readonly ThesisState[]
   hideIfEmpty?: boolean
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
+  onError?: (error: Error) => void
 }
 
 interface IThesesState {
@@ -80,13 +79,18 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
             error,
             isLoading: false,
             theses: {
-            content: [],
-            totalPages: 0,
-            totalElements: 0,
-            last: true,
-            pageNumber: 0,
-            pageSize: limit,
-          })
+              content: [],
+              totalPages: 0,
+              totalElements: 0,
+              last: true,
+              pageNumber: 0,
+              pageSize: limit,
+            }
+          }))
+          if (props.onError) {
+            props.onError(error)
+          }
+          return
         }
 
         setState({
@@ -107,55 +111,55 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
     debouncedSearch,
   ])
 
-  const contextState = useMemo<IThesesContext>(() => {
-    return {
-      theses: state.theses,
-      isLoading: state.isLoading,
-      error: state.error,
-      filters,
-      setFilters: (value) => {
-        setPage(0)
-        setFilters(value)
-      },
-      sort,
-      setSort: (value) => {
-        setPage(0)
-        setSort(value)
-      },
-      page,
-      setPage,
-      limit,
-      updateThesis: (newThesis: IThesis) => {
-        setState((prev) => {
-          if (!prev.theses) {
-            return prev
+  const contextState = useMemo<IThesesContext>(() => ({
+    theses: state.theses,
+    isLoading: state.isLoading,
+    error: state.error,
+    filters,
+    setFilters: (value) => {
+      setPage(0)
+      setFilters(value)
+    },
+    sort,
+    setSort: (value) => {
+      setPage(0)
+      setSort(value)
+    },
+    page,
+    setPage,
+    limit,
+    updateThesis: (newThesis: IThesis) => {
+      setState((prev) => {
+        if (!prev.theses) {
+          return prev
+        }
+
+        const index = prev.theses.content.findIndex((x) => x.thesisId === newThesis.thesisId)
+
+        if (index >= 0) {
+          const updatedContent = [...prev.theses.content]
+          updatedContent[index] = newThesis
+          return {
+            ...prev,
+            theses: {
+              ...prev.theses,
+              content: updatedContent
+            }
           }
-          if (!prev) {
-            return undefined
-          }
+        }
+        return prev
+      })
+    },
+  }), [state, filters, sort, page, limit])
 
-          const index = prev.content.findIndex((x) => x.thesisId === newThesis.thesisId)
-
-          if (index >= 0) {
-            prev.content[index] = newThesis
-          }
-
-          return { ...prev }
-        })
-      },
-    }
-  }, [theses, filters, sort, page, limit])
-
-  if (hideIfEmpty && page === 0 && (!theses || theses.content.length === 0)) {
-    return <></>
+  if (hideIfEmpty && page === 0 && (!state.theses || state.theses.content.length === 0)) {
+    return null
   }
 
   return (
-    <ErrorBoundary onError={props.onError}>
-      <ThesesContext.Provider value={contextState}>
-        {children}
-      </ThesesContext.Provider>
-    </ErrorBoundary>
+    <ThesesContext.Provider value={contextState}>
+      {children}
+    </ThesesContext.Provider>
   )
 }
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { useAuthenticationContext } from '../../../hooks/authentication'
+import { useAuthenticationContext } from '@/hooks/authentication'
 
 /**
  * Represents a group entity in the system
@@ -64,7 +64,11 @@ export const GroupProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await fetch('/api/groups')
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/groups`, {
+          headers: {
+            'Authorization': `Bearer ${auth.token}`
+          }
+        })
         if (!response.ok) {
           throw new Error(`Failed to fetch groups: ${response.status} ${response.statusText}`)
         }
