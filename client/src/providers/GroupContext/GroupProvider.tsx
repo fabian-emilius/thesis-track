@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, PropsWithChildren, useEffect } from 'react'
-import { useLocalStorage } from '../../../hooks/local-storage'
+import { useLocalStorage } from '../../hooks/local-storage'
 import { showSimpleError } from '../../utils/notification'
 import { doRequest } from '../../requests/request'
 

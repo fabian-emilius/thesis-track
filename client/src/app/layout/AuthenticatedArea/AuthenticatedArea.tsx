@@ -10,6 +10,7 @@ import {
   Stack,
   Text,
   Tooltip,
+  Button,
 } from '@mantine/core'
 import * as classes from './AuthenticatedArea.module.css'
 import { Link, useLocation, useNavigate } from 'react-router'
