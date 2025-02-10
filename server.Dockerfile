@@ -1,6 +1,7 @@
 FROM gradle:8.11.1-jdk21 AS build
 
-COPY --chown=gradle:gradle . /home/gradle/thesis-management
+WORKDIR /home/gradle/thesis-management
+COPY . .
 WORKDIR /home/gradle/thesis-management/server
 
 RUN gradle build -x test --no-daemon
