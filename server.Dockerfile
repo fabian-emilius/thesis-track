@@ -9,8 +9,9 @@ FROM eclipse-temurin:21
 
 EXPOSE 8080
 
-RUN mkdir /app
+RUN mkdir /app && chmod 755 /app
 
-COPY --from=build /home/gradle/thesis-management/server/build/libs/*.jar /app/server.jar
+COPY --from=build /home/gradle/thesis-management/server/build/libs/server-*.jar /app/server.jar
+RUN chmod 755 /app/server.jar
 
 ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom","-jar","/app/server.jar"]
