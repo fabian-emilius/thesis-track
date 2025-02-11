@@ -10,3 +10,7 @@ export function useThesesContext() {
 
   return data
 }
+
+export function useTheses() {
+  return useThesesContext()
+}

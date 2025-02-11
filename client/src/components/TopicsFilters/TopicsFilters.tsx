@@ -37,7 +37,7 @@ const TopicsFilters: React.FC<TopicsFiltersProps> = ({ visible = {} }) => {
             { value: 'MASTER', label: 'Master Thesis' },
           ]}
           value={filters.type || null}
-          onChange={(value) => setFilters({ ...filters, type: value })}
+          onChange={(value) => setFilters({ ...filters, type: value || undefined })}
           clearable
         />
       )}
@@ -54,7 +54,7 @@ const TopicsFilters: React.FC<TopicsFiltersProps> = ({ visible = {} }) => {
           placeholder="All groups"
           data={groups.map((group) => ({ value: group.id, label: group.name }))}
           value={selectedGroup?.id || null}
-          onChange={(value) => setFilters({ ...filters, groupId: value })}
+          onChange={(value) => setFilters({ ...filters, groupId: value || undefined })}
           clearable
         />
       )}

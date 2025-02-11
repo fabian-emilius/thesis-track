@@ -10,3 +10,7 @@ export function useTopicsContext() {
 
   return data
 }
+
+export function useTopics() {
+  return useTopicsContext()
+}
