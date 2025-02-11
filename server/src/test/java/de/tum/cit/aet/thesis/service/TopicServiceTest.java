@@ -1,189 +1,154 @@
 package de.tum.cit.aet.thesis.service;
 
+import de.tum.cit.aet.thesis.dto.TopicDto;
+import de.tum.cit.aet.thesis.entity.Group;
+import de.tum.cit.aet.thesis.entity.Topic;
+import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.entity.UserGroup;
+import de.tum.cit.aet.thesis.exception.request.AccessDeniedException;
+import de.tum.cit.aet.thesis.repository.GroupRepository;
+import de.tum.cit.aet.thesis.repository.TopicRepository;
+import de.tum.cit.aet.thesis.repository.UserGroupRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import de.tum.cit.aet.thesis.entity.Topic;
-import de.tum.cit.aet.thesis.entity.TopicRole;
-import de.tum.cit.aet.thesis.entity.User;
-import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
-import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
-import de.tum.cit.aet.thesis.mock.EntityMockFactory;
-import de.tum.cit.aet.thesis.repository.TopicRepository;
-import de.tum.cit.aet.thesis.repository.TopicRoleRepository;
-import de.tum.cit.aet.thesis.repository.UserRepository;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TopicServiceTest {
+public class TopicServiceTest {
+
     @Mock
     private TopicRepository topicRepository;
-    @Mock
-    private TopicRoleRepository topicRoleRepository;
-    @Mock
-    private UserRepository userRepository;
 
+    @Mock
+    private GroupRepository groupRepository;
+
+    @Mock
+    private UserGroupRepository userGroupRepository;
+
+    @Mock
+    private AuthenticationService authenticationService;
+
+    @InjectMocks
     private TopicService topicService;
-    private User testUser;
+
+    private User currentUser;
+    private Group testGroup;
     private Topic testTopic;
+    private UserGroup userGroup;
 
     @BeforeEach
     void setUp() {
-        topicService = new TopicService(
-                topicRepository,
-                topicRoleRepository,
-                userRepository
-        );
+        currentUser = new User();
+        currentUser.setUserId(UUID.randomUUID());
 
-        testUser = EntityMockFactory.createUserWithGroup("Test", "supervisor");
-        testTopic = EntityMockFactory.createTopic("Test Topic");
+        testGroup = new Group();
+        testGroup.setGroupId(UUID.randomUUID());
+        testGroup.setName("Test Group");
+
+        testTopic = new Topic();
+        testTopic.setId(UUID.randomUUID());
+        testTopic.setGroup(testGroup);
+        testTopic.setTitle("Test Topic");
+        testTopic.setCreatedBy(currentUser);
+
+        userGroup = new UserGroup();
+        userGroup.setUser(currentUser);
+        userGroup.setGroup(testGroup);
+        userGroup.setRole("MEMBER");
+
+        when(authenticationService.getCurrentUser()).thenReturn(currentUser);
     }
 
     @Test
-    void getAll_ReturnsPageOfTopics() {
-        List<Topic> topics = List.of(testTopic);
-        Page<Topic> expectedPage = new PageImpl<>(topics);
-        when(topicRepository.searchTopics(
-                any(),
-                anyBoolean(),
-                any(),
-                any(PageRequest.class)
-        )).thenReturn(expectedPage);
+    void getTopicsByGroup_WithAccess_ReturnsTopics() {
+        when(userGroupRepository.findByUserIdAndGroupId(currentUser.getUserId(), testGroup.getGroupId()))
+                .thenReturn(userGroup);
+        when(topicRepository.findByGroupGroupId(testGroup.getGroupId()))
+                .thenReturn(List.of(testTopic));
 
-        Page<Topic> result = topicService.getAll(
-                null,
-                true,
-                null,
-                0,
-                10,
-                "title",
-                "asc"
-        );
+        List<TopicDto> topics = topicService.getTopicsByGroup(testGroup.getGroupId());
 
-        assertNotNull(result);
-        assertEquals(1, result.getContent().size());
-        verify(topicRepository).searchTopics(
-                eq(null),
-                eq(true),
-                eq(null),
-                eq(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "title")))
-        );
+        assertFalse(topics.isEmpty());
+        assertEquals(testTopic.getTitle(), topics.get(0).getTitle());
     }
 
     @Test
-    void createTopic_WithValidData_CreatesTopic() {
-        List<UUID> supervisorIds = List.of(UUID.randomUUID());
-        List<UUID> advisorIds = List.of(UUID.randomUUID());
+    void getTopicsByGroup_WithoutAccess_ThrowsException() {
+        when(userGroupRepository.findByUserIdAndGroupId(currentUser.getUserId(), testGroup.getGroupId()))
+                .thenReturn(null);
 
-        User supervisor = EntityMockFactory.createUserWithGroup("Supervisor", "supervisor");
-        User advisor = EntityMockFactory.createUserWithGroup("Advisor", "advisor");
+        assertThrows(AccessDeniedException.class, () ->
+                topicService.getTopicsByGroup(testGroup.getGroupId()));
+    }
 
-        when(userRepository.findAllById(supervisorIds)).thenReturn(new ArrayList<>(List.of(supervisor)));
-        when(userRepository.findAllById(advisorIds)).thenReturn(new ArrayList<>(List.of(advisor)));
-        when(topicRepository.save(any(Topic.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    @Test
+    void getOpenTopics_ReturnsPageOfTopics() {
+        when(userGroupRepository.findByUserId(currentUser.getUserId()))
+                .thenReturn(List.of(userGroup));
+        when(topicRepository.findByGroupGroupIdInAndClosedAtIsNull(
+                any(List.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(testTopic)));
 
-        Topic result = topicService.createTopic(
-                testUser,
+        var result = topicService.getOpenTopics(Pageable.unpaged());
+
+        assertFalse(result.isEmpty());
+        assertEquals(testTopic.getTitle(), result.getContent().get(0).getTitle());
+    }
+
+    @Test
+    void createTopic_WithAccess_CreatesTopic() {
+        when(userGroupRepository.findByUserIdAndGroupId(currentUser.getUserId(), testGroup.getGroupId()))
+                .thenReturn(userGroup);
+        when(groupRepository.findById(testGroup.getGroupId()))
+                .thenReturn(Optional.of(testGroup));
+        when(topicRepository.save(any(Topic.class)))
+                .thenReturn(testTopic);
+
+        TopicDto created = topicService.createTopic(
+                testGroup.getGroupId(),
                 "Test Topic",
-                Set.of("Bachelor"),
-                "Problem Statement",
+                Set.of("BACHELOR"),
+                "Problem",
                 "Requirements",
                 "Goals",
-                "References",
-                supervisorIds,
-                advisorIds
+                "References"
         );
 
-        assertNotNull(result);
-        verify(topicRepository, times(2)).save(any(Topic.class));
-        verify(topicRoleRepository, times(2)).save(any(TopicRole.class));
+        assertNotNull(created);
+        assertEquals(testTopic.getTitle(), created.getTitle());
     }
 
     @Test
-    void createTopic_WithInvalidSupervisor_ThrowsException() {
-        User invalidSupervisor = EntityMockFactory.createUserWithGroup("Student", "student");
-        User advisor = EntityMockFactory.createUserWithGroup("Advisor", "advisor");
+    void updateTopic_WithAccess_UpdatesTopic() {
+        when(topicRepository.findById(testTopic.getId()))
+                .thenReturn(Optional.of(testTopic));
+        when(userGroupRepository.findByUserIdAndGroupId(currentUser.getUserId(), testGroup.getGroupId()))
+                .thenReturn(userGroup);
+        when(topicRepository.save(any(Topic.class)))
+                .thenReturn(testTopic);
 
-        List<UUID> supervisorIds = new ArrayList<>(List.of(invalidSupervisor.getId()));
-        List<UUID> advisorIds = new ArrayList<>(List.of(advisor.getId()));
-
-        when(userRepository.findAllById(supervisorIds)).thenReturn(new ArrayList<>(List.of(invalidSupervisor)));
-        when(userRepository.findAllById(advisorIds)).thenReturn(new ArrayList<>(List.of(advisor)));
-        when(topicRepository.save(any(Topic.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        assertThrows(ResourceInvalidParametersException.class, () ->
-                topicService.createTopic(
-                        testUser,
-                        "Test Topic",
-                        Set.of("Bachelor"),
-                        "Problem Statement",
-                        "Requirements",
-                        "Goals",
-                        "References",
-                        supervisorIds,
-                        advisorIds
-                )
-        );
-    }
-
-    @Test
-    void updateTopic_WithValidData_UpdatesTopic() {
-        User supervisor = EntityMockFactory.createUserWithGroup("Supervisor", "supervisor");
-        User advisor = EntityMockFactory.createUserWithGroup("Advisor", "advisor");
-
-        List<UUID> supervisorIds = new ArrayList<>(List.of(supervisor.getId()));
-        List<UUID> advisorIds = new ArrayList<>(List.of(advisor.getId()));
-
-        when(userRepository.findAllById(supervisorIds)).thenReturn(new ArrayList<>(List.of(supervisor)));
-        when(userRepository.findAllById(advisorIds)).thenReturn(new ArrayList<>(List.of(advisor)));
-        when(topicRepository.save(any(Topic.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Topic result = topicService.updateTopic(
-                testUser,
-                testTopic,
+        TopicDto updated = topicService.updateTopic(
+                testTopic.getId(),
                 "Updated Topic",
-                Set.of("Master"),
+                Set.of("BACHELOR"),
                 "Updated Problem",
                 "Updated Requirements",
                 "Updated Goals",
-                "Updated References",
-                supervisorIds,
-                advisorIds
+                "Updated References"
         );
 
-        assertNotNull(result);
-        assertEquals("Updated Topic", result.getTitle());
-        verify(topicRoleRepository).deleteByTopicId(testTopic.getId());
-        verify(topicRepository).save(testTopic);
-    }
-
-    @Test
-    void findById_WithValidId_ReturnsTopic() {
-        when(topicRepository.findById(testTopic.getId())).thenReturn(Optional.of(testTopic));
-
-        Topic result = topicService.findById(testTopic.getId());
-
-        assertNotNull(result);
-        assertEquals(testTopic, result);
-    }
-
-    @Test
-    void findById_WithInvalidId_ThrowsException() {
-        when(topicRepository.findById(testTopic.getId())).thenReturn(Optional.empty());
-
-        assertThrows(ResourceNotFoundException.class, () ->
-                topicService.findById(testTopic.getId())
-        );
+        assertNotNull(updated);
+        assertEquals("Updated Topic", testTopic.getTitle());
     }
 }
