@@ -1,80 +1,52 @@
 import React from 'react'
-import { Grid, MultiSelect, Select, TextInput } from '@mantine/core'
-import { useThesesContext } from '../../providers/ThesesProvider/hooks'
-import { ThesisState } from '../../requests/responses/thesis'
-import { MagnifyingGlass } from 'phosphor-react'
-import { formatThesisState, formatThesisType } from '../../utils/format'
-import { GLOBAL_CONFIG } from '../../config/global'
+import { Group, Select, TextInput } from '@mantine/core'
+import { useTheses } from '../../providers/ThesesProvider/hooks'
+import { useGroups } from '../../providers/GroupsProvider/hooks'
 
-const ThesesFilters = () => {
-  const { filters, setFilters, sort, setSort } = useThesesContext()
+const ThesesFilters: React.FC = () => {
+  const { filters, setFilters } = useTheses()
+  const { groups, selectedGroup } = useGroups()
 
   return (
-    <Grid gutter='xs'>
-      <Grid.Col span={6}>
-        <TextInput
-          label='Search'
-          placeholder='Search theses...'
-          leftSection={<MagnifyingGlass size={16} />}
-          value={filters.search || ''}
-          onChange={(x) => setFilters((prev) => ({ ...prev, search: x.target.value || undefined }))}
-        />
-      </Grid.Col>
-      <Grid.Col span={6}>
-        <Select
-          label='Sort By'
-          data={[
-            { label: 'Start Date Ascending', value: 'startDate:asc' },
-            { label: 'Start Date Descending', value: 'startDate:desc' },
-            { label: 'Created Ascending', value: 'createdAt:asc' },
-            { label: 'Created Descending', value: 'createdAt:desc' },
-          ]}
-          value={sort.column + ':' + sort.direction}
-          onChange={(x) =>
-            setSort({
-              column: (x?.split(':')[0] || 'startDate') as any,
-              direction: (x?.split(':')[1] || 'asc') as any,
-            })
-          }
-        />
-      </Grid.Col>
-      <Grid.Col span={6}>
-        <MultiSelect
-          hidePickedOptions
-          label='Type'
-          placeholder='Thesis Types'
-          data={Object.keys(GLOBAL_CONFIG.thesis_types).map((key) => ({
-            value: key,
-            label: formatThesisType(key),
-          }))}
-          value={filters.types || []}
-          onChange={(x) =>
-            setFilters((prev) => ({
-              ...prev,
-              types: x,
-            }))
-          }
-        />
-      </Grid.Col>
-      <Grid.Col span={6}>
-        <MultiSelect
-          hidePickedOptions
-          label='State'
-          placeholder='Thesis States'
-          data={Object.values(ThesisState).map((value) => ({
-            value: value,
-            label: formatThesisState(value),
-          }))}
-          value={filters.states || []}
-          onChange={(x) =>
-            setFilters((prev) => ({
-              ...prev,
-              states: x as ThesisState[],
-            }))
-          }
-        />
-      </Grid.Col>
-    </Grid>
+    <Group gap="md" grow>
+      <TextInput
+        placeholder="Search theses..."
+        value={filters.search || ''}
+        onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+      />
+      <Select
+        label="Type"
+        placeholder="All types"
+        data={[
+          { value: 'BACHELOR', label: 'Bachelor Thesis' },
+          { value: 'MASTER', label: 'Master Thesis' },
+        ]}
+        value={filters.type || null}
+        onChange={(value) => setFilters({ ...filters, type: value })}
+        clearable
+      />
+      <Select
+        label="State"
+        placeholder="All states"
+        data={[
+          { value: 'PROPOSED', label: 'Proposed' },
+          { value: 'IN_PROGRESS', label: 'In Progress' },
+          { value: 'COMPLETED', label: 'Completed' },
+          { value: 'GRADED', label: 'Graded' },
+        ]}
+        value={filters.state || null}
+        onChange={(value) => setFilters({ ...filters, state: value })}
+        clearable
+      />
+      <Select
+        label="Group"
+        placeholder="All groups"
+        data={groups.map((group) => ({ value: group.id, label: group.name }))}
+        value={selectedGroup?.id || null}
+        onChange={(value) => setFilters({ ...filters, groupId: value })}
+        clearable
+      />
+    </Group>
   )
 }
 

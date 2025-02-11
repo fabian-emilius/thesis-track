@@ -1,53 +1,64 @@
-import { Center, Checkbox, Grid, Stack } from '@mantine/core'
-import { GLOBAL_CONFIG } from '../../config/global'
 import React from 'react'
-import { useTopicsContext } from '../../providers/TopicsProvider/hooks'
-import { formatThesisType } from '../../utils/format'
+import { Group, Select, Switch, TextInput } from '@mantine/core'
+import { useTopics } from '../../providers/TopicsProvider/hooks'
+import { useGroups } from '../../providers/GroupsProvider/hooks'
 
-interface ITopicsFiltersProps {
-  visible: Array<'type' | 'closed'>
+interface TopicsFiltersProps {
+  visible?: {
+    type?: boolean
+    closed?: boolean
+    group?: boolean
+  }
 }
 
-const TopicsFilters = (props: ITopicsFiltersProps) => {
-  const { visible } = props
+const TopicsFilters: React.FC<TopicsFiltersProps> = ({ visible = {} }) => {
+  const { filters, setFilters } = useTopics()
+  const { groups, selectedGroup } = useGroups()
 
-  const { filters, setFilters } = useTopicsContext()
+  const {
+    type = true,
+    closed = true,
+    group = true,
+  } = visible
 
   return (
-    <Stack>
-      {visible.includes('closed') && (
-        <Checkbox
-          label='Show Closed Topics'
-          checked={!!filters.includeClosed}
-          onChange={(e) => {
-            setFilters({
-              includeClosed: e.target.checked,
-            })
-          }}
+    <Group gap="md" grow>
+      <TextInput
+        placeholder="Search topics..."
+        value={filters.search || ''}
+        onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+      />
+      {type && (
+        <Select
+          label="Type"
+          placeholder="All types"
+          data={[
+            { value: 'BACHELOR', label: 'Bachelor Thesis' },
+            { value: 'MASTER', label: 'Master Thesis' },
+          ]}
+          value={filters.type || null}
+          onChange={(value) => setFilters({ ...filters, type: value })}
+          clearable
         />
       )}
-      {visible.includes('type') && (
-        <Grid grow>
-          {Object.keys(GLOBAL_CONFIG.thesis_types).map((key) => (
-            <Grid.Col key={key} span={{ md: 3 }}>
-              <Center>
-                <Checkbox
-                  label={formatThesisType(key)}
-                  checked={!!filters.types?.includes(key)}
-                  onChange={(e) => {
-                    setFilters((prev) => ({
-                      types: [...(prev.types || []), key].filter(
-                        (row) => e.target.checked || row !== key,
-                      ),
-                    }))
-                  }}
-                />
-              </Center>
-            </Grid.Col>
-          ))}
-        </Grid>
+      {closed && (
+        <Switch
+          label="Show closed topics"
+          checked={filters.showClosed || false}
+          onChange={(e) => setFilters({ ...filters, showClosed: e.currentTarget.checked })}
+        />
       )}
-    </Stack>
+      {group && (
+        <Select
+          label="Group"
+          placeholder="All groups"
+          data={groups.map((group) => ({ value: group.id, label: group.name }))}
+          value={selectedGroup?.id || null}
+          onChange={(value) => setFilters({ ...filters, groupId: value })}
+          clearable
+        />
+      )}
+    </Group>
   )
 }
 

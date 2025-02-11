@@ -25,6 +25,7 @@ import {
   PaperPlaneTilt,
   Table,
   Presentation,
+  Users,
 } from 'phosphor-react'
 import { useIsSmallerBreakpoint } from '../../../hooks/theme'
 import { useAuthenticationContext, useUser } from '../../../hooks/authentication'
@@ -38,6 +39,7 @@ import CustomAvatar from '../../../components/CustomAvatar/CustomAvatar'
 import { formatUser } from '../../../utils/format'
 import ContentContainer from '../ContentContainer/ContentContainer'
 import Footer from '../../../components/Footer/Footer'
+import GroupSelect from '../../../components/GroupSelect/GroupSelect'
 
 export interface IAuthenticatedAreaProps {
   size?: MantineSize
@@ -89,6 +91,12 @@ const links: Array<{
     icon: Kanban,
     groups: ['admin', 'advisor', 'supervisor'],
   },
+  {
+    link: '/groups',
+    label: 'Groups',
+    icon: Users,
+    groups: ['admin'],
+  },
 ]
 
 const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) => {
@@ -112,7 +120,6 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
     collapseNavigation || minimizedState,
     minimizeAnimationDuration,
   )
-  // only use debounced State if value is false because otherwise the text is formatted weirdly if you expand the navigation
   const minimized = opened ? false : minimizedState || !!debouncedMinimized
 
   const location = useLocation()
@@ -166,8 +173,9 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
       padding={0}
     >
       <AppShell.Header>
-        <Group h='100%' px='md'>
+        <Group h='100%' px='md' justify="space-between">
           <Burger opened={opened} onClick={toggle} hiddenFrom='md' size='md' />
+          <GroupSelect />
         </Group>
       </AppShell.Header>
 

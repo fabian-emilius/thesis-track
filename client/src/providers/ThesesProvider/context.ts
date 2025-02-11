@@ -1,28 +1,28 @@
-import React, { Dispatch, SetStateAction } from 'react'
-import { IThesis, ThesisState } from '../../requests/responses/thesis'
-import { PaginationResponse } from '../../requests/responses/pagination'
+import { createContext } from 'react'
 
-export interface IThesesFilters {
+export interface Thesis {
+  id: string
+  title: string
+  type: 'BACHELOR' | 'MASTER'
+  state: 'PROPOSED' | 'IN_PROGRESS' | 'COMPLETED' | 'GRADED'
+  groupId: string
+  // ... other thesis fields
+}
+
+export interface ThesesFilters {
   search?: string
-  states?: ThesisState[]
-  types?: string[]
+  type?: string
+  state?: string
+  groupId?: string
 }
 
-export interface IThesesSort {
-  column: 'startDate' | 'endDate' | 'createdAt'
-  direction: 'asc' | 'desc'
+export interface ThesesContextType {
+  theses: Thesis[]
+  loading: boolean
+  error: Error | null
+  filters: ThesesFilters
+  setFilters: (filters: ThesesFilters) => void
+  fetchTheses: () => Promise<void>
 }
 
-export interface IThesesContext {
-  theses: PaginationResponse<IThesis> | undefined
-  filters: IThesesFilters
-  setFilters: Dispatch<SetStateAction<IThesesFilters>>
-  sort: IThesesSort
-  setSort: Dispatch<SetStateAction<IThesesSort>>
-  page: number
-  setPage: Dispatch<SetStateAction<number>>
-  limit: number
-  updateThesis: (thesis: IThesis) => unknown
-}
-
-export const ThesesContext = React.createContext<IThesesContext | undefined>(undefined)
+export const ThesesContext = createContext<ThesesContextType | null>(null)

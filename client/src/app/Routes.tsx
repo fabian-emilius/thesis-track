@@ -6,6 +6,7 @@ import PageLoader from '../components/PageLoader/PageLoader'
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage'))
 const ImprintPage = lazy(() => import('../pages/ImprintPage/ImprintPage'))
+const GroupsPage = lazy(() => import('../pages/GroupsPage/GroupsPage'))
 const AboutPage = lazy(() => import('../pages/AboutPage/AboutPage'))
 const ThesisOverviewPage = lazy(() => import('../pages/ThesisOverviewPage/ThesisOverviewPage'))
 const PresentationOverviewPage = lazy(
@@ -140,6 +141,14 @@ const AppRoutes = () => {
           <Route path='/imprint' element={<ImprintPage />} />
           <Route path='/privacy' element={<PrivacyPage />} />
           <Route path='/logout' element={<LogoutPage />} />
+          <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea requiredGroups={['admin']}>
+                <GroupsPage />
+              </AuthenticatedArea>
+            }
+          />
           <Route path='/' element={<LandingPage />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
