@@ -60,33 +60,33 @@ const GroupModal: React.FC<GroupModalProps> = ({ opened, onClose, group }) => {
       opened={opened}
       onClose={onClose}
       title={group ? 'Edit Group' : 'Create Group'}
-      size="md"
+      size='md'
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         {error && (
-          <Text color="red" mb="md">
+          <Text color='red' mb='md'>
             {error}
           </Text>
         )}
         <TextInput
-          label="Name"
-          placeholder="Enter group name"
+          label='Name'
+          placeholder='Enter group name'
           required
-          mb="md"
+          mb='md'
           data-autofocus
           {...form.getInputProps('name')}
         />
         <Textarea
-          label="Description"
-          placeholder="Enter group description"
-          mb="xl"
+          label='Description'
+          placeholder='Enter group description'
+          mb='xl'
           {...form.getInputProps('description')}
         />
-        <Group justify="flex-end">
-          <Button variant="light" onClick={onClose} disabled={loading}>
+        <Group justify='flex-end'>
+          <Button variant='light' onClick={onClose} disabled={loading}>
             Cancel
           </Button>
-          <Button type="submit" loading={loading}>
+          <Button type='submit' loading={loading}>
             {group ? 'Update' : 'Create'}
           </Button>
         </Group>

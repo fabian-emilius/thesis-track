@@ -17,8 +17,8 @@ const GroupSelect: React.FC<GroupSelectProps> = ({ onChange }) => {
 
   return (
     <Select
-      label="Select Group"
-      placeholder="Choose a group"
+      label='Select Group'
+      placeholder='Choose a group'
       data={groups.map((group) => ({ value: group.id, label: group.name }))}
       value={selectedGroup?.id || null}
       onChange={handleChange}

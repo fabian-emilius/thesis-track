@@ -32,7 +32,7 @@ export interface IThesesSort {
 export enum ThesisState {
   PROPOSAL = 'PROPOSAL',
   WRITING = 'WRITING',
-  SUBMITTED = 'SUBMITTED'
+  SUBMITTED = 'SUBMITTED',
 }
 
 export interface ThesesPagination {

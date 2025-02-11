@@ -8,15 +8,15 @@ const ThesesFilters: React.FC = () => {
   const { groups, selectedGroup } = useGroups()
 
   return (
-    <Group gap="md" grow>
+    <Group gap='md' grow>
       <TextInput
-        placeholder="Search theses..."
+        placeholder='Search theses...'
         value={filters.search || ''}
         onChange={(e) => setFilters({ ...filters, search: e.target.value })}
       />
       <Select
-        label="Type"
-        placeholder="All types"
+        label='Type'
+        placeholder='All types'
         data={[
           { value: 'BACHELOR', label: 'Bachelor Thesis' },
           { value: 'MASTER', label: 'Master Thesis' },
@@ -26,8 +26,8 @@ const ThesesFilters: React.FC = () => {
         clearable
       />
       <Select
-        label="State"
-        placeholder="All states"
+        label='State'
+        placeholder='All states'
         data={[
           { value: 'PROPOSED', label: 'Proposed' },
           { value: 'IN_PROGRESS', label: 'In Progress' },
@@ -39,8 +39,8 @@ const ThesesFilters: React.FC = () => {
         clearable
       />
       <Select
-        label="Group"
-        placeholder="All groups"
+        label='Group'
+        placeholder='All groups'
         data={groups.map((group) => ({ value: group.id, label: group.name }))}
         value={selectedGroup?.id || null}
         onChange={(value) => setFilters({ ...filters, groupId: value })}

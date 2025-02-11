@@ -15,23 +15,19 @@ const TopicsFilters: React.FC<TopicsFiltersProps> = ({ visible = {} }) => {
   const { filters, setFilters } = useTopics()
   const { groups, selectedGroup } = useGroups()
 
-  const {
-    type = true,
-    closed = true,
-    group = true,
-  } = visible
+  const { type = true, closed = true, group = true } = visible
 
   return (
-    <Group gap="md" grow>
+    <Group gap='md' grow>
       <TextInput
-        placeholder="Search topics..."
+        placeholder='Search topics...'
         value={filters.search || ''}
         onChange={(e) => setFilters({ ...filters, search: e.target.value })}
       />
       {type && (
         <Select
-          label="Type"
-          placeholder="All types"
+          label='Type'
+          placeholder='All types'
           data={[
             { value: 'BACHELOR', label: 'Bachelor Thesis' },
             { value: 'MASTER', label: 'Master Thesis' },
@@ -43,15 +39,15 @@ const TopicsFilters: React.FC<TopicsFiltersProps> = ({ visible = {} }) => {
       )}
       {closed && (
         <Switch
-          label="Show closed topics"
+          label='Show closed topics'
           checked={filters.showClosed || false}
           onChange={(e) => setFilters({ ...filters, showClosed: e.currentTarget.checked })}
         />
       )}
       {group && (
         <Select
-          label="Group"
-          placeholder="All groups"
+          label='Group'
+          placeholder='All groups'
           data={groups.map((group) => ({ value: group.id, label: group.name }))}
           value={selectedGroup?.id || null}
           onChange={(value) => setFilters({ ...filters, groupId: value || undefined })}

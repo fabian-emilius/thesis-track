@@ -40,18 +40,14 @@ const GroupsTable: React.FC<GroupsTableProps> = ({ onEdit }) => {
             <Table.Td>{group.description}</Table.Td>
             <Table.Td>{new Date(group.createdAt).toLocaleDateString()}</Table.Td>
             <Table.Td>
-              <Group gap="xs">
-                <Button
-                  variant="light"
-                  size="xs"
-                  onClick={() => onEdit(group)}
-                >
+              <Group gap='xs'>
+                <Button variant='light' size='xs' onClick={() => onEdit(group)}>
                   Edit
                 </Button>
                 <Button
-                  variant="light"
-                  color="red"
-                  size="xs"
+                  variant='light'
+                  color='red'
+                  size='xs'
                   onClick={() => handleDelete(group.id)}
                 >
                   Delete

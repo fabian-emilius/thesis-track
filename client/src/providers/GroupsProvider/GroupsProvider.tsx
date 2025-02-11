@@ -30,7 +30,7 @@ export const GroupsProvider: React.FC<PropsWithChildren> = ({ children }) => {
       setGroups(data)
 
       // Validate selected group still exists
-      if (selectedGroup && !data.find(g => g.id === selectedGroup.id)) {
+      if (selectedGroup && !data.find((g) => g.id === selectedGroup.id)) {
         setSelectedGroup(null)
       }
     } catch (err) {
@@ -40,61 +40,70 @@ export const GroupsProvider: React.FC<PropsWithChildren> = ({ children }) => {
     }
   }, [selectedGroup])
 
-  const createGroup = useCallback(async (group: Partial<Group>) => {
-    setError(null)
-    try {
-      const response = await fetch('/api/groups', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(group),
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+  const createGroup = useCallback(
+    async (group: Partial<Group>) => {
+      setError(null)
+      try {
+        const response = await fetch('/api/groups', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(group),
+        })
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        await fetchGroups()
+      } catch (err) {
+        throw err instanceof Error ? err : new Error('Failed to create group')
       }
-      await fetchGroups()
-    } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to create group')
-    }
-  }, [fetchGroups])
+    },
+    [fetchGroups],
+  )
 
-  const updateGroup = useCallback(async (id: string, group: Partial<Group>) => {
-    setError(null)
-    try {
-      const response = await fetch(`/api/groups/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(group),
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+  const updateGroup = useCallback(
+    async (id: string, group: Partial<Group>) => {
+      setError(null)
+      try {
+        const response = await fetch(`/api/groups/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(group),
+        })
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        await fetchGroups()
+      } catch (err) {
+        throw err instanceof Error ? err : new Error('Failed to update group')
       }
-      await fetchGroups()
-    } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to update group')
-    }
-  }, [fetchGroups])
+    },
+    [fetchGroups],
+  )
 
-  const deleteGroup = useCallback(async (id: string) => {
-    setError(null)
-    try {
-      const response = await fetch(`/api/groups/${id}`, {
-        method: 'DELETE',
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+  const deleteGroup = useCallback(
+    async (id: string) => {
+      setError(null)
+      try {
+        const response = await fetch(`/api/groups/${id}`, {
+          method: 'DELETE',
+        })
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        if (selectedGroup?.id === id) {
+          setSelectedGroup(null)
+        }
+        await fetchGroups()
+      } catch (err) {
+        throw err instanceof Error ? err : new Error('Failed to delete group')
       }
-      if (selectedGroup?.id === id) {
-        setSelectedGroup(null)
-      }
-      await fetchGroups()
-    } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to delete group')
-    }
-  }, [fetchGroups, selectedGroup])
+    },
+    [fetchGroups, selectedGroup],
+  )
 
   useEffect(() => {
     fetchGroups()

@@ -173,7 +173,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
       padding={0}
     >
       <AppShell.Header>
-        <Group h='100%' px='md' justify="space-between">
+        <Group h='100%' px='md' justify='space-between'>
           <Burger opened={opened} onClick={toggle} hiddenFrom='md' size='md' />
           <GroupSelect />
         </Group>

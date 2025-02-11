@@ -32,8 +32,8 @@ const GroupsPage: React.FC = () => {
 
   if (error) {
     return (
-      <Container size="xl">
-        <Alert icon={<Warning />} title="Error" color="red">
+      <Container size='xl'>
+        <Alert icon={<Warning />} title='Error' color='red'>
           {error.message || 'An error occurred while loading groups'}
         </Alert>
       </Container>
@@ -41,24 +41,16 @@ const GroupsPage: React.FC = () => {
   }
 
   return (
-    <Container size="xl" pos="relative">
+    <Container size='xl' pos='relative'>
       <LoadingOverlay visible={loading} />
-      <Group justify="space-between" mb="xl">
+      <Group justify='space-between' mb='xl'>
         <Title>Groups</Title>
-        <Button
-          leftSection={<Plus />}
-          onClick={open}
-          disabled={loading}
-        >
+        <Button leftSection={<Plus />} onClick={open} disabled={loading}>
           Create Group
         </Button>
       </Group>
       <GroupsTable onEdit={handleEdit} />
-      <GroupModal
-        opened={opened}
-        onClose={handleClose}
-        group={selectedGroup || undefined}
-      />
+      <GroupModal opened={opened} onClose={handleClose} group={selectedGroup || undefined} />
     </Container>
   )
 }
