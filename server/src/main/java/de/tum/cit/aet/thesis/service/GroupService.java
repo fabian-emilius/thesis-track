@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class GroupService extends BaseGroupService {
+    private final GroupRepository groupRepository;
     private final TopicService topicService;
     private final ThesisService thesisService;
 
@@ -30,6 +31,7 @@ public class GroupService extends BaseGroupService {
             TopicService topicService,
             ThesisService thesisService) {
         super(groupRepository, userGroupRepository, authenticationService);
+        this.groupRepository = groupRepository;
         this.topicService = topicService;
         this.thesisService = thesisService;
     }
@@ -89,6 +91,11 @@ public class GroupService extends BaseGroupService {
     }
 
     
+
+    private Group findGroupById(UUID groupId) {
+        return groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+    }
 
     private GroupDto convertToDto(Group group) {
         GroupDto dto = new GroupDto();

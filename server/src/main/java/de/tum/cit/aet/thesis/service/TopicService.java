@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 public class TopicService extends BaseGroupService {
     private final TopicRepository topicRepository;
 
-    public TopicService(TopicRepository topicRepository,
-                       GroupRepository groupRepository,
+    public TopicService(GroupRepository groupRepository,
                        UserGroupRepository userGroupRepository,
-                       AuthenticationService authenticationService) {
+                       AuthenticationService authenticationService,
+                       TopicRepository topicRepository) {
         super(groupRepository, userGroupRepository, authenticationService);
         this.topicRepository = topicRepository;
     }

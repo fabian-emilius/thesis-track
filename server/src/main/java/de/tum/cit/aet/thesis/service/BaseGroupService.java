@@ -2,13 +2,22 @@ package de.tum.cit.aet.thesis.service;
 
 import de.tum.cit.aet.thesis.entity.UserGroup;
 import de.tum.cit.aet.thesis.exception.request.AccessDeniedException;
+import de.tum.cit.aet.thesis.repository.GroupRepository;
 import de.tum.cit.aet.thesis.repository.UserGroupRepository;
+import de.tum.cit.aet.thesis.service.auth.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.UUID;
 
-@RequiredArgsConstructor
 public abstract class BaseGroupService {
+    public BaseGroupService(GroupRepository groupRepository,
+                          UserGroupRepository userGroupRepository,
+                          AuthenticationService authenticationService) {
+        this.groupRepository = groupRepository;
+        this.userGroupRepository = userGroupRepository;
+        this.authenticationService = authenticationService;
+    }
+    protected final GroupRepository groupRepository;
     protected final UserGroupRepository userGroupRepository;
     protected final AuthenticationService authenticationService;
 

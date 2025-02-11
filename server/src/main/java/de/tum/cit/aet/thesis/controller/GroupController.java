@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,34 +19,29 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/v2/groups")
 @RequiredArgsConstructor
-@Tag(name = "Groups", description = "Group management endpoints")
 public class GroupController {
     private final GroupService groupService;
 
     @GetMapping
     @PreAuthorize("hasRole('ROLE_USER')")
-    @Operation(summary = "Get all groups", security = @SecurityRequirement(name = "bearer-key"))
     public ResponseEntity<List<GroupDto>> getAllGroups() {
         return ResponseEntity.ok(groupService.getAllGroups());
     }
 
     @GetMapping("/{groupId}")
     @PreAuthorize("@groupSecurityEvaluator.hasGroupAccess(#groupId)")
-    @Operation(summary = "Get group by ID", security = @SecurityRequirement(name = "bearer-key"))
     public ResponseEntity<GroupDto> getGroup(@PathVariable UUID groupId) {
         return ResponseEntity.ok(groupService.getGroup(groupId));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "Create new group", security = @SecurityRequirement(name = "bearer-key"))
     public ResponseEntity<GroupDto> createGroup(@RequestBody @Valid CreateGroupRequest request) {
         return ResponseEntity.ok(groupService.createGroup(request.getName(), request.getDescription()));
     }
 
     @PutMapping("/{groupId}")
     @PreAuthorize("@groupSecurityEvaluator.isGroupAdmin(#groupId)")
-    @Operation(summary = "Update existing group", security = @SecurityRequirement(name = "bearer-key"))
     public ResponseEntity<GroupDto> updateGroup(
             @PathVariable UUID groupId,
             @RequestBody @Valid UpdateGroupRequest request) {
@@ -54,14 +50,12 @@ public class GroupController {
 
     @GetMapping("/{groupId}/topics")
     @PreAuthorize("@groupSecurityEvaluator.hasGroupAccess(#groupId)")
-    @Operation(summary = "Get group topics", security = @SecurityRequirement(name = "bearer-key"))
     public ResponseEntity<List<TopicDto>> getGroupTopics(@PathVariable UUID groupId) {
         return ResponseEntity.ok(groupService.getGroupTopics(groupId));
     }
 
     @GetMapping("/{groupId}/theses")
     @PreAuthorize("@groupSecurityEvaluator.hasGroupAccess(#groupId)")
-    @Operation(summary = "Get group theses", security = @SecurityRequirement(name = "bearer-key"))
     public ResponseEntity<List<ThesisDto>> getGroupTheses(@PathVariable UUID groupId) {
         return ResponseEntity.ok(groupService.getGroupTheses(groupId));
     }

@@ -5,6 +5,7 @@ import de.tum.cit.aet.thesis.entity.Thesis;
 import de.tum.cit.aet.thesis.entity.Topic;
 import de.tum.cit.aet.thesis.exception.request.AccessDeniedException;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
+import de.tum.cit.aet.thesis.repository.GroupRepository;
 import de.tum.cit.aet.thesis.repository.ThesisRepository;
 import de.tum.cit.aet.thesis.repository.TopicRepository;
 import de.tum.cit.aet.thesis.repository.UserGroupRepository;
@@ -21,11 +22,12 @@ public class ThesisService extends BaseGroupService {
     private final ThesisRepository thesisRepository;
     private final TopicRepository topicRepository;
 
-    public ThesisService(ThesisRepository thesisRepository,
-                        TopicRepository topicRepository,
+    public ThesisService(AuthenticationService authenticationService,
                         UserGroupRepository userGroupRepository,
-                        AuthenticationService authenticationService) {
-        super(userGroupRepository, authenticationService);
+                        GroupRepository groupRepository,
+                        ThesisRepository thesisRepository,
+                        TopicRepository topicRepository) {
+        super(authenticationService, userGroupRepository, groupRepository);
         this.thesisRepository = thesisRepository;
         this.topicRepository = topicRepository;
     }
