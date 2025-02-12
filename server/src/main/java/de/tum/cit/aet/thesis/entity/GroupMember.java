@@ -29,6 +29,9 @@ public class GroupMember {
     @Enumerated(EnumType.STRING)
     private GroupRole role;
 
+    @Column(name = "is_admin", nullable = false)
+    private boolean isAdmin;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

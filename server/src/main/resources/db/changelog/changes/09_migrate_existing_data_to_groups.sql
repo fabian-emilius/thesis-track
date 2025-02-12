@@ -1,45 +1,28 @@
 -- liquibase formatted sql
 
 -- changeset thesis:9
--- Migrate existing data to default group
+-- Delete orphaned data without group association
 
--- Create default group
-INSERT INTO groups (id, name, slug, description, created_at, updated_at)
-VALUES (
-    '00000000-0000-0000-0000-000000000001',
-    'Default Research Group',
-    'default-group',
-    'Default research group for existing data',
-    CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
-);
-
--- Update existing topics
-UPDATE topics
-SET group_id = '00000000-0000-0000-0000-000000000001'
-WHERE group_id IS NULL;
-
--- Update existing theses
-UPDATE theses
-SET group_id = '00000000-0000-0000-0000-000000000001'
-WHERE group_id IS NULL;
-
--- Update existing applications
-UPDATE applications
-SET group_id = '00000000-0000-0000-0000-000000000001'
-WHERE group_id IS NULL;
+DELETE FROM topics WHERE group_id IS NULL;
+DELETE FROM theses WHERE group_id IS NULL;
+DELETE FROM applications WHERE group_id IS NULL;
 
 -- Create group members for existing users with roles
-INSERT INTO group_members (group_id, user_id, role, created_at, updated_at)
+INSERT INTO group_members (group_id, user_id, role, is_admin, created_at, updated_at)
 SELECT DISTINCT
-    '00000000-0000-0000-0000-000000000001',
+    g.id,
     u.id,
     CASE
         WHEN u.role = 'SUPERVISOR' THEN 'SUPERVISOR'::varchar
         WHEN u.role = 'ADVISOR' THEN 'ADVISOR'::varchar
         ELSE 'ADVISOR'::varchar
     END,
+    CASE
+        WHEN u.role = 'SUPERVISOR' THEN true
+        ELSE false
+    END,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 FROM users u
+CROSS JOIN groups g
 WHERE u.role IN ('SUPERVISOR', 'ADVISOR');

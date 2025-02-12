@@ -63,7 +63,7 @@ public class ApplicationService {
             String sortBy,
             String sortOrder
     ) {
-        groupPermissionService.validateGroupMember(groupId);
+        groupPermissionService.validateSupervisorOrAdmin(groupId);
         Sort.Order order = new Sort.Order(sortOrder.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
 
         String searchQueryFilter = searchQuery == null || searchQuery.isEmpty() ? null : searchQuery.toLowerCase();

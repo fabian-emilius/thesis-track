@@ -6,11 +6,11 @@
 -- Create groups table
 CREATE TABLE groups (
     id UUID PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
     description TEXT,
-    logo_path VARCHAR(255),
-    link VARCHAR(255),
+    logo_path TEXT,
+    link TEXT,
     mail_footer TEXT,
     acceptance_text TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -22,6 +22,7 @@ CREATE TABLE group_members (
     group_id UUID NOT NULL REFERENCES groups(id),
     user_id UUID NOT NULL REFERENCES users(id),
     role VARCHAR(50) NOT NULL,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (group_id, user_id)
