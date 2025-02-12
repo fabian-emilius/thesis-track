@@ -10,6 +10,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import de.tum.cit.aet.thesis.constants.UploadFileType;
 import de.tum.cit.aet.thesis.exception.UploadException;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import java.io.File;
 import java.io.IOException;

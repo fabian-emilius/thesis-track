@@ -2,7 +2,6 @@
 
 -- changeset thesis:9
 -- Delete orphaned data without group association
-
 DELETE FROM topics WHERE group_id IS NULL;
 DELETE FROM theses WHERE group_id IS NULL;
 DELETE FROM applications WHERE group_id IS NULL;
@@ -18,11 +17,12 @@ SELECT DISTINCT
         ELSE 'ADVISOR'::varchar
     END,
     CASE
-        WHEN u.role = 'SUPERVISOR' THEN true
+        WHEN u.role IN ('SUPERVISOR', 'GROUP_ADMIN') THEN true
         ELSE false
     END,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
 FROM users u
-CROSS JOIN groups g
-WHERE u.role IN ('SUPERVISOR', 'ADVISOR');
+JOIN user_groups ug ON u.id = ug.user_id
+JOIN groups g ON ug.group_id = g.id
+WHERE u.role IN ('SUPERVISOR', 'ADVISOR', 'GROUP_ADMIN');

@@ -9,6 +9,9 @@ import de.tum.cit.aet.thesis.service.GroupService;
 import de.tum.cit.aet.thesis.service.UserService;
 import de.tum.cit.aet.thesis.utility.FileValidator;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,14 +40,11 @@ public class GroupController {
      * @return List of all groups with their details
      */
     @GetMapping
-    @Operation(
-        summary = "Get all groups",
-        description = "Retrieves a list of all academic groups registered in the system",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved groups"),
-            @ApiResponse(responseCode = "403", description = "Forbidden - insufficient permissions")
-        }
-    )
+    @Operation(summary = "Get all groups", description = "Retrieves a list of all academic groups registered in the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved groups"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - insufficient permissions")
+    })
     @RateLimit(limit = 100, timeUnit = TimeUnit.MINUTES)
     public ResponseEntity<List<Group>> getAllGroups() {
         return ResponseEntity.ok(groupService.getAllGroups());
@@ -58,10 +58,7 @@ public class GroupController {
      * @throws ResourceNotFoundException if the group is not found
      */
     @GetMapping("/{groupId}")
-    @Operation(
-        summary = "Get group by ID",
-        description = "Retrieves detailed information about a specific academic group"
-    )
+    @Operation(summary = "Get group by ID", description = "Retrieves detailed information about a specific academic group")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Group found and returned successfully"),
         @ApiResponse(responseCode = "404", description = "Group not found"),
@@ -82,10 +79,7 @@ public class GroupController {
      * @throws UnauthorizedException if the user is not a system administrator
      */
     @PostMapping
-    @Operation(
-        summary = "Create new group",
-        description = "Creates a new academic group with the provided details. Requires system admin privileges."
-    )
+    @Operation(summary = "Create new group", description = "Creates a new academic group with the provided details. Requires system admin privileges.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Group created successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
@@ -109,10 +103,7 @@ public class GroupController {
      * @throws UnauthorizedException if the user is not a group administrator
      */
     @PutMapping("/{groupId}")
-    @Operation(
-        summary = "Update existing group",
-        description = "Updates an existing academic group's information. Requires group admin privileges."
-    )
+    @Operation(summary = "Update existing group", description = "Updates an existing academic group's information. Requires group admin privileges.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Group updated successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
@@ -140,10 +131,7 @@ public class GroupController {
      * @throws UnauthorizedException if the user is not a group administrator
      */
     @PostMapping(value = "/{groupId}/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(
-        summary = "Upload group logo",
-        description = "Uploads or updates the logo image for a specific group. Accepts PNG or JPEG files up to 5MB."
-    )
+    @Operation(summary = "Upload group logo", description = "Uploads or updates the logo image for a specific group. Accepts PNG or JPEG files up to 5MB.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Logo uploaded successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid file format or size"),
@@ -170,10 +158,7 @@ public class GroupController {
      * @throws ResourceNotFoundException if the group is not found
      */
     @GetMapping("/{groupId}/members")
-    @Operation(
-        summary = "Get group members",
-        description = "Retrieves a list of all members belonging to a specific academic group, including their roles and status"
-    )
+    @Operation(summary = "Get group members", description = "Retrieves a list of all members belonging to a specific academic group, including their roles and status")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved group members"),
         @ApiResponse(responseCode = "404", description = "Group not found"),

@@ -65,8 +65,8 @@ class GroupPermissionServiceTest {
     }
 
     @Test
-    void validateGroupAdmin_Success() {
-        groupMember.setRole(GroupRole.GROUP_ADMIN);
+    void validateGroupAdmin_Success_WithIsAdmin() {
+        groupMember.setIsAdmin(true);
         when(authenticationService.isAdmin()).thenReturn(false);
         when(authenticationService.getCurrentUserId()).thenReturn(userId);
         when(groupMemberRepository.findByGroupIdAndUserId(any(), any()))
@@ -77,7 +77,7 @@ class GroupPermissionServiceTest {
 
     @Test
     void validateGroupAdmin_NotAdmin_ThrowsException() {
-        groupMember.setRole(GroupRole.ADVISOR);
+        groupMember.setIsAdmin(false);
         when(authenticationService.isAdmin()).thenReturn(false);
         when(authenticationService.getCurrentUserId()).thenReturn(userId);
         when(groupMemberRepository.findByGroupIdAndUserId(any(), any()))
@@ -88,14 +88,51 @@ class GroupPermissionServiceTest {
     }
 
     @Test
-    void validateSupervisorOrAdmin_Success() {
+    void validateSupervisorOrAdmin_Success_WithSupervisor() {
         groupMember.setRole(GroupRole.SUPERVISOR);
+        groupMember.setIsAdmin(true);
         when(authenticationService.isAdmin()).thenReturn(false);
         when(authenticationService.getCurrentUserId()).thenReturn(userId);
         when(groupMemberRepository.findByGroupIdAndUserId(any(), any()))
             .thenReturn(Optional.of(groupMember));
 
         assertDoesNotThrow(() -> groupPermissionService.validateSupervisorOrAdmin(groupId));
+    }
+
+    @Test
+    void validateSupervisorOrAdmin_Success_WithIsAdmin() {
+        groupMember.setRole(GroupRole.ADVISOR);
+        groupMember.setIsAdmin(true);
+        when(authenticationService.isAdmin()).thenReturn(false);
+        when(authenticationService.getCurrentUserId()).thenReturn(userId);
+        when(groupMemberRepository.findByGroupIdAndUserId(any(), any()))
+            .thenReturn(Optional.of(groupMember));
+
+        assertDoesNotThrow(() -> groupPermissionService.validateSupervisorOrAdmin(groupId));
+    }
+
+    @Test
+    void validateSupervisorOrAdmin_NotSupervisorOrAdmin_ThrowsException() {
+        groupMember.setRole(GroupRole.ADVISOR);
+        groupMember.setIsAdmin(false);
+        when(authenticationService.isAdmin()).thenReturn(false);
+        when(authenticationService.getCurrentUserId()).thenReturn(userId);
+        when(groupMemberRepository.findByGroupIdAndUserId(any(), any()))
+            .thenReturn(Optional.of(groupMember));
+
+        assertThrows(AccessDeniedException.class, 
+            () -> groupPermissionService.validateSupervisorOrAdmin(groupId));
+    }
+
+    @Test
+    void supervisorAutomaticallyGetsAdminRights() {
+        groupMember.setRole(GroupRole.SUPERVISOR);
+        when(authenticationService.isAdmin()).thenReturn(false);
+        when(authenticationService.getCurrentUserId()).thenReturn(userId);
+        when(groupMemberRepository.findByGroupIdAndUserId(any(), any()))
+            .thenReturn(Optional.of(groupMember));
+
+        assertTrue(groupPermissionService.isGroupAdmin(groupId));
     }
 
     @Test

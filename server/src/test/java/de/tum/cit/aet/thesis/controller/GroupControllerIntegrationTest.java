@@ -30,6 +30,7 @@ class GroupControllerIntegrationTest extends BaseIntegrationTest {
 
     private Group testGroup;
     private GroupMember testGroupMember;
+    private GroupMember testSupervisorMember;
 
     @BeforeEach
     void setUp() {
@@ -44,8 +45,16 @@ class GroupControllerIntegrationTest extends BaseIntegrationTest {
         testGroupMember = new GroupMember();
         testGroupMember.setGroupId(testGroup.getId());
         testGroupMember.setUserId(UUID.randomUUID());
-        testGroupMember.setRole(GroupRole.GROUP_ADMIN);
+        testGroupMember.setRole(GroupRole.MEMBER);
+        testGroupMember.setIsAdmin(true);
         testGroupMember = groupMemberRepository.save(testGroupMember);
+
+        testSupervisorMember = new GroupMember();
+        testSupervisorMember.setGroupId(testGroup.getId());
+        testSupervisorMember.setUserId(UUID.randomUUID());
+        testSupervisorMember.setRole(GroupRole.SUPERVISOR);
+        testSupervisorMember.setIsAdmin(true);
+        testSupervisorMember = groupMemberRepository.save(testSupervisorMember);
     }
 
     @Test
@@ -117,6 +126,27 @@ class GroupControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].groupId").value(testGroupMember.getGroupId().toString()))
                 .andExpect(jsonPath("$[0].userId").value(testGroupMember.getUserId().toString()))
-                .andExpect(jsonPath("$[0].role").value(testGroupMember.getRole().toString()));
+                .andExpect(jsonPath("$[0].role").value(testGroupMember.getRole().toString()))
+                .andExpect(jsonPath("$[0].isAdmin").value(true))
+                .andExpect(jsonPath("$[1].groupId").value(testSupervisorMember.getGroupId().toString()))
+                .andExpect(jsonPath("$[1].userId").value(testSupervisorMember.getUserId().toString()))
+                .andExpect(jsonPath("$[1].role").value(testSupervisorMember.getRole().toString()))
+                .andExpect(jsonPath("$[1].isAdmin").value(true));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void supervisorShouldAutomaticallyBeAdmin() throws Exception {
+        GroupMember newSupervisor = new GroupMember();
+        newSupervisor.setGroupId(testGroup.getId());
+        newSupervisor.setUserId(UUID.randomUUID());
+        newSupervisor.setRole(GroupRole.SUPERVISOR);
+        
+        mockMvc.perform(post("/v2/groups/{groupId}/members", testGroup.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newSupervisor)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.role").value(GroupRole.SUPERVISOR.toString()))
+                .andExpect(jsonPath("$.isAdmin").value(true));
     }
 }

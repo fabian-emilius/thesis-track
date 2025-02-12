@@ -24,7 +24,6 @@ import java.util.UUID;
 @Service
 @Validated
 @RequiredArgsConstructor
-@RateLimitGroup(name = "group-service")
 public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
@@ -106,7 +105,6 @@ public class GroupService {
      * @see GroupRole
      */
     @Transactional
-    @RateLimit(permits = 10, duration = 1, unit = TimeUnit.HOURS)
     public Group createGroup(@NotNull @Valid GroupDto groupDto, @NotNull User creator) {
         log.info("Creating new group with slug: {} by user: {}", groupDto.getSlug(), creator.getId());
         if (groupRepository.existsBySlug(groupDto.getSlug())) {
@@ -150,7 +148,6 @@ public class GroupService {
      * @see GroupPermissionService#validateGroupAdmin
      */
     @Transactional
-    @RateLimit(permits = 20, duration = 1, unit = TimeUnit.HOURS)
     public Group updateGroup(@NotNull UUID groupId, @NotNull @Valid GroupDto groupDto) {
         log.info("Updating group with ID: {}", groupId);
         Group group = getGroupById(groupId);
@@ -189,7 +186,6 @@ public class GroupService {
      * @see UploadService#saveGroupLogo
      */
     @Transactional
-    @RateLimit(permits = 5, duration = 1, unit = TimeUnit.MINUTES)
     public void updateGroupLogo(@NotNull UUID groupId, @NotNull byte[] logoData, @NotNull String contentType) {
         log.info("Updating logo for group with ID: {}", groupId);
         try {
