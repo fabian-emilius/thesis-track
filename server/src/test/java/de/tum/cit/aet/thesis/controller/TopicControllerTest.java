@@ -1,3 +1,4 @@
+```java
 package de.tum.cit.aet.thesis.controller;
 
 import org.junit.jupiter.api.Test;
@@ -28,9 +29,10 @@ class TopicControllerTest extends BaseIntegrationTest {
 
     @Test
     void getTopics_Success() throws Exception {
-        createTestTopic("Test Topic");
+        UUID groupId = createTestGroup("Test Group");
+        createTestTopic("Test Topic", groupId);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v2/topics")
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/groups/{groupId}/topics", groupId)
                         .header("Authorization", createRandomAdminAuthentication()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", isA(List.class)))
@@ -40,18 +42,33 @@ class TopicControllerTest extends BaseIntegrationTest {
 
     @Test
     void getTopic_Success() throws Exception {
-        UUID topicId = createTestTopic("Test Topic");
+        UUID groupId = createTestGroup("Test Group");
+        UUID topicId = createTestTopic("Test Topic", groupId);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v2/topics/{topicId}", topicId)
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/groups/{groupId}/topics/{topicId}", groupId, topicId)
                         .header("Authorization", createRandomAdminAuthentication()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.topicId").value(topicId.toString()))
-                .andExpect(jsonPath("$.title").value("Test Topic"));
+                .andExpect(jsonPath("$.title").value("Test Topic"))
+                .andExpect(jsonPath("$.groupId").value(groupId.toString()));
+    }
+
+    @Test
+    void getTopic_WrongGroup_NotFound() throws Exception {
+        UUID correctGroupId = createTestGroup("Correct Group");
+        UUID wrongGroupId = createTestGroup("Wrong Group");
+        UUID topicId = createTestTopic("Test Topic", correctGroupId);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/groups/{groupId}/topics/{topicId}", wrongGroupId, topicId)
+                        .header("Authorization", createRandomAdminAuthentication()))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void createTopic_Success() throws Exception {
+        UUID groupId = createTestGroup("Test Group");
         UUID advisorId = createTestUser("supervisor", List.of("supervisor", "advisor"));
+        addUserToGroup(advisorId, groupId);
 
         ReplaceTopicPayload payload = new ReplaceTopicPayload(
                 "Test Topic",
@@ -64,17 +81,42 @@ class TopicControllerTest extends BaseIntegrationTest {
                 List.of(advisorId)
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/v2/topics")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v2/groups/{groupId}/topics", groupId)
                         .header("Authorization", createRandomAdminAuthentication())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Test Topic"))
-                .andExpect(jsonPath("$.thesisTypes", containsInAnyOrder("MASTER", "BACHELOR")));
+                .andExpect(jsonPath("$.thesisTypes", containsInAnyOrder("MASTER", "BACHELOR")))
+                .andExpect(jsonPath("$.groupId").value(groupId.toString()));
+    }
+
+    @Test
+    void createTopic_UserNotInGroup_Forbidden() throws Exception {
+        UUID groupId = createTestGroup("Test Group");
+        UUID advisorId = createTestUser("supervisor", List.of("supervisor", "advisor"));
+
+        ReplaceTopicPayload payload = new ReplaceTopicPayload(
+                "Test Topic",
+                Set.of("MASTER"),
+                "Problem Statement",
+                "Requirements",
+                "Goals",
+                "References",
+                List.of(advisorId),
+                List.of(advisorId)
+        );
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/v2/groups/{groupId}/topics", groupId)
+                        .header("Authorization", createRandomAdminAuthentication())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(payload)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void createTopic_AsStudent_Forbidden() throws Exception {
+        UUID groupId = createTestGroup("Test Group");
         ReplaceTopicPayload payload = new ReplaceTopicPayload(
                 "Test Topic",
                 Set.of("MASTER"),
@@ -86,7 +128,7 @@ class TopicControllerTest extends BaseIntegrationTest {
                 List.of(UUID.randomUUID())
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/v2/topics")
+        mockMvc.perform(MockMvcRequestBuilders.post("/v2/groups/{groupId}/topics", groupId)
                         .header("Authorization", createRandomAuthentication("student"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(payload)))
@@ -95,8 +137,10 @@ class TopicControllerTest extends BaseIntegrationTest {
 
     @Test
     void updateTopic_Success() throws Exception {
-        UUID topicId = createTestTopic("Test Topic");
+        UUID groupId = createTestGroup("Test Group");
+        UUID topicId = createTestTopic("Test Topic", groupId);
         UUID advisorId = createTestUser("supervisor", List.of("supervisor", "advisor"));
+        addUserToGroup(advisorId, groupId);
 
         ReplaceTopicPayload updatePayload = new ReplaceTopicPayload(
                 "Updated Topic",
@@ -109,7 +153,7 @@ class TopicControllerTest extends BaseIntegrationTest {
                 List.of(advisorId)
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/v2/topics/{topicId}", topicId)
+        mockMvc.perform(MockMvcRequestBuilders.put("/v2/groups/{groupId}/topics/{topicId}", groupId, topicId)
                         .header("Authorization", createRandomAdminAuthentication())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatePayload)))
@@ -118,19 +162,47 @@ class TopicControllerTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.problemStatement").value("Updated Problem Statement"))
                 .andExpect(jsonPath("$.requirements").value("Updated Requirements"))
                 .andExpect(jsonPath("$.goals").value("Updated Goals"))
-                .andExpect(jsonPath("$.references").value("Updated References"));
+                .andExpect(jsonPath("$.references").value("Updated References"))
+                .andExpect(jsonPath("$.groupId").value(groupId.toString()));
+    }
+
+    @Test
+    void updateTopic_WrongGroup_NotFound() throws Exception {
+        UUID correctGroupId = createTestGroup("Correct Group");
+        UUID wrongGroupId = createTestGroup("Wrong Group");
+        UUID topicId = createTestTopic("Test Topic", correctGroupId);
+        UUID advisorId = createTestUser("supervisor", List.of("supervisor", "advisor"));
+        addUserToGroup(advisorId, correctGroupId);
+
+        ReplaceTopicPayload updatePayload = new ReplaceTopicPayload(
+                "Updated Topic",
+                Set.of("MASTER"),
+                "Updated Problem Statement",
+                "Updated Requirements",
+                "Updated Goals",
+                "Updated References",
+                List.of(advisorId),
+                List.of(advisorId)
+        );
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/v2/groups/{groupId}/topics/{topicId}", wrongGroupId, topicId)
+                        .header("Authorization", createRandomAdminAuthentication())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updatePayload)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void closeTopic_Success() throws Exception {
-        UUID topicId = createTestTopic("Test Topic");
+        UUID groupId = createTestGroup("Test Group");
+        UUID topicId = createTestTopic("Test Topic", groupId);
 
         CloseTopicPayload closePayload = new CloseTopicPayload(
                 ApplicationRejectReason.TOPIC_FILLED,
                 true
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/topics/{topicId}", topicId)
+        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/groups/{groupId}/topics/{topicId}", groupId, topicId)
                         .header("Authorization", createRandomAdminAuthentication())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(closePayload)))
@@ -139,13 +211,31 @@ class TopicControllerTest extends BaseIntegrationTest {
     }
 
     @Test
-    void getTopics_WithPagination_Success() throws Exception {
-        // Create multiple test topics
-        createTestTopic("Topic 1");
-        createTestTopic("Topic 2");
-        createTestTopic("Topic 3");
+    void closeTopic_WrongGroup_NotFound() throws Exception {
+        UUID correctGroupId = createTestGroup("Correct Group");
+        UUID wrongGroupId = createTestGroup("Wrong Group");
+        UUID topicId = createTestTopic("Test Topic", correctGroupId);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v2/topics")
+        CloseTopicPayload closePayload = new CloseTopicPayload(
+                ApplicationRejectReason.TOPIC_FILLED,
+                true
+        );
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/v2/groups/{groupId}/topics/{topicId}", wrongGroupId, topicId)
+                        .header("Authorization", createRandomAdminAuthentication())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(closePayload)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getTopics_WithPagination_Success() throws Exception {
+        UUID groupId = createTestGroup("Test Group");
+        createTestTopic("Topic 1", groupId);
+        createTestTopic("Topic 2", groupId);
+        createTestTopic("Topic 3", groupId);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/groups/{groupId}/topics", groupId)
                         .header("Authorization", createRandomAdminAuthentication())
                         .param("page", "0")
                         .param("limit", "2")
@@ -159,15 +249,18 @@ class TopicControllerTest extends BaseIntegrationTest {
 
     @Test
     void getTopics_WithSearch_Success() throws Exception {
-        createTestTopic("Specific Topic Title");
+        UUID groupId = createTestGroup("Test Group");
+        createTestTopic("Specific Topic Title", groupId);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/v2/topics")
+        mockMvc.perform(MockMvcRequestBuilders.get("/v2/groups/{groupId}/topics", groupId)
                         .header("Authorization", createRandomAdminAuthentication())
                         .param("search", "Specific")
                         .param("page", "0")
                         .param("limit", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(equalTo(1))))
-                .andExpect(jsonPath("$.content[0].title", containsString("Specific")));
+                .andExpect(jsonPath("$.content[0].title", containsString("Specific")))
+                .andExpect(jsonPath("$.content[0].groupId").value(groupId.toString()));
     }
 }
+```

@@ -69,26 +69,17 @@ public class UploadService {
             String fileHash = computeFileHash(file);
             String secureFilename = fileHash + "." + extension;
 
-            String originalFilename = file.getOriginalFilename();
-            String extension = FilenameUtils.getExtension(originalFilename);
-
-            if (allowedExtensions != null && !allowedExtensions.contains(extension)) {
-                throw new UploadException("File type not allowed");
-            }
-
-            String filename = StringUtils.cleanPath(computeFileHash(file) + "." + extension);
-
             if (filename.contains("..")) {
                 throw new UploadException("Cannot store file with relative path outside current directory");
             }
 
             Path targetPath;
             if (type == UploadFileType.GROUP_LOGO) {
-                targetPath = rootLocation.resolve(GROUP_LOGOS_DIR).resolve(groupId + "." + extension);
+                targetPath = rootLocation.resolve(GROUP_LOGOS_DIR).resolve(sanitizedGroupId + "." + extension);
             } else {
-                Path groupPath = rootLocation.resolve(GROUP_FILES_DIR).resolve(groupId);
+                Path groupPath = rootLocation.resolve(GROUP_FILES_DIR).resolve(sanitizedGroupId);
                 Files.createDirectories(groupPath);
-                targetPath = groupPath.resolve(filename);
+                targetPath = groupPath.resolve(secureFilename);
             }
 
             try (InputStream inputStream = file.getInputStream()) {

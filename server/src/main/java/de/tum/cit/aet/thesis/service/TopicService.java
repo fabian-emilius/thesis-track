@@ -35,6 +35,7 @@ public class TopicService {
     }
 
     public Page<Topic> getAll(
+            UUID groupId,
             String[] types,
             boolean includeClosed,
             String searchQuery,
@@ -52,6 +53,7 @@ public class TopicService {
         String[] typesFilter = types == null || types.length == 0 ? null : types;
 
         return topicRepository.searchTopics(
+                groupId,
                 typesFilter,
                 includeClosed,
                 searchQueryFilter,
@@ -62,6 +64,7 @@ public class TopicService {
     @Transactional
     public Topic createTopic(
             User creator,
+            UUID groupId,
             String title,
             Set<String> thesisTypes,
             String problemStatement,
@@ -71,6 +74,9 @@ public class TopicService {
             List<UUID> supervisorIds,
             List<UUID> advisorIds
     ) {
+        if (!creator.hasGroupAccess(groupId)) {
+            throw new ResourceInvalidParametersException("User does not have access to this group");
+        }
         Topic topic = new Topic();
 
         topic.setTitle(title);
@@ -82,6 +88,7 @@ public class TopicService {
         topic.setUpdatedAt(Instant.now());
         topic.setCreatedAt(Instant.now());
         topic.setCreatedBy(creator);
+        topic.setGroupId(groupId);
 
         topic = topicRepository.save(topic);
 
@@ -94,6 +101,7 @@ public class TopicService {
     public Topic updateTopic(
             User updater,
             Topic topic,
+            UUID groupId,
             String title,
             Set<String> thesisTypes,
             String problemStatement,
@@ -103,6 +111,9 @@ public class TopicService {
             List<UUID> supervisorIds,
             List<UUID> advisorIds
     ) {
+        if (!updater.hasGroupAccess(groupId) || !topic.getGroupId().equals(groupId)) {
+            throw new ResourceInvalidParametersException("User does not have access to this group or topic belongs to different group");
+        }
         topic.setTitle(title);
         topic.setThesisTypes(thesisTypes);
         topic.setProblemStatement(problemStatement);
@@ -116,9 +127,10 @@ public class TopicService {
         return topicRepository.save(topic);
     }
 
-    public Topic findById(UUID topicId) {
-        return topicRepository.findById(topicId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Topic with id %s not found.", topicId)));
+    public Topic findById(UUID topicId, UUID groupId) {
+        Topic topic = topicRepository.findByIdAndGroupId(topicId, groupId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Topic with id %s not found in group %s.", topicId, groupId)));
+        return topic;
     }
 
     private void assignTopicRoles(Topic topic, User assigner, List<UUID> advisorIds, List<UUID> supervisorIds) {

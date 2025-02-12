@@ -45,15 +45,18 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
             Pageable page
     );
 
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.group.id = :groupId AND a.state = 'NOT_ASSESSED'")
+    long countUnreviewedApplicationsByGroup(@Param("groupId") UUID groupId);
+
     @Query(
             "SELECT COUNT(DISTINCT a) FROM Application a " +
             "LEFT JOIN Topic t ON (a.topic.id = t.id) " +
             "LEFT JOIN TopicRole r ON (t.id = r.topic.id) " +
             "WHERE " +
-                    "(:groupId IS NULL OR a.group.id = :groupId) AND " +
-                    "(a.topic IS NULL OR :userId IS NULL OR r.user.id = :userId) AND " +
+                    "a.group.id = :groupId AND " +
+                    "(a.topic IS NULL OR r.user.id = :userId) AND " +
                     "a.state = 'NOT_ASSESSED' AND " +
-                    "(:userId IS NULL OR NOT EXISTS(SELECT ar FROM ApplicationReviewer ar WHERE ar.application.id = a.id AND ar.user.id = :userId))"
+                    "NOT EXISTS(SELECT ar FROM ApplicationReviewer ar WHERE ar.application.id = a.id AND ar.user.id = :userId)"
     )
     long countUnreviewedApplications(@Param("groupId") UUID groupId, @Param("userId") UUID userId);
 

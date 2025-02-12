@@ -288,8 +288,9 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
-    public boolean applicationExists(User user, UUID topicId) {
-        return applicationRepository.existsPendingApplication(user.getId(), topicId);
+    public boolean applicationExists(User user, UUID topicId, UUID groupId) {
+        groupPermissionService.validateGroupMember(groupId);
+        return applicationRepository.existsPendingApplication(user.getId(), topicId, groupId);
     }
 
     public Application findById(UUID applicationId) {

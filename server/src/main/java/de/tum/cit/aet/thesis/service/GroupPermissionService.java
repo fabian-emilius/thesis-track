@@ -9,6 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -121,5 +123,29 @@ public class GroupPermissionService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UUID userId = authenticationService.getCurrentUserId();
         return groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
+    }
+
+    public boolean hasGroupAccess(Authentication authentication) {
+        return isGroupMember(getGroupIdFromRequest()) || authenticationService.isAdmin();
+    }
+
+    public boolean hasThesisAccess(Authentication authentication) {
+        return isGroupMember(getGroupIdFromRequest()) || authenticationService.isAdmin();
+    }
+
+    public boolean hasPresentationAccess(Authentication authentication) {
+        return isGroupMember(getGroupIdFromRequest()) || authenticationService.isAdmin();
+    }
+
+    private UUID getGroupIdFromRequest() {
+        String groupId = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+            .getRequest().getParameter("groupId");
+        return groupId != null ? UUID.fromString(groupId) : null;
+    }
+
+    public void validateSameGroup(UUID group1, UUID group2) {
+        if (!group1.equals(group2)) {
+            throw new AccessDeniedException("Groups do not match");
+        }
     }
 }

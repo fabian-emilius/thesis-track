@@ -314,6 +314,7 @@ public class ThesisService {
     /* PROPOSAL */
 
     public Resource getProposalFile(ThesisProposal proposal) {
+        groupPermissionService.validateGroupMember(proposal.getThesis().getGroupId());
         return uploadService.load(proposal.getProposalFilename());
     }
 
@@ -426,6 +427,7 @@ public class ThesisService {
     }
 
     public Resource getThesisFile(ThesisFile file) {
+        groupPermissionService.validateGroupMember(file.getThesis().getGroupId());
         return uploadService.load(file.getFilename());
     }
 
@@ -466,6 +468,7 @@ public class ThesisService {
     }
 
     public Resource getAssessmentFile(Thesis thesis) {
+        groupPermissionService.validateGroupMember(thesis.getGroupId());
         ThesisAssessment assessment = thesis.getAssessments().getFirst();
         ThesisPresentation presentation = thesis.getPresentations().getFirst();
 
@@ -542,6 +545,7 @@ public class ThesisService {
     private boolean existsPendingThesis(User user) {
         Page<Thesis> theses = thesisRepository.searchTheses(
                 user.getId(),
+                user.getGroupId(),
                 null,
                 null,
                 Set.of(
@@ -559,8 +563,10 @@ public class ThesisService {
     }
 
     public Thesis findById(UUID thesisId) {
-        return thesisRepository.findById(thesisId)
+        Thesis thesis = thesisRepository.findById(thesisId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Thesis with id %s not found.", thesisId)));
+        groupPermissionService.validateGroupMember(thesis.getGroupId());
+        return thesis;
     }
 
     private void assignThesisRoles(

@@ -55,4 +55,7 @@ public interface ThesisRepository extends JpaRepository<Thesis, UUID> {
             @Param("roleNames") Set<ThesisRoleName> roleNames,
             @Param("states") Set<ThesisState> states
     );
+
+    @Query(value = "SELECT DISTINCT t FROM Thesis t WHERE t.group.id = :groupId AND t.state != 'FINISHED' AND t.state != 'DROPPED_OUT'")
+    List<Thesis> findActiveThesesByGroup(@Param("groupId") UUID groupId);
 }

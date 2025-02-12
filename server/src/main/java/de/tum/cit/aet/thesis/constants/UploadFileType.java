@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum UploadFileType {
     PDF("PDF"),
     IMAGE("IMAGE"),
+    GROUP_LOGO("GROUP_LOGO"),
     ANY("ANY");
 
     private final String value;

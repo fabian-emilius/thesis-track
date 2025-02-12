@@ -38,6 +38,7 @@ public class TopicController {
 
     @GetMapping
     public ResponseEntity<PaginationDto<TopicDto>> getTopics(
+            @RequestParam(required = true) UUID groupId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false, defaultValue = "") String[] type,
             @RequestParam(required = false, defaultValue = "false") Boolean includeClosed,
@@ -47,6 +48,7 @@ public class TopicController {
             @RequestParam(required = false, defaultValue = "desc") String sortOrder
     ) {
         Page<Topic> topics = topicService.getAll(
+                groupId,
                 type,
                 includeClosed,
                 search,
@@ -60,8 +62,11 @@ public class TopicController {
     }
 
     @GetMapping("/{topicId}")
-    public ResponseEntity<TopicDto> getTopic(@PathVariable UUID topicId) {
-        Topic topic = topicService.findById(topicId);
+    public ResponseEntity<TopicDto> getTopic(
+            @RequestParam(required = true) UUID groupId,
+            @PathVariable UUID topicId
+    ) {
+        Topic topic = topicService.findById(groupId, topicId);
 
         return ResponseEntity.ok(TopicDto.fromTopicEntity(topic));
     }
@@ -69,12 +74,14 @@ public class TopicController {
     @PostMapping
     @PreAuthorize("hasAnyRole('admin', 'advisor', 'supervisor')")
     public ResponseEntity<TopicDto> createTopic(
+            @RequestParam(required = true) UUID groupId,
             @RequestBody ReplaceTopicPayload payload,
             JwtAuthenticationToken jwt
     ) {
         User authenticatedUser = authenticationService.getAuthenticatedUser(jwt);
 
         Topic topic = topicService.createTopic(
+                groupId,
                 authenticatedUser,
                 RequestValidator.validateStringMaxLength(payload.title(), StringLimits.THESIS_TITLE.getLimit()),
                 RequestValidator.validateStringSetItemMaxLengthAllowNull(payload.thesisTypes(), StringLimits.SHORTTEXT.getLimit()),
@@ -92,12 +99,13 @@ public class TopicController {
     @PutMapping("/{topicId}")
     @PreAuthorize("hasAnyRole('admin', 'advisor', 'supervisor')")
     public ResponseEntity<TopicDto> updateTopic(
+            @RequestParam(required = true) UUID groupId,
             @PathVariable UUID topicId,
             @RequestBody ReplaceTopicPayload payload,
             JwtAuthenticationToken jwt
     ) {
         User authenticatedUser = authenticationService.getAuthenticatedUser(jwt);
-        Topic topic = topicService.findById(topicId);
+        Topic topic = topicService.findById(groupId, topicId);
 
         topic = topicService.updateTopic(
                 authenticatedUser,
@@ -118,12 +126,13 @@ public class TopicController {
     @DeleteMapping("/{topicId}")
     @PreAuthorize("hasAnyRole('admin', 'advisor', 'supervisor')")
     public ResponseEntity<TopicDto> closeTopic(
+            @RequestParam(required = true) UUID groupId,
             @PathVariable UUID topicId,
             @RequestBody CloseTopicPayload payload,
             JwtAuthenticationToken jwt
     ) {
         User authenticatedUser = authenticationService.getAuthenticatedUser(jwt);
-        Topic topic = topicService.findById(topicId);
+        Topic topic = topicService.findById(groupId, topicId);
 
         topic = applicationService.closeTopic(
                 authenticatedUser,

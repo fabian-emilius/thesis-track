@@ -166,7 +166,7 @@ public class DashboardService {
 
         if (user.hasAnyGroup("admin", "supervisor", "advisor")) {
             // review application task
-            long unreviewedApplications = applicationRepository.countUnreviewedApplications(user.getId());
+            long unreviewedApplications = applicationRepository.countUnreviewedApplications(user.getId(), user.getGroupId());
 
             if (unreviewedApplications > 0) {
                 tasks.add(new TaskDto(
@@ -177,7 +177,7 @@ public class DashboardService {
             }
 
             // no open topic task
-            long openTopics = topicRepository.countOpenTopics();
+            long openTopics = topicRepository.countOpenTopics(user.getGroupId());
 
             if (openTopics == 0) {
                 tasks.add(new TaskDto(
