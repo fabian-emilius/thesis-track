@@ -28,6 +28,7 @@ public class ApplicationService {
     private final ThesisService thesisService;
     private final TopicService topicService;
     private final ApplicationReviewerRepository applicationReviewerRepository;
+    private final GroupPermissionService groupPermissionService;
 
     @Autowired
     public ApplicationService(
@@ -36,13 +37,15 @@ public class ApplicationService {
             TopicRepository topicRepository,
             ThesisService thesisService,
             TopicService topicService,
-            ApplicationReviewerRepository applicationReviewerRepository) {
+            ApplicationReviewerRepository applicationReviewerRepository,
+            GroupPermissionService groupPermissionService) {
         this.applicationRepository = applicationRepository;
         this.mailingService = mailingService;
         this.topicRepository = topicRepository;
         this.thesisService = thesisService;
         this.topicService = topicService;
         this.applicationReviewerRepository = applicationReviewerRepository;
+        this.groupPermissionService = groupPermissionService;
     }
 
     public Page<Application> getAll(
@@ -54,11 +57,13 @@ public class ApplicationService {
             String[] topics,
             String[] types,
             boolean includeSuggestedTopics,
+            UUID groupId,
             int page,
             int limit,
             String sortBy,
             String sortOrder
     ) {
+        groupPermissionService.validateGroupMember(groupId);
         Sort.Order order = new Sort.Order(sortOrder.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
 
         String searchQueryFilter = searchQuery == null || searchQuery.isEmpty() ? null : searchQuery.toLowerCase();
@@ -76,13 +81,18 @@ public class ApplicationService {
                 topicsFilter,
                 typesFilter,
                 includeSuggestedTopics,
+                groupId,
                 PageRequest.of(page, limit, Sort.by(order))
         );
     }
 
     @Transactional
-    public Application createApplication(User user, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+    public Application createApplication(User user, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation, UUID groupId) {
+        groupPermissionService.validateGroupMember(groupId);
         Topic topic = topicId == null ? null : topicService.findById(topicId);
+        if (topic != null) {
+            groupPermissionService.validateSameGroup(topic.getGroup().getId(), groupId);
+        }
 
         if (topic != null && topic.getClosedAt() != null) {
             throw new ResourceInvalidParametersException("This topic is already closed. You cannot submit new applications for it.");
@@ -99,6 +109,7 @@ public class ApplicationService {
         application.setState(ApplicationState.NOT_ASSESSED);
         application.setDesiredStartDate(desiredStartDate);
         application.setCreatedAt(Instant.now());
+        application.setGroup(groupPermissionService.getGroup(groupId));
 
         application = applicationRepository.save(application);
 
@@ -109,6 +120,7 @@ public class ApplicationService {
 
     @Transactional
     public Application updateApplication(Application application, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+        groupPermissionService.validateGroupMember(application.getGroup().getId());
         application.setTopic(topicId == null ? null : topicService.findById(topicId));
         application.setThesisTitle(thesisTitle);
         application.setThesisType(thesisType);
@@ -174,6 +186,7 @@ public class ApplicationService {
 
     @Transactional
     public List<Application> reject(User reviewingUser, Application application, ApplicationRejectReason reason, boolean notifyUser) {
+        groupPermissionService.validateSupervisorOrAdmin(application.getGroup().getId());
         application.setState(ApplicationState.REJECTED);
         application.setRejectReason(reason);
         application.setReviewedAt(Instant.now());
@@ -209,6 +222,7 @@ public class ApplicationService {
 
     @Transactional
     public Topic closeTopic(User closer, Topic topic, ApplicationRejectReason reason, boolean notifyUser) {
+        groupPermissionService.validateSupervisorOrAdmin(topic.getGroup().getId());
         topic.setClosedAt(Instant.now());
 
         rejectApplicationsForTopic(closer, topic, reason, notifyUser);
@@ -234,6 +248,7 @@ public class ApplicationService {
 
     @Transactional
     public Application reviewApplication(Application application, User reviewer, ApplicationReviewReason reason) {
+        groupPermissionService.validateSupervisorOrAdmin(application.getGroup().getId());
         ApplicationReviewer entity = application.getReviewer(reviewer).orElseGet(() -> {
             ApplicationReviewerId id = new ApplicationReviewerId();
             id.setApplicationId(application.getId());
@@ -267,6 +282,7 @@ public class ApplicationService {
 
     @Transactional
     public Application updateComment(Application application, String comment) {
+        groupPermissionService.validateSupervisorOrAdmin(application.getGroup().getId());
         application.setComment(comment);
 
         return applicationRepository.save(application);

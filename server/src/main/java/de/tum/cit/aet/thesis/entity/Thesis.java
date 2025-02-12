@@ -26,6 +26,11 @@ public class Thesis {
     private UUID id;
 
     @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
+    @NotNull
     @Column(name = "title", nullable = false)
     private String title;
 

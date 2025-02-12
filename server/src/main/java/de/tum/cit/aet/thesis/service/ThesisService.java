@@ -32,6 +32,7 @@ public class ThesisService {
     private final ThesisStateChangeRepository thesisStateChangeRepository;
     private final UserRepository userRepository;
     private final UploadService uploadService;
+    private final GroupPermissionService groupPermissionService;
     private final ThesisProposalRepository thesisProposalRepository;
     private final ThesisAssessmentRepository thesisAssessmentRepository;
     private final MailingService mailingService;
@@ -52,7 +53,9 @@ public class ThesisService {
             MailingService mailingService,
             AccessManagementService accessManagementService,
             ThesisPresentationService thesisPresentationService,
-            ThesisFeedbackRepository thesisFeedbackRepository, ThesisFileRepository thesisFileRepository) {
+            ThesisFeedbackRepository thesisFeedbackRepository,
+            ThesisFileRepository thesisFileRepository,
+            GroupPermissionService groupPermissionService) {
         this.thesisRoleRepository = thesisRoleRepository;
         this.thesisRepository = thesisRepository;
         this.thesisStateChangeRepository = thesisStateChangeRepository;
@@ -65,10 +68,12 @@ public class ThesisService {
         this.thesisPresentationService = thesisPresentationService;
         this.thesisFeedbackRepository = thesisFeedbackRepository;
         this.thesisFileRepository = thesisFileRepository;
+        this.groupPermissionService = groupPermissionService;
     }
 
     public Page<Thesis> getAll(
             UUID userId,
+            UUID groupId,
             Set<ThesisVisibility> visibilities,
             String searchQuery,
             ThesisState[] states,
@@ -78,6 +83,7 @@ public class ThesisService {
             String sortBy,
             String sortOrder
     ) {
+        groupPermissionService.validateGroupMember(groupId);
         Sort.Order order = new Sort.Order(sortOrder.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
 
         String searchQueryFilter = searchQuery == null || searchQuery.isEmpty() ? null : searchQuery.toLowerCase();
@@ -86,6 +92,7 @@ public class ThesisService {
 
         return thesisRepository.searchTheses(
                 userId,
+                groupId,
                 visibilities,
                 searchQueryFilter,
                 statesFilter,
@@ -97,6 +104,7 @@ public class ThesisService {
     @Transactional
     public Thesis createThesis(
             User creator,
+            UUID groupId,
             String thesisTitle,
             String thesisType,
             String language,
@@ -106,7 +114,9 @@ public class ThesisService {
             Application application,
             boolean notifyUser
     ) {
+        groupPermissionService.validateGroupAdmin(groupId);
         Thesis thesis = new Thesis();
+        thesis.setGroupId(groupId);
 
         thesis.setTitle(thesisTitle);
         thesis.setType(thesisType);
@@ -138,6 +148,7 @@ public class ThesisService {
 
     @Transactional
     public Thesis closeThesis(User closingUser, Thesis thesis) {
+        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
         if (thesis.getState() == ThesisState.DROPPED_OUT || thesis.getState() == ThesisState.FINISHED) {
             throw new ResourceInvalidParametersException("Thesis is already completed");
         }
@@ -162,6 +173,7 @@ public class ThesisService {
     public Thesis updateThesis(
             User updatingUser,
             Thesis thesis,
+        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
             String thesisTitle,
             String thesisType,
             String language,
@@ -368,6 +380,7 @@ public class ThesisService {
 
     @Transactional
     public Thesis submitThesis(Thesis thesis) {
+        groupPermissionService.validateGroupMember(thesis.getGroupId());
         if (thesis.getLatestFile("THESIS").isEmpty()) {
             throw new ResourceInvalidParametersException("Thesis file not uploaded yet");
         }
@@ -421,6 +434,7 @@ public class ThesisService {
     public Thesis submitAssessment(
             User creatingUser,
             Thesis thesis,
+        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
             String summary,
             String positives,
             String negatives,
@@ -493,6 +507,7 @@ public class ThesisService {
     /* GRADING */
     @Transactional
     public Thesis gradeThesis(Thesis thesis, String finalGrade, String finalFeedback, ThesisVisibility visibility) {
+        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
         thesis.setState(ThesisState.GRADED);
         thesis.setVisibility(visibility);
         thesis.setFinalGrade(finalGrade);

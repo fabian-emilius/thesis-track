@@ -50,6 +50,8 @@ public class MailBuilder {
     @Getter
     private final List<RawAttachment> rawAttachments;
 
+    private Group group;
+
     private record RawAttachment(String filename, ByteArrayDataSource file) {}
     private record StoredAttachment(String filename, String file) {}
 
@@ -70,6 +72,12 @@ public class MailBuilder {
         this.fileAttachments = new ArrayList<>();
         this.rawAttachments = new ArrayList<>();
         this.notificationNames = new HashSet<>();
+    }
+
+    public MailBuilder setGroup(Group group) {
+        this.group = group;
+        this.variables.put("group", group);
+        return this;
     }
 
     public MailBuilder addStoredAttachment(String storedFile, String filename) {
@@ -207,6 +215,7 @@ public class MailBuilder {
     public MailBuilder fillApplicationPlaceholders(Application application) {
         fillPlaceholder("application", ApplicationDto.fromApplicationEntity(application, false));
         fillPlaceholder("applicationUrl", config.getClientHost() + "/applications/" + application.getId());
+        setGroup(application.getThesis().getGroup());
 
         return this;
     }
@@ -214,13 +223,13 @@ public class MailBuilder {
     public MailBuilder fillThesisPlaceholders(Thesis thesis) {
         fillPlaceholder("thesis", ThesisDto.fromThesisEntity(thesis, false, true));
         fillPlaceholder("thesisUrl", config.getClientHost() + "/theses/" + thesis.getId());
+        setGroup(thesis.getGroup());
 
         return this;
     }
 
     public MailBuilder fillThesisCommentPlaceholders(ThesisComment comment) {
         fillThesisPlaceholders(comment.getThesis());
-
         fillPlaceholder("comment", ThesisCommentDto.fromCommentEntity(comment));
 
         return this;
@@ -237,7 +246,6 @@ public class MailBuilder {
 
     public MailBuilder fillThesisProposalPlaceholders(ThesisProposal proposal) {
         fillThesisPlaceholders(proposal.getThesis());
-
         fillPlaceholder("proposal", ThesisDto.ThesisProposalDto.fromProposalEntity(proposal));
 
         return this;
@@ -245,7 +253,6 @@ public class MailBuilder {
 
     public MailBuilder fillThesisAssessmentPlaceholders(ThesisAssessment assessment) {
         fillThesisPlaceholders(assessment.getThesis());
-
         fillPlaceholder("assessment", ThesisDto.ThesisAssessmentDto.fromAssessmentEntity(assessment));
 
         return this;
@@ -305,6 +312,10 @@ public class MailBuilder {
                 templateContext.setVariables(this.variables);
                 templateContext.setVariable("recipient", UserDto.fromUserEntity(recipient));
                 templateContext.setVariable("DataFormatter", DataFormatter.class);
+                if (group != null) {
+                    templateContext.setVariable("groupFooter", group.getEmailFooter());
+                    templateContext.setVariable("groupSignature", group.getEmailSignature());
+                }
 
                 message.setSubject(subject);
 
