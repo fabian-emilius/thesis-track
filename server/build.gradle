@@ -57,6 +57,13 @@ dependencies {
 	implementation "ch.qos.logback:logback-classic:${logback_version}"
 	implementation "ch.qos.logback:logback-core:${logback_version}"
 
+	// API Documentation
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.4.0'
+
+	// Rate Limiting
+	implementation 'com.github.vladimir-bukhtoyarov:bucket4j-core:8.0.1'
+	implementation 'com.github.vladimir-bukhtoyarov:bucket4j-jcache:8.0.1'
+
 	// use newest version of commons-compress to avoid security issues through outdated dependencies
 	implementation "org.apache.commons:commons-compress:1.27.1"
 
@@ -102,10 +109,3 @@ test {
 tasks.withType(JavaCompile).configureEach {
 	options.compilerArgs << "-Xlint:deprecation"
 }
-
-// Available commands:
-//
-// Find dependency updates:    ./gradlew dependencyUpdates -Drevision=release
-// Test:                       ./gradlew test
-// Build:                      ./gradlew build -x test
-// Run:						   ./gradlew bootRun

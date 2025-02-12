@@ -1,17 +1,21 @@
 package de.tum.cit.aet.thesis.entity;
 
 import de.tum.cit.aet.thesis.entity.key.GroupMemberId;
+import de.tum.cit.aet.thesis.constants.GroupRole;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "group_members")
 @IdClass(GroupMemberId.class)
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class GroupMember {
     @Id
     @Column(name = "group_id")
