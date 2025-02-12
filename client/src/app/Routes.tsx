@@ -3,6 +3,9 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
 import PageLoader from '../components/PageLoader/PageLoader'
 
+const GroupSelectionPage = lazy(() => import('../pages/GroupSelectionPage/GroupSelectionPage'))
+const GroupManagementPage = lazy(() => import('../pages/GroupManagementPage/GroupManagementPage'))
+const GroupEditPage = lazy(() => import('../pages/GroupEditPage/GroupEditPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage'))
 const ImprintPage = lazy(() => import('../pages/ImprintPage/ImprintPage'))
@@ -38,6 +41,30 @@ const AppRoutes = () => {
           />
           <Route path='/applications/thesis' element={<Navigate to='/' replace />} />
           <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea>
+                <GroupSelectionPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/manage'
+            element={
+              <AuthenticatedArea requiredGroups={['admin']}>
+                <GroupManagementPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/:groupId/edit'
+            element={
+              <AuthenticatedArea requiredGroups={['admin']}>
+                <GroupEditPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
             path='/dashboard'
             element={
               <AuthenticatedArea>
@@ -54,7 +81,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path='/submit-application/:topicId?'
+            path='/:groupId/submit-application/:topicId?'
             element={
               <AuthenticatedArea>
                 <ReplaceApplicationPage />
@@ -86,7 +113,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path='/topics'
+            path='/:groupId/topics'
             element={
               <AuthenticatedArea requiredGroups={['admin', 'advisor', 'supervisor']}>
                 <ManageTopicsPage />
@@ -94,7 +121,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path='/topics/:topicId'
+            path='/:groupId/topics/:topicId'
             element={
               <AuthenticatedArea size='md' requireAuthentication={false}>
                 <TopicPage />
@@ -102,7 +129,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path='/applications/:applicationId?'
+            path='/:groupId/applications/:applicationId?'
             element={
               <AuthenticatedArea
                 collapseNavigation={true}

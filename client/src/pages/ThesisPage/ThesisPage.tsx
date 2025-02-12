@@ -1,4 +1,6 @@
 import { usePageTitle } from '../../hooks/theme'
+import { useGroupContext } from '../../providers/GroupProvider/GroupProvider'
+import { useThesis } from '../../hooks/thesis'
 import ThesisConfigSection from './components/ThesisConfigSection/ThesisConfigSection'
 import ThesisInfoSection from './components/ThesisInfoSection/ThesisInfoSection'
 import ThesisProposalSection from './components/ThesisProposalSection/ThesisProposalSection'
@@ -15,12 +17,14 @@ import ThesisPresentationSection from './components/ThesisPresentationSection/Th
 
 const ThesisPage = () => {
   const { thesisId } = useParams<{ thesisId: string }>()
+  const { group } = useGroupContext()
+  const { hasAccess } = useThesis(thesisId)
 
   usePageTitle('Thesis')
 
   return (
-    <ThesisProvider thesisId={thesisId} requireLoadedThesis>
-      <Stack>
+    <ThesisProvider thesisId={thesisId} groupId={group?.id} requireLoadedThesis>
+      <Stack style={{ display: !hasAccess ? 'none' : undefined }}>
         <ThesisHeader />
         <ThesisConfigSection />
         <ThesisStudentInfoSection />
@@ -32,6 +36,11 @@ const ThesisPage = () => {
         <ThesisAssessmentSection />
         <ThesisFinalGradeSection />
       </Stack>
+      {!hasAccess && (
+        <Stack align="center" justify="center" h="50vh">
+          <Title order={2}>You don't have access to this thesis</Title>
+        </Stack>
+      )}
     </ThesisProvider>
   )
 }

@@ -10,7 +10,10 @@ import {
   Stack,
   Text,
   Tooltip,
+  Menu,
 } from '@mantine/core'
+import { useGroupContext } from '../../../hooks/group'
+import GroupNavigation from '../GroupNavigation/GroupNavigation'
 import * as classes from './AuthenticatedArea.module.css'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks'
@@ -44,6 +47,7 @@ export interface IAuthenticatedAreaProps {
   requireAuthentication?: boolean
   collapseNavigation?: boolean
   requiredGroups?: string[]
+  groupSpecific?: boolean
 }
 
 const links: Array<{
@@ -98,7 +102,10 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
     requireAuthentication = true,
     collapseNavigation = false,
     requiredGroups,
+    groupSpecific = false,
   } = props
+
+  const { currentGroup, groups, setCurrentGroup } = useGroupContext()
 
   const navigate = useNavigate()
   const user = useUser()
@@ -173,6 +180,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
 
       <AppShell.Navbar p='md'>
         <AppShell.Section grow mb='md'>
+          {groupSpecific && <GroupNavigation minimized={minimized} />}
           {!minimized && (
             <Group preventGrowOverflow={false}>
               <Logo className={classes.logo} />
@@ -196,7 +204,8 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
           {links
             .filter(
               (item) =>
-                !item.groups || item.groups.some((role) => auth.user?.groups.includes(role)),
+                (!item.groups || item.groups.some((role) => auth.user?.groups.includes(role))) &&
+                (!groupSpecific || !currentGroup || item.groups?.includes(currentGroup)),
             )
             .map((item) => (
               <Link
@@ -260,8 +269,9 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
         <div className={classes.mainHeight}>
           {auth.user ? (
             <Suspense fallback={<PageLoader />}>
-              {!requiredGroups ||
-              requiredGroups.some((role) => auth.user?.groups.includes(role)) ? (
+              {(!requiredGroups ||
+                requiredGroups.some((role) => auth.user?.groups.includes(role))) &&
+              (!groupSpecific || currentGroup) ? (
                 <ContentContainer size={size}>{children}</ContentContainer>
               ) : (
                 <Center className={classes.fullHeight}>

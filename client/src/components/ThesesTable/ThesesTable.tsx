@@ -6,8 +6,11 @@ import { IThesesSort } from '../../providers/ThesesProvider/context'
 import { useNavigate } from 'react-router'
 import { IThesis } from '../../requests/responses/thesis'
 import ThesisStateBadge from '../ThesisStateBadge/ThesisStateBadge'
-import { Center } from '@mantine/core'
+import { Center, Group, ActionIcon, Tooltip } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
+import { useGroupContext } from '../../providers/GroupProvider/hooks'
+import { useThesesByGroup } from '../../hooks/useThesesByGroup'
+import { IconEdit, IconTrash } from '@phosphor-react/core'
 
 type ThesisColumn =
   | 'state'
@@ -23,15 +26,24 @@ type ThesisColumn =
 interface IThesesTableProps {
   columns?: ThesisColumn[]
   extraColumns?: Record<string, DataTableColumn<IThesis>>
+  groupId?: string
+  onEdit?: (thesis: IThesis) => void
+  onDelete?: (thesis: IThesis) => void
 }
 
 const ThesesTable = (props: IThesesTableProps) => {
   const {
     columns = ['state', 'title', 'type', 'students', 'advisors', 'start_date', 'end_date'],
     extraColumns = {},
+    groupId,
+    onEdit,
+    onDelete,
   } = props
 
-  const { theses, sort, setSort, page, setPage, limit } = useThesesContext()
+  const { currentGroup, canManageTheses } = useGroupContext()
+  const { theses, sort, setSort, page, setPage, limit, isLoading } = groupId 
+    ? useThesesByGroup(groupId)
+    : useThesesContext()
 
   const navigate = useNavigate()
 
@@ -102,11 +114,42 @@ const ThesesTable = (props: IThesesTableProps) => {
       render: (thesis) => formatDate(thesis.endDate, { withTime: false }),
     },
     ...extraColumns,
+    actions: {
+      accessor: 'actions',
+      title: 'Actions',
+      width: 100,
+      render: (thesis) => (
+        canManageTheses && (
+          <Group gap="xs" justify="center">
+            {onEdit && (
+              <Tooltip label="Edit">
+                <ActionIcon size="sm" variant="subtle" onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(thesis);
+                }}>
+                  <IconEdit size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+            {onDelete && (
+              <Tooltip label="Delete">
+                <ActionIcon size="sm" variant="subtle" color="red" onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(thesis);
+                }}>
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Tooltip>
+            )}
+          </Group>
+        )
+      ),
+    },
   }
 
   return (
     <DataTable
-      fetching={!theses}
+      fetching={isLoading || !theses}
       withTableBorder
       minHeight={200}
       noRecordsText='No theses to show'
@@ -130,7 +173,10 @@ const ThesesTable = (props: IThesesTableProps) => {
       }}
       records={theses?.content}
       idAccessor='thesisId'
-      columns={columns.map((column) => columnConfig[column])}
+      columns={[
+        ...columns.map((column) => columnConfig[column]),
+        ...(canManageTheses && (onEdit || onDelete) ? [columnConfig.actions] : [])
+      ]}
       onRowClick={({ record: thesis }) => onThesisClick(thesis)}
     />
   )

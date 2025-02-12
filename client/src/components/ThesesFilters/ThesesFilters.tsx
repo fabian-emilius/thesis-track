@@ -1,16 +1,33 @@
 import React from 'react'
-import { Grid, MultiSelect, Select, TextInput } from '@mantine/core'
+import { Grid, MultiSelect, Select, TextInput, SegmentedControl } from '@mantine/core'
 import { useThesesContext } from '../../providers/ThesesProvider/hooks'
+import { useGroupContext } from '../../providers/GroupProvider/hooks'
 import { ThesisState } from '../../requests/responses/thesis'
-import { MagnifyingGlass } from 'phosphor-react'
-import { formatThesisState, formatThesisType } from '../../utils/format'
+import { MagnifyingGlass, Users } from 'phosphor-react'
+import { formatThesisState, formatThesisType, formatUserName } from '../../utils/format'
 import { GLOBAL_CONFIG } from '../../config/global'
 
 const ThesesFilters = () => {
-  const { filters, setFilters, sort, setSort } = useThesesContext()
+  const { filters, setFilters, sort, setSort, presets, activePreset, setActivePreset } = useThesesContext()
+  const { currentGroup, groupMembers } = useGroupContext()
 
   return (
     <Grid gutter='xs'>
+      {currentGroup && (
+        <Grid.Col span={12}>
+          <SegmentedControl
+            fullWidth
+            data={[
+              { label: 'All Theses', value: 'all' },
+              { label: 'My Group', value: 'group' },
+              { label: 'My Theses', value: 'personal' },
+              ...(presets?.map(p => ({ label: p.name, value: p.id })) || [])
+            ]}
+            value={activePreset}
+            onChange={setActivePreset}
+          />
+        </Grid.Col>
+      )}
       <Grid.Col span={6}>
         <TextInput
           label='Search'
@@ -74,6 +91,27 @@ const ThesesFilters = () => {
           }
         />
       </Grid.Col>
+      {currentGroup && (
+        <Grid.Col span={6}>
+          <MultiSelect
+            hidePickedOptions
+            label='Group Members'
+            placeholder='Filter by group members'
+            icon={<Users size={16} />}
+            data={groupMembers.map(member => ({
+              value: member.id,
+              label: formatUserName(member)
+            }))}
+            value={filters.memberIds || []}
+            onChange={(x) =>
+              setFilters((prev) => ({
+                ...prev,
+                memberIds: x,
+              }))
+            }
+          />
+        </Grid.Col>
+      )}
     </Grid>
   )
 }

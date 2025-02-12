@@ -20,6 +20,8 @@ interface IApplicationDataProps {
   application: IApplication
   bottomSection?: ReactNode
   rightTitleSection?: ReactNode
+  showGroupInfo?: boolean
+  canManageGroup?: boolean
 }
 
 const ApplicationData = (props: IApplicationDataProps) => {
@@ -29,10 +31,17 @@ const ApplicationData = (props: IApplicationDataProps) => {
     <Grid>
       <Grid.Col span={{ md: 8 }} py={0}>
         <Stack>
-          <Group>
-            <Title>
-              {application.user.firstName} {application.user.lastName}
-            </Title>
+          <Group justify="space-between" wrap="nowrap">
+            <Group wrap="nowrap">
+              <Title>
+                {application.user.firstName} {application.user.lastName}
+              </Title>
+              {application.group && (
+                <Badge size="lg" variant="light">
+                  Group: {application.group.name}
+                </Badge>
+              )}
+            </Group>
             {rightTitleSection}
           </Group>
           {application.topic ? (
@@ -134,6 +143,26 @@ const ApplicationData = (props: IApplicationDataProps) => {
                 }
               />
             </Grid.Col>
+            {application.group && (
+              <>
+                <Grid.Col span={{ xs: 4, sm: 3 }}>
+                  <LabeledItem
+                    label='Group Role'
+                    value={
+                      <Badge color="blue">
+                        {GLOBAL_CONFIG.group_roles[application.groupRole || ''] ?? application.groupRole}
+                      </Badge>
+                    }
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ xs: 4, sm: 3 }}>
+                  <LabeledItem
+                    label='Group Join Date'
+                    value={formatDate(application.groupJoinedAt, { withTime: true })}
+                  />
+                </Grid.Col>
+              </>
+            )}
             {application.reviewedAt && (
               <Grid.Col span={{ xs: 4, sm: 3 }}>
                 <LabeledItem
@@ -149,6 +178,22 @@ const ApplicationData = (props: IApplicationDataProps) => {
                 </Grid.Col>
               ))}
           </Grid>
+          {application.group && showGroupInfo && (
+            <>
+              <Title order={3}>Group Information</Title>
+              <DocumentEditor label='Group Motivation' value={application.groupMotivation || ''} />
+              <DocumentEditor label='Group Contribution' value={application.groupContribution || ''} />
+              {application.groupFiles?.map((file, index) => (
+                <AuthenticatedFilePreview
+                  key={`${file.fileId}-${index}`}
+                  url={`/v2/applications/${application.applicationId}/group-files/${file.fileId}`}
+                  filename={file.filename}
+                  type={file.type}
+                  aspectRatio={16 / 11}
+                />
+              ))}
+            </>
+          )}
           {bottomSection}
         </Stack>
       </Grid.Col>

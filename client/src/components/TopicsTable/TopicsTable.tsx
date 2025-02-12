@@ -1,9 +1,12 @@
 import { DataTable, DataTableColumn } from 'mantine-datatable'
 import { formatDate, formatThesisType } from '../../utils/format'
 import { useTopicsContext } from '../../providers/TopicsProvider/hooks'
+import { useGroupContext } from '../../providers/GroupProvider/hooks'
 import { ITopic } from '../../requests/responses/topic'
 import { useNavigate } from 'react-router'
-import { Badge, Center, Stack, Text } from '@mantine/core'
+import { Badge, Center, Stack, Text, ActionIcon, Group } from '@mantine/core'
+import { IconEdit, IconTrash } from '@tabler/icons-react'
+import { usePermissions } from '../../hooks/usePermissions'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import React from 'react'
 
@@ -13,6 +16,8 @@ interface ITopicsTableProps {
   columns?: TopicColumn[]
   extraColumns?: Record<string, DataTableColumn<ITopic>>
   noBorder?: boolean
+  onEdit?: (topic: ITopic) => void
+  onDelete?: (topic: ITopic) => void
 }
 
 const TopicsTable = (props: ITopicsTableProps) => {
@@ -24,9 +29,36 @@ const TopicsTable = (props: ITopicsTableProps) => {
 
   const navigate = useNavigate()
 
-  const { topics, page, setPage, limit } = useTopicsContext()
+  const { topics, page, setPage, limit, isLoading } = useTopicsContext()
+  const { currentGroup } = useGroupContext()
+  const { canEditTopics, canDeleteTopics } = usePermissions()
 
   const columnConfig: Record<TopicColumn, DataTableColumn<ITopic>> = {
+    actions: {
+      accessor: 'actions',
+      title: 'Actions',
+      width: 100,
+      render: (topic) => (
+        <Group gap="xs" justify="center">
+          {canEditTopics && props.onEdit && (
+            <ActionIcon size="sm" variant="subtle" onClick={(e) => {
+              e.stopPropagation();
+              props.onEdit?.(topic);
+            }}>
+              <IconEdit size={16} />
+            </ActionIcon>
+          )}
+          {canDeleteTopics && props.onDelete && (
+            <ActionIcon size="sm" variant="subtle" color="red" onClick={(e) => {
+              e.stopPropagation();
+              props.onDelete?.(topic);
+            }}>
+              <IconTrash size={16} />
+            </ActionIcon>
+          )}
+        </Group>
+      ),
+    },
     state: {
       accessor: 'state',
       title: 'State',
@@ -88,7 +120,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
 
   return (
     <DataTable
-      fetching={!topics}
+      fetching={isLoading}
       withTableBorder={!noBorder}
       minHeight={200}
       noRecordsText='No topics to show'
@@ -102,7 +134,10 @@ const TopicsTable = (props: ITopicsTableProps) => {
       onPageChange={(x) => setPage(x - 1)}
       records={topics?.content}
       idAccessor='topicId'
-      columns={columns.map((column) => columnConfig[column])}
+      columns={[
+        ...columns.map((column) => columnConfig[column]),
+        ...(props.onEdit || props.onDelete ? [columnConfig.actions] : [])
+      ]}
       onRowClick={({ record }) => navigate(`/topics/${record.topicId}`)}
     />
   )
