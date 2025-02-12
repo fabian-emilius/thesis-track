@@ -173,7 +173,6 @@ public class ThesisService {
     public Thesis updateThesis(
             User updatingUser,
             Thesis thesis,
-        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
             String thesisTitle,
             String thesisType,
             String language,
@@ -186,6 +185,7 @@ public class ThesisService {
             List<UUID> supervisorIds,
             List<ThesisStatePayload> states
     ) {
+        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
         thesis.setTitle(thesisTitle);
         thesis.setType(thesisType);
         thesis.setLanguage(language);
@@ -434,12 +434,12 @@ public class ThesisService {
     public Thesis submitAssessment(
             User creatingUser,
             Thesis thesis,
-        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
             String summary,
             String positives,
             String negatives,
             String gradeSuggestion
     ) {
+        groupPermissionService.validateSupervisorOrAdmin(thesis.getGroupId());
         ThesisAssessment assessment = new ThesisAssessment();
 
         assessment.setThesis(thesis);

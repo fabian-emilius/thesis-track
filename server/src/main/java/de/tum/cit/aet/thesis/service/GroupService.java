@@ -24,6 +24,7 @@ import java.util.UUID;
 @Service
 @Validated
 @RequiredArgsConstructor
+@RateLimitGroup(name = "group-service")
 public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
@@ -78,6 +79,7 @@ public class GroupService {
      * @throws ResourceAlreadyExistsException if a group with the same slug already exists
      */
     @Transactional
+    @RateLimit(permits = 10, duration = 1, unit = TimeUnit.HOURS)
     public Group createGroup(@NotNull @Valid GroupDto groupDto, @NotNull User creator) {
         log.info("Creating new group with slug: {} by user: {}", groupDto.getSlug(), creator.getId());
         if (groupRepository.existsBySlug(groupDto.getSlug())) {
@@ -108,6 +110,7 @@ public class GroupService {
      * @throws ResourceAlreadyExistsException if the new slug is already in use
      */
     @Transactional
+    @RateLimit(permits = 20, duration = 1, unit = TimeUnit.HOURS)
     public Group updateGroup(@NotNull UUID groupId, @NotNull @Valid GroupDto groupDto) {
         log.info("Updating group with ID: {}", groupId);
         Group group = getGroupById(groupId);
@@ -131,14 +134,25 @@ public class GroupService {
      * @throws ResourceNotFoundException if the group is not found
      */
     @Transactional
+    @RateLimit(permits = 5, duration = 1, unit = TimeUnit.MINUTES)
     public void updateGroupLogo(@NotNull UUID groupId, @NotNull byte[] logoData, @NotNull String contentType) {
         log.info("Updating logo for group with ID: {}", groupId);
-        Group group = getGroupById(groupId);
-        groupPermissionService.validateGroupAdmin(group.getId());
+        try {
+            FileValidator.validateImage(logoData, contentType, 5_000_000L); // 5MB limit
+            Group group = getGroupById(groupId);
+            groupPermissionService.validateGroupAdmin(group.getId());
 
-        String logoPath = uploadService.saveGroupLogo(groupId, logoData, contentType);
-        group.setLogoPath(logoPath);
-        groupRepository.save(group);
+            String logoPath = uploadService.saveGroupLogo(groupId, logoData, contentType);
+            group.setLogoPath(logoPath);
+            groupRepository.save(group);
+            log.info("Successfully updated logo for group: {}", groupId);
+        } catch (FileValidationException e) {
+            log.error("File validation failed for group logo update: {}", e.getMessage());
+            throw new BadRequestException("Invalid logo file: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Error updating group logo: {}", e.getMessage(), e);
+            throw new ServiceException("Failed to update group logo", e);
+        }
     }
 
     private void updateGroupFromDto(Group group, GroupDto dto) {
