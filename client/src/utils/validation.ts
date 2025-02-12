@@ -1,4 +1,4 @@
-import { ValidationError } from '../types/api';
+import { ValidationError } from '../types/api'
 
 /**
  * Checks if a user list is not empty
@@ -6,7 +6,7 @@ import { ValidationError } from '../types/api';
  * @returns boolean indicating if list is not empty
  */
 export function isNotEmptyUserList(users?: string[]): boolean {
-  return Array.isArray(users) && users.length > 0;
+  return Array.isArray(users) && users.length > 0
 }
 
 /**
@@ -15,9 +15,9 @@ export function isNotEmptyUserList(users?: string[]): boolean {
  * @returns Length of text content
  */
 export function getHtmlTextLength(html: string): number {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent?.length || 0;
+  const div = document.createElement('div')
+  div.innerHTML = html
+  return div.textContent?.length || 0
 }
 
 /**
@@ -26,17 +26,17 @@ export function getHtmlTextLength(html: string): number {
  * @returns Array of validation errors
  */
 export function validateGroupData(data: any): ValidationError[] {
-  const errors: ValidationError[] = [];
+  const errors: ValidationError[] = []
 
   if (!data.name?.trim()) {
-    errors.push({ field: 'name', message: 'Name is required' });
+    errors.push({ field: 'name', message: 'Name is required' })
   }
 
   if (!data.description?.trim()) {
-    errors.push({ field: 'description', message: 'Description is required' });
+    errors.push({ field: 'description', message: 'Description is required' })
   }
 
-  return errors;
+  return errors
 }
 
 /**
@@ -45,15 +45,15 @@ export function validateGroupData(data: any): ValidationError[] {
  * @returns Array of validation errors
  */
 export function validateMemberData(data: any): ValidationError[] {
-  const errors: ValidationError[] = [];
+  const errors: ValidationError[] = []
 
   if (!data.userId) {
-    errors.push({ field: 'userId', message: 'User ID is required' });
+    errors.push({ field: 'userId', message: 'User ID is required' })
   }
 
   if (!data.role) {
-    errors.push({ field: 'role', message: 'Role is required' });
+    errors.push({ field: 'role', message: 'Role is required' })
   }
 
-  return errors;
+  return errors
 }

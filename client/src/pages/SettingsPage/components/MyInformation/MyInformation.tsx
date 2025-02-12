@@ -18,28 +18,28 @@ const MyInformation = () => {
         includeAvatar={true}
         onComplete={() => showSimpleSuccess('You successfully updated your profile')}
       />
-      
-      <Tabs defaultValue="memberships">
+
+      <Tabs defaultValue='memberships'>
         <Tabs.List>
-          <Tabs.Tab value="memberships">Group Memberships</Tabs.Tab>
-          <Tabs.Tab value="preferences">Group Preferences</Tabs.Tab>
-          <Tabs.Tab value="activity">Activity History</Tabs.Tab>
-          <Tabs.Tab value="notifications">Notifications</Tabs.Tab>
+          <Tabs.Tab value='memberships'>Group Memberships</Tabs.Tab>
+          <Tabs.Tab value='preferences'>Group Preferences</Tabs.Tab>
+          <Tabs.Tab value='activity'>Activity History</Tabs.Tab>
+          <Tabs.Tab value='notifications'>Notifications</Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="memberships">
+        <Tabs.Panel value='memberships'>
           <GroupMemberships />
         </Tabs.Panel>
-        
-        <Tabs.Panel value="preferences">
+
+        <Tabs.Panel value='preferences'>
           <GroupPreferences />
         </Tabs.Panel>
-        
-        <Tabs.Panel value="activity">
+
+        <Tabs.Panel value='activity'>
           <GroupActivity />
         </Tabs.Panel>
-        
-        <Tabs.Panel value="notifications">
+
+        <Tabs.Panel value='notifications'>
           <GroupNotifications />
         </Tabs.Panel>
       </Tabs>

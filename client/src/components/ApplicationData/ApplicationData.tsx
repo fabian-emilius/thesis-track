@@ -31,13 +31,13 @@ const ApplicationData = (props: IApplicationDataProps) => {
     <Grid>
       <Grid.Col span={{ md: 8 }} py={0}>
         <Stack>
-          <Group justify="space-between" wrap="nowrap">
-            <Group wrap="nowrap">
+          <Group justify='space-between' wrap='nowrap'>
+            <Group wrap='nowrap'>
               <Title>
                 {application.user.firstName} {application.user.lastName}
               </Title>
               {application.group && (
-                <Badge size="lg" variant="light">
+                <Badge size='lg' variant='light'>
                   Group: {application.group.name}
                 </Badge>
               )}
@@ -149,8 +149,9 @@ const ApplicationData = (props: IApplicationDataProps) => {
                   <LabeledItem
                     label='Group Role'
                     value={
-                      <Badge color="blue">
-                        {GLOBAL_CONFIG.group_roles[application.groupRole || ''] ?? application.groupRole}
+                      <Badge color='blue'>
+                        {GLOBAL_CONFIG.group_roles[application.groupRole || ''] ??
+                          application.groupRole}
                       </Badge>
                     }
                   />
@@ -182,7 +183,10 @@ const ApplicationData = (props: IApplicationDataProps) => {
             <>
               <Title order={3}>Group Information</Title>
               <DocumentEditor label='Group Motivation' value={application.groupMotivation || ''} />
-              <DocumentEditor label='Group Contribution' value={application.groupContribution || ''} />
+              <DocumentEditor
+                label='Group Contribution'
+                value={application.groupContribution || ''}
+              />
               {application.groupFiles?.map((file, index) => (
                 <AuthenticatedFilePreview
                   key={`${file.fileId}-${index}`}

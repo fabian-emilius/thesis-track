@@ -99,11 +99,11 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
       textAlign: 'center',
       width: 100,
       render: (application) => (
-        <Group gap="xs" justify="center">
+        <Group gap='xs' justify='center'>
           {onApplicationView && (
             <ActionIcon
-              size="sm"
-              variant="subtle"
+              size='sm'
+              variant='subtle'
               onClick={(e) => {
                 e.stopPropagation()
                 onApplicationView(application)
@@ -114,8 +114,8 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
           )}
           {onApplicationEdit && hasGroupPermission('applications.edit') && (
             <ActionIcon
-              size="sm"
-              variant="subtle"
+              size='sm'
+              variant='subtle'
               onClick={(e) => {
                 e.stopPropagation()
                 onApplicationEdit(application)
@@ -156,7 +156,11 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
       records={applications?.content}
       idAccessor='applicationId'
       columns={columns.map((column) => columnConfig[column])}
-      onRowClick={onApplicationClick ? ({ record: application }) => onApplicationClick(application) : undefined}
+      onRowClick={
+        onApplicationClick
+          ? ({ record: application }) => onApplicationClick(application)
+          : undefined
+      }
     />
   )
 }

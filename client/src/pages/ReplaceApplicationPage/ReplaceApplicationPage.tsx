@@ -11,9 +11,9 @@ const ReplaceApplicationPage = () => {
   const { group, isLoading: isLoadingGroup } = useGroup()
   const { data: topic, isLoading: isLoadingTopic } = useTopic(topicId)
   const { data: application, isLoading: isLoadingApplication } = useApplication(applicationId)
-  
+
   usePageTitle(applicationId ? 'Edit Application' : 'Submit Application')
-  
+
   const navigate = useNavigate()
 
   const isLoading = isLoadingGroup || isLoadingTopic || (applicationId && isLoadingApplication)
@@ -24,7 +24,7 @@ const ReplaceApplicationPage = () => {
 
   if (!group) {
     return (
-      <Alert color="red" title="Error">
+      <Alert color='red' title='Error'>
         No group context available. Please select a group first.
       </Alert>
     )

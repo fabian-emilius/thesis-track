@@ -1,12 +1,12 @@
-import { createContext, useContext } from 'react';
-import { GroupContextType } from '../../types/group';
+import { createContext, useContext } from 'react'
+import { GroupContextType } from '../../types/group'
 
-export const GroupContext = createContext<GroupContextType | null>(null);
+export const GroupContext = createContext<GroupContextType | null>(null)
 
 export const useGroupContext = () => {
-  const context = useContext(GroupContext);
+  const context = useContext(GroupContext)
   if (!context) {
-    throw new Error('useGroupContext must be used within a GroupProvider');
+    throw new Error('useGroupContext must be used within a GroupProvider')
   }
-  return context;
-};
+  return context
+}

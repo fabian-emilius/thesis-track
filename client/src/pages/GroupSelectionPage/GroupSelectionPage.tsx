@@ -1,15 +1,15 @@
-import { Container } from '@mantine/core';
-import { GroupGrid } from '../../components/GroupGrid/GroupGrid';
-import { useGroups } from '../../hooks/group';
+import { Container } from '@mantine/core'
+import { GroupGrid } from '../../components/GroupGrid/GroupGrid'
+import { useGroups } from '../../hooks/group'
 
 export function GroupSelectionPage() {
-  const { data: groups = [], isLoading } = useGroups();
+  const { data: groups = [], isLoading } = useGroups()
 
   return (
-    <Container size="xl">
+    <Container size='xl'>
       <GroupGrid groups={groups} isLoading={isLoading} />
     </Container>
-  );
+  )
 }
 
-export default GroupSelectionPage;
+export default GroupSelectionPage

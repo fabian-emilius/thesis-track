@@ -19,11 +19,11 @@ const TopicsFilters = (props: ITopicsFiltersProps) => {
   const { data: groups } = useGroups()
 
   return (
-    <Stack spacing="md">
+    <Stack spacing='md'>
       {visible.includes('group') && groups && (
         <Select
-          label="Filter by Group"
-          data={groups.map(g => ({ value: g.id, label: g.name }))}
+          label='Filter by Group'
+          data={groups.map((g) => ({ value: g.id, label: g.name }))}
           value={filters.groupId}
           onChange={(value) => setFilters({ groupId: value })}
           clearable
@@ -31,8 +31,8 @@ const TopicsFilters = (props: ITopicsFiltersProps) => {
       )}
       {visible.includes('advisor') && advisors && (
         <Select
-          label="Filter by Advisor"
-          data={advisors.map(a => ({ value: a.id, label: a.name }))}
+          label='Filter by Advisor'
+          data={advisors.map((a) => ({ value: a.id, label: a.name }))}
           value={filters.advisorId}
           onChange={(value) => setFilters({ advisorId: value })}
           clearable

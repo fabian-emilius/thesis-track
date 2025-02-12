@@ -37,7 +37,7 @@ const ThesisPage = () => {
         <ThesisFinalGradeSection />
       </Stack>
       {!hasAccess && (
-        <Stack align="center" justify="center" h="50vh">
+        <Stack align='center' justify='center' h='50vh'>
           <Title order={2}>You don't have access to this thesis</Title>
         </Stack>
       )}

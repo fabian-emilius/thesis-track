@@ -1,6 +1,10 @@
 import { Group, Stack, Text, Divider, Title } from '@mantine/core'
 import { usePageTitle } from '../../../../hooks/theme'
-import { useLoggedInUser, useManagementAccess, useUserGroups } from '../../../../hooks/authentication'
+import {
+  useLoggedInUser,
+  useManagementAccess,
+  useUserGroups,
+} from '../../../../hooks/authentication'
 import ThesesTable from '../../../../components/ThesesTable/ThesesTable'
 import ThesesProvider from '../../../../providers/ThesesProvider/ThesesProvider'
 import React, { useEffect, useState } from 'react'

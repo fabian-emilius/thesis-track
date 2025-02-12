@@ -8,7 +8,8 @@ import { formatThesisState, formatThesisType, formatUserName } from '../../utils
 import { GLOBAL_CONFIG } from '../../config/global'
 
 const ThesesFilters = () => {
-  const { filters, setFilters, sort, setSort, presets, activePreset, setActivePreset } = useThesesContext()
+  const { filters, setFilters, sort, setSort, presets, activePreset, setActivePreset } =
+    useThesesContext()
   const { currentGroup, groupMembers } = useGroupContext()
 
   return (
@@ -21,7 +22,7 @@ const ThesesFilters = () => {
               { label: 'All Theses', value: 'all' },
               { label: 'My Group', value: 'group' },
               { label: 'My Theses', value: 'personal' },
-              ...(presets?.map(p => ({ label: p.name, value: p.id })) || [])
+              ...(presets?.map((p) => ({ label: p.name, value: p.id })) || []),
             ]}
             value={activePreset}
             onChange={setActivePreset}
@@ -98,9 +99,9 @@ const ThesesFilters = () => {
             label='Group Members'
             placeholder='Filter by group members'
             icon={<Users size={16} />}
-            data={groupMembers.map(member => ({
+            data={groupMembers.map((member) => ({
               value: member.id,
-              label: formatUserName(member)
+              label: formatUserName(member),
             }))}
             value={filters.memberIds || []}
             onChange={(x) =>

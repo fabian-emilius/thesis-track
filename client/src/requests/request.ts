@@ -1,6 +1,6 @@
-import { ApiRequestOptions } from '../types/api';
+import { ApiRequestOptions } from '../types/api'
 
-const BASE_URL = process.env.REACT_APP_API_URL || '';
+const BASE_URL = process.env.REACT_APP_API_URL || ''
 
 /**
  * Generic request function for API calls
@@ -15,13 +15,13 @@ export const request = {
       },
       credentials: 'include',
       signal: options.signal,
-    });
+    })
 
     if (!response.ok) {
-      throw await response.json();
+      throw await response.json()
     }
 
-    return response.json();
+    return response.json()
   },
 
   async post<T>(path: string, data?: any, options: ApiRequestOptions = {}): Promise<T> {
@@ -34,13 +34,13 @@ export const request = {
       body: data instanceof FormData ? data : JSON.stringify(data),
       credentials: 'include',
       signal: options.signal,
-    });
+    })
 
     if (!response.ok) {
-      throw await response.json();
+      throw await response.json()
     }
 
-    return response.json();
+    return response.json()
   },
 
   async put<T>(path: string, data: any, options: ApiRequestOptions = {}): Promise<T> {
@@ -53,13 +53,13 @@ export const request = {
       body: JSON.stringify(data),
       credentials: 'include',
       signal: options.signal,
-    });
+    })
 
     if (!response.ok) {
-      throw await response.json();
+      throw await response.json()
     }
 
-    return response.json();
+    return response.json()
   },
 
   async delete<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -71,12 +71,12 @@ export const request = {
       },
       credentials: 'include',
       signal: options.signal,
-    });
+    })
 
     if (!response.ok) {
-      throw await response.json();
+      throw await response.json()
     }
 
-    return response.json();
+    return response.json()
   },
-};
+}

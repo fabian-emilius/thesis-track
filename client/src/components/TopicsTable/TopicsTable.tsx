@@ -39,20 +39,29 @@ const TopicsTable = (props: ITopicsTableProps) => {
       title: 'Actions',
       width: 100,
       render: (topic) => (
-        <Group gap="xs" justify="center">
+        <Group gap='xs' justify='center'>
           {canEditTopics && props.onEdit && (
-            <ActionIcon size="sm" variant="subtle" onClick={(e) => {
-              e.stopPropagation();
-              props.onEdit?.(topic);
-            }}>
+            <ActionIcon
+              size='sm'
+              variant='subtle'
+              onClick={(e) => {
+                e.stopPropagation()
+                props.onEdit?.(topic)
+              }}
+            >
               <IconEdit size={16} />
             </ActionIcon>
           )}
           {canDeleteTopics && props.onDelete && (
-            <ActionIcon size="sm" variant="subtle" color="red" onClick={(e) => {
-              e.stopPropagation();
-              props.onDelete?.(topic);
-            }}>
+            <ActionIcon
+              size='sm'
+              variant='subtle'
+              color='red'
+              onClick={(e) => {
+                e.stopPropagation()
+                props.onDelete?.(topic)
+              }}
+            >
               <IconTrash size={16} />
             </ActionIcon>
           )}
@@ -136,7 +145,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       idAccessor='topicId'
       columns={[
         ...columns.map((column) => columnConfig[column]),
-        ...(props.onEdit || props.onDelete ? [columnConfig.actions] : [])
+        ...(props.onEdit || props.onDelete ? [columnConfig.actions] : []),
       ]}
       onRowClick={({ record }) => navigate(`/topics/${record.topicId}`)}
     />

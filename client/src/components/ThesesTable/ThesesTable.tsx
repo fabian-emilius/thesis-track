@@ -41,7 +41,7 @@ const ThesesTable = (props: IThesesTableProps) => {
   } = props
 
   const { currentGroup, canManageTheses } = useGroupContext()
-  const { theses, sort, setSort, page, setPage, limit, isLoading } = groupId 
+  const { theses, sort, setSort, page, setPage, limit, isLoading } = groupId
     ? useThesesByGroup(groupId)
     : useThesesContext()
 
@@ -118,32 +118,40 @@ const ThesesTable = (props: IThesesTableProps) => {
       accessor: 'actions',
       title: 'Actions',
       width: 100,
-      render: (thesis) => (
+      render: (thesis) =>
         canManageTheses && (
-          <Group gap="xs" justify="center">
+          <Group gap='xs' justify='center'>
             {onEdit && (
-              <Tooltip label="Edit">
-                <ActionIcon size="sm" variant="subtle" onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(thesis);
-                }}>
+              <Tooltip label='Edit'>
+                <ActionIcon
+                  size='sm'
+                  variant='subtle'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onEdit(thesis)
+                  }}
+                >
                   <IconEdit size={16} />
                 </ActionIcon>
               </Tooltip>
             )}
             {onDelete && (
-              <Tooltip label="Delete">
-                <ActionIcon size="sm" variant="subtle" color="red" onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(thesis);
-                }}>
+              <Tooltip label='Delete'>
+                <ActionIcon
+                  size='sm'
+                  variant='subtle'
+                  color='red'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDelete(thesis)
+                  }}
+                >
                   <IconTrash size={16} />
                 </ActionIcon>
               </Tooltip>
             )}
           </Group>
-        )
-      ),
+        ),
     },
   }
 
@@ -175,7 +183,7 @@ const ThesesTable = (props: IThesesTableProps) => {
       idAccessor='thesisId'
       columns={[
         ...columns.map((column) => columnConfig[column]),
-        ...(canManageTheses && (onEdit || onDelete) ? [columnConfig.actions] : [])
+        ...(canManageTheses && (onEdit || onDelete) ? [columnConfig.actions] : []),
       ]}
       onRowClick={({ record: thesis }) => onThesisClick(thesis)}
     />
