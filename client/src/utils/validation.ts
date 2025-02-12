@@ -1,99 +1,58 @@
 import { ValidationError } from '../types/api';
 
 /**
- * Validates group name according to requirements
- * @param name - The group name to validate
- * @returns Array of validation errors or empty array if valid
+ * Checks if a user list is not empty
+ * @param users - Array of user IDs
+ * @returns boolean indicating if list is not empty
  */
-export function validateGroupName(name: string): ValidationError[] {
+export function isNotEmptyUserList(users?: string[]): boolean {
+  return Array.isArray(users) && users.length > 0;
+}
+
+/**
+ * Gets the length of text content from HTML string
+ * @param html - HTML string
+ * @returns Length of text content
+ */
+export function getHtmlTextLength(html: string): number {
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent?.length || 0;
+}
+
+/**
+ * Validates group data
+ * @param data - Group data to validate
+ * @returns Array of validation errors
+ */
+export function validateGroupData(data: any): ValidationError[] {
   const errors: ValidationError[] = [];
-  
-  if (!name.trim()) {
-    errors.push({
-      field: 'name',
-      message: 'Name is required',
-    });
+
+  if (!data.name?.trim()) {
+    errors.push({ field: 'name', message: 'Name is required' });
   }
 
-  if (name.length > 100) {
-    errors.push({
-      field: 'name',
-      message: 'Name must be less than 100 characters',
-    });
+  if (!data.description?.trim()) {
+    errors.push({ field: 'description', message: 'Description is required' });
   }
 
   return errors;
 }
 
 /**
- * Validates group description according to requirements
- * @param description - The group description to validate
- * @returns Array of validation errors or empty array if valid
+ * Validates member data
+ * @param data - Member data to validate
+ * @returns Array of validation errors
  */
-export function validateGroupDescription(description: string): ValidationError[] {
+export function validateMemberData(data: any): ValidationError[] {
   const errors: ValidationError[] = [];
-  
-  if (!description.trim()) {
-    errors.push({
-      field: 'description',
-      message: 'Description is required',
-    });
+
+  if (!data.userId) {
+    errors.push({ field: 'userId', message: 'User ID is required' });
   }
 
-  if (description.length > 1000) {
-    errors.push({
-      field: 'description',
-      message: 'Description must be less than 1000 characters',
-    });
-  }
-
-  return errors;
-}
-
-/**
- * Validates a URL string
- * @param url - The URL to validate
- * @returns Array of validation errors or empty array if valid
- */
-export function validateUrl(url?: string): ValidationError[] {
-  const errors: ValidationError[] = [];
-  
-  if (url && !url.match(/^https?:\/\/.+/)) {
-    errors.push({
-      field: 'url',
-      message: 'Invalid URL format',
-    });
-  }
-
-  return errors;
-}
-
-/**
- * Validates file size and type
- * @param file - The file to validate
- * @param maxSize - Maximum file size in bytes
- * @param allowedTypes - Array of allowed MIME types
- * @returns Array of validation errors or empty array if valid
- */
-export function validateFile(
-  file: File,
-  maxSize: number,
-  allowedTypes: string[]
-): ValidationError[] {
-  const errors: ValidationError[] = [];
-  
-  if (file.size > maxSize) {
-    errors.push({
-      field: 'file',
-      message: `File size must be less than ${maxSize / 1024 / 1024}MB`,
-    });
-  }
-
-  if (!allowedTypes.includes(file.type)) {
-    errors.push({
-      field: 'file',
-      message: 'Invalid file type',
-    });
+  if (!data.role) {
+    errors.push({ field: 'role', message: 'Role is required' });
   }
 
   return errors;

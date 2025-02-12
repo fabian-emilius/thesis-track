@@ -1,15 +1,16 @@
 import { ReactNode, useState, useCallback, useEffect, useMemo } from 'react';
-import { Group, GroupMember, GroupContextType, GroupRole } from '../../types/group';
-import { GroupContext } from './context';
-import { useGetGroups, useGetGroupMembers, useUpdateGroup } from '../../hooks/api/groups';
+import { Group, GroupMember, GroupContextType, GroupRole } from '@/types/group';
+import { GroupContext } from '@/contexts/group/context';
+import { useGetGroups, useGetGroupMembers, useUpdateGroup } from '@/hooks/api/groups';
 import { notifications } from '@mantine/notifications';
-import { ApiError } from '../../types/api';
+import { ApiError } from '@/types/api';
 
-interface GroupProviderProps {
+export interface GroupProviderProps {
   children: ReactNode;
 }
 
 export function GroupProvider({ children }: GroupProviderProps) {
+export default GroupProvider;
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [userGroups, setUserGroups] = useState<GroupMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);

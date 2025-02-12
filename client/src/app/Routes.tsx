@@ -1,11 +1,11 @@
 import React, { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
-import PageLoader from '../components/PageLoader/PageLoader'
+import PageLoader from '@/components/PageLoader/PageLoader'
 
-const GroupSelectionPage = lazy(() => import('../pages/GroupSelectionPage/GroupSelectionPage'))
-const GroupManagementPage = lazy(() => import('../pages/GroupManagementPage/GroupManagementPage'))
-const GroupEditPage = lazy(() => import('../pages/GroupEditPage/GroupEditPage'))
+const GroupSelectionPage = lazy(() => import('@/pages/GroupSelection/GroupSelectionPage'))
+const GroupManagementPage = lazy(() => import('@/pages/GroupManagement/GroupManagementPage'))
+const GroupEditPage = lazy(() => import('@/pages/GroupEdit/GroupEditPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage'))
 const ImprintPage = lazy(() => import('../pages/ImprintPage/ImprintPage'))

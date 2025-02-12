@@ -1,14 +1,39 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Group, GroupMember } from '../types/group';
-import { request } from '../requests/request';
-import { ApiError } from '../types/error';
-import { GroupResponse, GroupMemberResponse, CreateGroupRequest, UpdateGroupRequest, AddGroupMemberRequest } from '../requests/responses/group';
-import { validateGroupData, validateMemberData } from '../utils/validation';
+import { Group, GroupMember } from '@/types/models/group';
+import { request } from '@/lib/request';
+import { ApiError } from '@/types/error';
+import { GroupResponse, GroupMemberResponse, CreateGroupRequest, UpdateGroupRequest, AddGroupMemberRequest } from '@/types/responses/group';
+import { validateGroupData, validateMemberData } from '@/utils/validation';
+import { createContext, useContext, ReactNode } from 'react';
 
 /**
  * Hook to fetch all groups
  * @returns Query result containing array of groups
  */
+interface GroupContextType {
+  selectedGroupId: string | null;
+  setSelectedGroupId: (id: string | null) => void;
+}
+
+const GroupContext = createContext<GroupContextType | undefined>(undefined);
+
+export function GroupProvider({ children }: { children: ReactNode }) {
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  return (
+    <GroupContext.Provider value={{ selectedGroupId, setSelectedGroupId }}>
+      {children}
+    </GroupContext.Provider>
+  );
+}
+
+export function useGroupContext() {
+  const context = useContext(GroupContext);
+  if (!context) {
+    throw new Error('useGroupContext must be used within a GroupProvider');
+  }
+  return context;
+}
+
 export function useGroups() {
   return useQuery<GroupResponse[], ApiError>({
     queryKey: ['groups'],
@@ -171,5 +196,21 @@ export function useRemoveGroupMember(groupId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups', groupId, 'members'] });
     },
+  });
+}
+
+export function useGroupRole(groupId: string, userId: string) {
+  return useQuery<string>({
+    queryKey: ['groups', groupId, 'members', userId, 'role'],
+    queryFn: () => request.get(`/v2/groups/${groupId}/members/${userId}/role`),
+    enabled: !!groupId && !!userId,
+  });
+}
+
+export function useGroupInvitations(groupId: string) {
+  return useQuery<GroupMemberResponse[]>({
+    queryKey: ['groups', groupId, 'invitations'],
+    queryFn: () => request.get(`/v2/groups/${groupId}/invitations`),
+    enabled: !!groupId,
   });
 }
