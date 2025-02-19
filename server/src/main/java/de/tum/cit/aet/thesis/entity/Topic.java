@@ -1,5 +1,6 @@
 package de.tum.cit.aet.thesis.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class Topic {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "group_id", nullable = false)
+    @JsonIgnore
     private ResearchGroup group;
 
     @NotNull
@@ -67,9 +69,11 @@ public class Topic {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonIgnore
     private User createdBy;
 
     @OneToMany(mappedBy = "topic", fetch = FetchType.EAGER)
     @OrderBy("position ASC")
+    @JsonIgnore
     private List<TopicRole> roles = new ArrayList<>();
 }

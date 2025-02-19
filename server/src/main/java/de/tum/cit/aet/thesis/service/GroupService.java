@@ -2,6 +2,7 @@ package de.tum.cit.aet.thesis.service;
 
 import de.tum.cit.aet.thesis.entity.ResearchGroup;
 import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.enums.GroupRole;
 import de.tum.cit.aet.thesis.exception.request.ResourceAlreadyExistsException;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
 import de.tum.cit.aet.thesis.repository.ResearchGroupRepository;
@@ -89,11 +90,19 @@ public class GroupService implements IGroupService {
         return savedGroup;
     }
 
+    /**
+     * Updates an existing research group's details.
+     *
+     * @param slug The group's slug
+     * @param updatedGroup The updated group details
+     * @return The updated research group
+     * @throws ResourceNotFoundException if the group is not found
+     */
+    @Override
     @Transactional
-    public ResearchGroup updateGroup(String slug, ResearchGroup updatedGroup) {
+    public ResearchGroup updateGroup(@NotBlank String slug, @Valid @NotNull ResearchGroup updatedGroup) {
         ResearchGroup existingGroup = getGroupBySlug(slug);
 
-        // Update fields
         existingGroup.setName(updatedGroup.getName());
         existingGroup.setDescription(updatedGroup.getDescription());
         existingGroup.setWebsiteLink(updatedGroup.getWebsiteLink());
@@ -102,13 +111,6 @@ public class GroupService implements IGroupService {
         existingGroup.setAcceptanceInstructions(updatedGroup.getAcceptanceInstructions());
 
         return groupRepository.save(existingGroup);
-    }
-
-    @Transactional
-    public void updateGroupLogo(String slug, String logoFilename) {
-        ResearchGroup group = getGroupBySlug(slug);
-        group.setLogoFilename(logoFilename);
-        groupRepository.save(group);
     }
 
     /**

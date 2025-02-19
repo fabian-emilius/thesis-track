@@ -1,10 +1,12 @@
 package de.tum.cit.aet.thesis.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -44,14 +46,17 @@ public class ResearchGroup {
     @Column(nullable = false)
     private OffsetDateTime updatedAt;
 
-    @OneToMany(mappedBy = "group")
-    private Set<GroupMember> members;
+    @JsonIgnore
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    private Set<GroupMember> members = new HashSet<>();
 
-    @OneToMany(mappedBy = "group")
-    private Set<Topic> topics;
+    @JsonIgnore
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    private Set<Topic> topics = new HashSet<>();
 
-    @OneToMany(mappedBy = "group")
-    private Set<Application> applications;
+    @JsonIgnore
+    @OneToMany(mappedBy = "group", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Set<Application> applications = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {

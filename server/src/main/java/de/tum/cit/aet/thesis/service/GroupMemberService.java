@@ -7,6 +7,7 @@ import de.tum.cit.aet.thesis.entity.ResearchGroup;
 import de.tum.cit.aet.thesis.entity.User;
 import de.tum.cit.aet.thesis.exception.ValidationException;
 import de.tum.cit.aet.thesis.repository.GroupMemberRepository;
+import de.tum.cit.aet.thesis.service.IGroupMemberService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

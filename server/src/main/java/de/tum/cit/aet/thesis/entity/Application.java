@@ -1,5 +1,6 @@
 package de.tum.cit.aet.thesis.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -26,16 +27,17 @@ public class Application {
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "group_id", nullable = false)
+    @JoinColumn(name = "group_id", nullable = false, foreignKey = @ForeignKey(name = "fk_application_group"))
     private ResearchGroup group;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_application_user"))
     private User user;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id")
+    @JoinColumn(name = "topic_id", foreignKey = @ForeignKey(name = "fk_application_topic"))
     private Topic topic;
 
     @Column(name = "thesis_title")
@@ -73,6 +75,7 @@ public class Application {
     @Column(name = "reviewed_at")
     private Instant reviewedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "application", fetch = FetchType.EAGER)
     @OrderBy("reviewedAt ASC")
     private List<ApplicationReviewer> reviewers = new ArrayList<>();
