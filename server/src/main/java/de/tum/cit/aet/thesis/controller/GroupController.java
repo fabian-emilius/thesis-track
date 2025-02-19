@@ -111,7 +111,7 @@ public class GroupController {
     public ResponseEntity<Void> uploadGroupLogo(
             @PathVariable @NotNull UUID groupId,
             @RequestParam("file") MultipartFile file) {
-        String logoUrl = uploadService.uploadFile(file, "group-logos");
+        String logoUrl = uploadService.uploadFile(file, "logos", "group-" + groupId);
         groupService.updateGroupLogo(groupId, logoUrl);
         return ResponseEntity.noContent().build();
     }

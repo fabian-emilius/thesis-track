@@ -3,8 +3,9 @@ package de.tum.cit.aet.thesis.security;
 import de.tum.cit.aet.thesis.entity.UserGroup;
 import de.tum.cit.aet.thesis.entity.key.UserGroupId;
 import de.tum.cit.aet.thesis.repository.UserGroupRepository;
-import de.tum.cit.aet.thesis.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,6 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class GroupPermissionEvaluator {
-    private final AuthenticationService authenticationService;
     private final UserGroupRepository userGroupRepository;
 
     /**
@@ -33,7 +33,7 @@ public class GroupPermissionEvaluator {
             return false;
         }
         
-        UUID userId = authenticationService.getCurrentUserId();
+        UUID userId = getCurrentUserId();
         return userGroupRepository.findById(new UserGroupId(userId, groupId))
                 .map(userGroup -> "admin".equals(userGroup.getRole()))
                 .orElse(false);
@@ -51,7 +51,7 @@ public class GroupPermissionEvaluator {
             return false;
         }
         
-        UUID userId = authenticationService.getCurrentUserId();
+        UUID userId = getCurrentUserId();
         return userGroupRepository.findById(new UserGroupId(userId, groupId))
                 .isPresent();
     }
@@ -69,9 +69,17 @@ public class GroupPermissionEvaluator {
             return false;
         }
         
-        UUID userId = authenticationService.getCurrentUserId();
+        UUID userId = getCurrentUserId();
         return userGroupRepository.findById(new UserGroupId(userId, groupId))
                 .map(userGroup -> role.equals(userGroup.getRole()))
                 .orElse(false);
+    }
+
+    private UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+        return UUID.fromString(authentication.getName());
     }
 }
