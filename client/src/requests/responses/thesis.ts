@@ -1,4 +1,5 @@
 import { ILightUser } from './user'
+import { Group } from './group'
 
 export enum ThesisState {
   PROPOSAL = 'PROPOSAL',
@@ -87,6 +88,7 @@ export interface IThesis {
     startedAt: string
     endedAt: string
   }>
+  group?: Group
 }
 
 export interface IThesisComment {
@@ -109,6 +111,7 @@ export interface IPublishedThesis {
   students: ILightUser[]
   advisors: ILightUser[]
   supervisors: ILightUser[]
+  group?: Group
 }
 
 export interface IPublishedPresentation {

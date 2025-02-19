@@ -42,19 +42,19 @@ const GroupLogoUpload: React.FC<GroupLogoUploadProps> = ({
       multiple={false}
       loading={loading}
     >
-      <Group position='center' spacing='xl' style={{ minHeight: rem(220), pointerEvents: 'none' }}>
+      <Group justify='center' gap='xl' style={{ minHeight: rem(220), pointerEvents: 'none' }}>
         <Dropzone.Accept>
           <IconUpload
             size='3.2rem'
             stroke={1.5}
-            color={theme.colors[theme.primaryColor][theme.colorScheme === 'dark' ? 4 : 6]}
+            color={theme.colors[theme.primaryColor][6]}
           />
         </Dropzone.Accept>
         <Dropzone.Reject>
           <IconX
             size='3.2rem'
             stroke={1.5}
-            color={theme.colors.red[theme.colorScheme === 'dark' ? 4 : 6]}
+            color={theme.colors.red[6]}
           />
         </Dropzone.Reject>
         <Dropzone.Idle>
@@ -65,11 +65,11 @@ const GroupLogoUpload: React.FC<GroupLogoUploadProps> = ({
           <Text size='xl' inline>
             Drag group logo here or click to select
           </Text>
-          <Text size='sm' color='dimmed' inline mt={7}>
+          <Text size='sm' c='dimmed' inline mt={7}>
             Upload a square image, preferably 512x512px (max {maxSize / 1024 / 1024}MB)
           </Text>
           {displayError && (
-            <Text color='red' size='sm' mt={5}>
+            <Text c='red' size='sm' mt={5}>
               {displayError}
             </Text>
           )}

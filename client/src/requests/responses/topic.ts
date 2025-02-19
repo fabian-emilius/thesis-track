@@ -1,4 +1,5 @@
 import { ILightUser } from './user'
+import { Group } from './group'
 
 export interface ITopic {
   topicId: string
@@ -14,4 +15,5 @@ export interface ITopic {
   createdBy: ILightUser
   advisors: ILightUser[]
   supervisors: ILightUser[]
+  group?: Group
 }

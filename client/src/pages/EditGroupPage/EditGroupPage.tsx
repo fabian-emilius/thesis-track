@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Title, TextInput, Textarea, Button, Stack, Group, Card } from '@mantine/core'
+import { Container, Title, TextInput, Textarea, Button, Stack, Group, Card, Text } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGroups } from '../../providers/GroupsProvider/hooks'
@@ -75,9 +75,9 @@ const EditGroupPage: React.FC = () => {
         Edit Group: {selectedGroup.name}
       </Title>
 
-      <Stack spacing='xl'>
+      <Stack gap='xl'>
         <form onSubmit={form.onSubmit(handleSubmit)}>
-          <Stack spacing='md'>
+          <Stack gap='md'>
             <GroupLogoUpload
               onUpload={(file) => {
                 // TODO: Implement logo upload
@@ -139,12 +139,12 @@ const EditGroupPage: React.FC = () => {
             Group Members
           </Title>
 
-          <Stack spacing='md'>
+          <Stack gap='md'>
             {selectedGroup.members?.map((member) => (
-              <Group key={member.userId} position='apart'>
+              <Group key={member.userId} justify='space-between'>
                 <div>
-                  <Text>{member.userId}</Text>
-                  <Text size='sm' color='dimmed'>
+                  <Text size='sm'>{member.userId}</Text>
+                  <Text size='sm' c='dimmed'>
                     {member.role}
                   </Text>
                 </div>

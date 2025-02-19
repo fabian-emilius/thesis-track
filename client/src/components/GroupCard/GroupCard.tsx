@@ -1,11 +1,11 @@
 import React from 'react'
-import { Card, Image, Text, Group as MantineGroup, Button } from '@mantine/core'
+import { Card, Image, Text, Group, Button } from '@mantine/core'
 import { Link } from 'react-router-dom'
-import { Group } from '../../requests/responses/group'
+import { Group as GroupType } from '../../requests/responses/group'
 
 interface GroupCardProps {
   /** Group data to display */
-  group: Group
+  group: GroupType
   /** Optional click handler for the entire card */
   onClick?: () => void
   /** Optional custom styles */
@@ -38,13 +38,13 @@ const GroupCard: React.FC<GroupCardProps> = ({ group, onClick, className }) => {
         </Card.Section>
       )}
 
-      <MantineGroup position='apart' mt='md' mb='xs'>
-        <Text size='lg' weight={500}>
+      <Group justify='space-between' mt='md' mb='xs'>
+        <Text fw={500} size='lg'>
           {group.name}
         </Text>
-      </MantineGroup>
+      </Group>
 
-      <Text size='sm' color='dimmed' lineClamp={3}>
+      <Text size='sm' c='dimmed' lineClamp={3}>
         {group.description}
       </Text>
 

@@ -41,7 +41,7 @@ const GroupSelectionStep: React.FC<GroupSelectionStepProps> = ({ onComplete }) =
   }
 
   return (
-    <Stack spacing='xl'>
+    <Stack gap='xl'>
       <Title order={2}>Select Research Group</Title>
       <SimpleGrid
         cols={3}
