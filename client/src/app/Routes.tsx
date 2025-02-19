@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
 import PageLoader from '../components/PageLoader/PageLoader'
 
@@ -26,6 +26,12 @@ const ReviewApplicationPage = lazy(
 )
 const ThesisPage = lazy(() => import('../pages/ThesisPage/ThesisPage'))
 const LandingPage = lazy(() => import('../pages/LandingPage/LandingPage'))
+
+// Group Management Pages
+const GroupsOverviewPage = lazy(() => import('../pages/GroupsOverviewPage/GroupsOverviewPage'))
+const CreateGroupPage = lazy(() => import('../pages/CreateGroupPage/CreateGroupPage'))
+const GroupLandingPage = lazy(() => import('../pages/GroupLandingPage/GroupLandingPage'))
+const EditGroupPage = lazy(() => import('../pages/EditGroupPage/EditGroupPage'))
 
 const AppRoutes = () => {
   return (
@@ -136,6 +142,41 @@ const AppRoutes = () => {
               </AuthenticatedArea>
             }
           />
+
+          {/* Group Management Routes */}
+          <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea requireAuthentication={false}>
+                <GroupsOverviewPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/create'
+            element={
+              <AuthenticatedArea requiredGroups={['admin']}>
+                <CreateGroupPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/:slug'
+            element={
+              <AuthenticatedArea requireAuthentication={false}>
+                <GroupLandingPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/:slug/edit'
+            element={
+              <AuthenticatedArea requiredGroups={['admin', 'group_admin']}>
+                <EditGroupPage />
+              </AuthenticatedArea>
+            }
+          />
+
           <Route path='/about' element={<AboutPage />} />
           <Route path='/imprint' element={<ImprintPage />} />
           <Route path='/privacy' element={<PrivacyPage />} />

@@ -16,6 +16,7 @@ import { formatThesisType } from '../../../../utils/format'
 interface IMotivationStepProps {
   topic: ITopic | undefined
   application: IApplication | undefined
+  groupId: string | undefined
   onComplete: () => unknown
 }
 
@@ -27,7 +28,7 @@ interface IMotivationStepForm {
 }
 
 const MotivationStep = (props: IMotivationStepProps) => {
-  const { topic, application, onComplete } = props
+  const { topic, application, groupId, onComplete } = props
 
   const [loading, setLoading] = useState(false)
 
@@ -72,6 +73,11 @@ const MotivationStep = (props: IMotivationStepProps) => {
   }, [application?.applicationId])
 
   const onSubmit = async (values: IMotivationStepForm) => {
+    if (!groupId) {
+      showSimpleError('Please select a research group')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -81,6 +87,7 @@ const MotivationStep = (props: IMotivationStepProps) => {
           method: application ? 'PUT' : 'POST',
           requiresAuth: true,
           data: {
+            groupId,
             topicId: mergedTopic?.topicId,
             thesisTitle: values.thesisTitle || null,
             thesisType: values.thesisType,

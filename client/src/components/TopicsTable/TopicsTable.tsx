@@ -7,19 +7,21 @@ import { Badge, Center, Stack, Text } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import React from 'react'
 
-type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | string
+type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | 'group' | string
 
 interface ITopicsTableProps {
   columns?: TopicColumn[]
   extraColumns?: Record<string, DataTableColumn<ITopic>>
   noBorder?: boolean
+  groupId?: string
 }
 
 const TopicsTable = (props: ITopicsTableProps) => {
   const {
     extraColumns = {},
-    columns = ['title', 'types', 'supervisor', 'advisor'],
+    columns = ['title', 'types', 'supervisor', 'advisor', 'group'],
     noBorder = false,
+    groupId,
   } = props
 
   const navigate = useNavigate()
@@ -83,6 +85,14 @@ const TopicsTable = (props: ITopicsTableProps) => {
       ellipsis: true,
       render: (record) => formatDate(record.createdAt),
     },
+    group: {
+      accessor: 'group',
+      title: 'Group',
+      width: 150,
+      render: (topic) => (
+        <Text size='sm'>{topic.group?.name || 'No Group'}</Text>
+      ),
+    },
     ...extraColumns,
   }
 
@@ -102,7 +112,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       onPageChange={(x) => setPage(x - 1)}
       records={topics?.content}
       idAccessor='topicId'
-      columns={columns.map((column) => columnConfig[column])}
+      columns={columns.filter(column => !groupId || column !== 'group').map((column) => columnConfig[column])}
       onRowClick={({ record }) => navigate(`/topics/${record.topicId}`)}
     />
   )

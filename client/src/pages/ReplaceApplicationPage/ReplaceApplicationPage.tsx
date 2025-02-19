@@ -5,7 +5,9 @@ import { useEffect, useState } from 'react'
 import SelectTopicStep from './components/SelectTopicStep/SelectTopicStep'
 import StudentInformationStep from './components/StudentInformationStep/StudentInformationStep'
 import MotivationStep from './components/MotivationStep/MotivationStep'
+import GroupSelectionStep from './components/GroupSelectionStep/GroupSelectionStep'
 import TopicsProvider from '../../providers/TopicsProvider/TopicsProvider'
+import GroupsProvider from '../../providers/GroupsProvider/GroupsProvider'
 import { IApplication } from '../../requests/responses/application'
 import { doRequest } from '../../requests/request'
 import { usePageTitle } from '../../hooks/theme'
@@ -16,6 +18,7 @@ const ReplaceApplicationPage = () => {
   usePageTitle('Submit Application')
 
   const [application, setApplication] = useState<IApplication>()
+  const [selectedGroupId, setSelectedGroupId] = useState<string>()
 
   useEffect(() => {
     setApplication(undefined)
@@ -30,6 +33,7 @@ const ReplaceApplicationPage = () => {
         (res) => {
           if (res.ok) {
             setApplication(res.data)
+            setSelectedGroupId(res.data.groupId)
           }
         },
       )
@@ -46,8 +50,9 @@ const ReplaceApplicationPage = () => {
       return
     }
 
-    if (value === 0 && topicId) {
+    if (value === 0 && (topicId || selectedGroupId)) {
       navigate(`/submit-application`, { replace: true })
+      setSelectedGroupId(undefined)
     }
 
     window.scrollTo(0, 0)
@@ -57,25 +62,42 @@ const ReplaceApplicationPage = () => {
   return (
     <Stack>
       <Title>{applicationId ? 'Edit Application' : 'Submit Application'}</Title>
-      <Stepper active={Math.max(step, topicId || applicationId ? 1 : 0)} onStepClick={updateStep}>
-        <Stepper.Step label='First Step' description='Select Topic'>
-          <TopicsProvider limit={100}>
+      <Stepper
+        active={Math.max(
+          step,
+          selectedGroupId ? 2 : topicId || applicationId ? 1 : 0,
+        )}
+        onStepClick={updateStep}
+      >
+        <Stepper.Step label='First Step' description='Select Group'>
+          <GroupsProvider>
+            <GroupSelectionStep
+              onComplete={(groupId) => {
+                setSelectedGroupId(groupId)
+                setStep(1)
+              }}
+            />
+          </GroupsProvider>
+        </Stepper.Step>
+        <Stepper.Step label='Second Step' description='Select Topic'>
+          <TopicsProvider limit={100} groupId={selectedGroupId}>
             <SelectTopicStep
               onComplete={(x) => {
                 navigate(`/submit-application/${x?.topicId || ''}`, { replace: true })
-                setStep(1)
+                setStep(2)
               }}
             />
           </TopicsProvider>
         </Stepper.Step>
-        <Stepper.Step label='Second step' description='Update Information'>
-          <StudentInformationStep onComplete={() => setStep(2)} />
+        <Stepper.Step label='Third step' description='Update Information'>
+          <StudentInformationStep onComplete={() => setStep(3)} />
         </Stepper.Step>
         <Stepper.Step label='Final step' description='Submit your Application'>
           <MotivationStep
-            onComplete={() => setStep(3)}
+            onComplete={() => setStep(4)}
             topic={topic || undefined}
             application={application}
+            groupId={selectedGroupId}
           />
         </Stepper.Step>
         <Stepper.Completed>
