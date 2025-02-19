@@ -28,6 +28,7 @@ public class ApplicationService {
     private final ThesisService thesisService;
     private final TopicService topicService;
     private final ApplicationReviewerRepository applicationReviewerRepository;
+    private final GroupService groupService;
 
     @Autowired
     public ApplicationService(
@@ -36,18 +37,21 @@ public class ApplicationService {
             TopicRepository topicRepository,
             ThesisService thesisService,
             TopicService topicService,
-            ApplicationReviewerRepository applicationReviewerRepository) {
+            ApplicationReviewerRepository applicationReviewerRepository,
+            GroupService groupService) {
         this.applicationRepository = applicationRepository;
         this.mailingService = mailingService;
         this.topicRepository = topicRepository;
         this.thesisService = thesisService;
         this.topicService = topicService;
         this.applicationReviewerRepository = applicationReviewerRepository;
+        this.groupService = groupService;
     }
 
     public Page<Application> getAll(
             UUID userId,
             UUID reviewerId,
+            UUID groupId,
             String searchQuery,
             ApplicationState[] states,
             String[] previous,
@@ -70,6 +74,7 @@ public class ApplicationService {
         return applicationRepository.searchApplications(
                 userId,
                 statesFilter != null && !statesFilter.contains(ApplicationState.REJECTED) ? reviewerId : null,
+                groupId,
                 searchQueryFilter,
                 statesFilter,
                 previousFilter,
@@ -81,15 +86,17 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application createApplication(User user, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+    public Application createApplication(User user, UUID groupId, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
         Topic topic = topicId == null ? null : topicService.findById(topicId);
 
         if (topic != null && topic.getClosedAt() != null) {
             throw new ResourceInvalidParametersException("This topic is already closed. You cannot submit new applications for it.");
         }
 
+        Group group = groupService.findById(groupId);
         Application application = new Application();
         application.setUser(user);
+        application.setGroup(group);
 
         application.setTopic(topic);
         application.setThesisTitle(thesisTitle);
@@ -108,7 +115,10 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application updateApplication(Application application, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+    public Application updateApplication(Application application, UUID groupId, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+        if (groupId != null && !application.getGroup().getId().equals(groupId)) {
+            application.setGroup(groupService.findById(groupId));
+        }
         application.setTopic(topicId == null ? null : topicService.findById(topicId));
         application.setThesisTitle(thesisTitle);
         application.setThesisType(thesisType);
@@ -272,8 +282,8 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
-    public boolean applicationExists(User user, UUID topicId) {
-        return applicationRepository.existsPendingApplication(user.getId(), topicId);
+    public boolean applicationExists(User user, UUID groupId, UUID topicId) {
+        return applicationRepository.existsPendingApplication(user.getId(), groupId, topicId);
     }
 
     public Application findById(UUID applicationId) {

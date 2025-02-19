@@ -26,12 +26,15 @@ public class TopicService {
     private final TopicRepository topicRepository;
     private final TopicRoleRepository topicRoleRepository;
     private final UserRepository userRepository;
+    private final GroupService groupService;
 
     @Autowired
-    public TopicService(TopicRepository topicRepository, TopicRoleRepository topicRoleRepository, UserRepository userRepository) {
+    public TopicService(TopicRepository topicRepository, TopicRoleRepository topicRoleRepository, 
+                       UserRepository userRepository, GroupService groupService) {
         this.topicRepository = topicRepository;
         this.topicRoleRepository = topicRoleRepository;
         this.userRepository = userRepository;
+        this.groupService = groupService;
     }
 
     public Page<Topic> getAll(
@@ -41,7 +44,8 @@ public class TopicService {
             int page,
             int limit,
             String sortBy,
-            String sortOrder
+            String sortOrder,
+            UUID groupId
     ) {
         Sort.Order order = new Sort.Order(
                 sortOrder.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC,
@@ -55,6 +59,7 @@ public class TopicService {
                 typesFilter,
                 includeClosed,
                 searchQueryFilter,
+                groupId,
                 PageRequest.of(page, limit, Sort.by(order))
         );
     }
@@ -69,8 +74,10 @@ public class TopicService {
             String goals,
             String references,
             List<UUID> supervisorIds,
-            List<UUID> advisorIds
+            List<UUID> advisorIds,
+            UUID groupId
     ) {
+        Group group = groupService.findById(groupId);
         Topic topic = new Topic();
 
         topic.setTitle(title);
@@ -82,6 +89,7 @@ public class TopicService {
         topic.setUpdatedAt(Instant.now());
         topic.setCreatedAt(Instant.now());
         topic.setCreatedBy(creator);
+        topic.setGroup(group);
 
         topic = topicRepository.save(topic);
 
@@ -116,9 +124,9 @@ public class TopicService {
         return topicRepository.save(topic);
     }
 
-    public Topic findById(UUID topicId) {
-        return topicRepository.findById(topicId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Topic with id %s not found.", topicId)));
+    public Topic findById(UUID topicId, UUID groupId) {
+        return topicRepository.findByIdAndGroupId(topicId, groupId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Topic with id %s not found in group %s.", topicId, groupId)));
     }
 
     private void assignTopicRoles(Topic topic, User assigner, List<UUID> advisorIds, List<UUID> supervisorIds) {
