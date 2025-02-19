@@ -1,5 +1,6 @@
 package de.tum.cit.aet.thesis.entity;
 
+import de.tum.cit.aet.thesis.entity.key.UserGroupId;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
