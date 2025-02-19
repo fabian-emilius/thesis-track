@@ -6,8 +6,9 @@ import { IThesesSort } from '../../providers/ThesesProvider/context'
 import { useNavigate } from 'react-router'
 import { IThesis } from '../../requests/responses/thesis'
 import ThesisStateBadge from '../ThesisStateBadge/ThesisStateBadge'
-import { Center } from '@mantine/core'
+import { Center, Text } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
+import { useGroupContext } from '../../providers/GroupContext/context'
 
 type ThesisColumn =
   | 'state'
@@ -18,20 +19,24 @@ type ThesisColumn =
   | 'title'
   | 'start_date'
   | 'end_date'
+  | 'group'
   | string
 
 interface IThesesTableProps {
   columns?: ThesisColumn[]
   extraColumns?: Record<string, DataTableColumn<IThesis>>
+  hideGroupColumn?: boolean
 }
 
 const ThesesTable = (props: IThesesTableProps) => {
   const {
-    columns = ['state', 'title', 'type', 'students', 'advisors', 'start_date', 'end_date'],
+    columns = ['state', 'title', 'type', 'students', 'advisors', 'start_date', 'end_date', 'group'],
     extraColumns = {},
+    hideGroupColumn = false,
   } = props
 
   const { theses, sort, setSort, page, setPage, limit } = useThesesContext()
+  const { currentGroup } = useGroupContext()
 
   const navigate = useNavigate()
 
@@ -101,8 +106,20 @@ const ThesesTable = (props: IThesesTableProps) => {
       width: 130,
       render: (thesis) => formatDate(thesis.endDate, { withTime: false }),
     },
+    group: {
+      accessor: 'group',
+      title: 'Research Group',
+      width: 180,
+      ellipsis: true,
+      render: (thesis) => <Text size='sm'>{thesis.group?.name}</Text>,
+      hidden: hideGroupColumn || !!currentGroup,
+    },
     ...extraColumns,
   }
+
+  const visibleColumns = columns
+    .filter((column) => !columnConfig[column].hidden)
+    .map((column) => columnConfig[column])
 
   return (
     <DataTable
@@ -130,7 +147,7 @@ const ThesesTable = (props: IThesesTableProps) => {
       }}
       records={theses?.content}
       idAccessor='thesisId'
-      columns={columns.map((column) => columnConfig[column])}
+      columns={visibleColumns}
       onRowClick={({ record: thesis }) => onThesisClick(thesis)}
     />
   )

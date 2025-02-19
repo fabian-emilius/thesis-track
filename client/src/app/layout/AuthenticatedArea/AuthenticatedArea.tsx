@@ -10,6 +10,8 @@ import {
   Stack,
   Text,
   Tooltip,
+  Select,
+  useMantineTheme,
 } from '@mantine/core'
 import * as classes from './AuthenticatedArea.module.css'
 import { Link, useLocation, useNavigate } from 'react-router'
@@ -25,6 +27,7 @@ import {
   PaperPlaneTilt,
   Table,
   Presentation,
+  Buildings,
 } from 'phosphor-react'
 import { useIsSmallerBreakpoint } from '../../../hooks/theme'
 import { useAuthenticationContext, useUser } from '../../../hooks/authentication'
@@ -38,6 +41,7 @@ import CustomAvatar from '../../../components/CustomAvatar/CustomAvatar'
 import { formatUser } from '../../../utils/format'
 import ContentContainer from '../ContentContainer/ContentContainer'
 import Footer from '../../../components/Footer/Footer'
+import { useGroupContext } from '../../../providers/GroupContext/context'
 
 export interface IAuthenticatedAreaProps {
   size?: MantineSize
@@ -51,6 +55,7 @@ const links: Array<{
   label: string
   icon: any
   groups: string[] | undefined
+  requiresGroup?: boolean
 }> = [
   { link: '/dashboard', label: 'Dashboard', icon: NewspaperClipping, groups: undefined },
   {
@@ -64,30 +69,41 @@ const links: Array<{
     label: 'Submit Application',
     icon: PaperPlaneTilt,
     groups: undefined,
+    requiresGroup: true,
   },
   {
     link: '/applications',
     label: 'Review Applications',
     icon: Scroll,
     groups: ['admin', 'advisor', 'supervisor'],
+    requiresGroup: true,
   },
   {
     link: '/topics',
     label: 'Manage Topics',
     icon: FolderSimplePlus,
     groups: ['admin', 'advisor', 'supervisor'],
+    requiresGroup: true,
   },
   {
     link: '/theses',
     label: 'Browse Theses',
     icon: Table,
     groups: undefined,
+    requiresGroup: true,
   },
   {
     link: '/overview',
     label: 'Theses Overview',
     icon: Kanban,
     groups: ['admin', 'advisor', 'supervisor'],
+    requiresGroup: true,
+  },
+  {
+    link: '/groups',
+    label: 'Research Groups',
+    icon: Buildings,
+    groups: undefined,
   },
 ]
 
@@ -103,6 +119,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
   const navigate = useNavigate()
   const user = useUser()
   const [opened, { toggle, close }] = useDisclosure()
+  const theme = useMantineTheme()
 
   const minimizeAnimationDuration = 200
   const [minimizedState, setMinimized] = useLocalStorage<boolean>('navigation_minimized', {
@@ -120,6 +137,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
 
   const showHeader = useIsSmallerBreakpoint('md')
   const auth = useAuthenticationContext()
+  const { currentGroup, userGroups, setCurrentGroup } = useGroupContext()
 
   useEffect(() => {
     if (requireAuthentication && !auth.isAuthenticated) {
@@ -150,6 +168,22 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
     )
   }
 
+  const groupOptions = userGroups.map((group) => ({
+    value: group.id,
+    label: group.name,
+  }))
+
+  const handleGroupChange = (groupId: string) => {
+    const group = userGroups.find((g) => g.id === groupId)
+    if (group) {
+      setCurrentGroup(group)
+      // Navigate to group landing page if we're on a group-specific page
+      if (location.pathname.includes('/groups/')) {
+        navigate(`/groups/${group.slug}`)
+      }
+    }
+  }
+
   return (
     <AppShell
       header={{ collapsed: !showHeader, height: 60 }}
@@ -161,6 +195,8 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
       styles={{
         navbar: {
           transition: `width ${minimizeAnimationDuration}ms ease-in-out`,
+          backgroundColor:
+            currentGroup?.settings?.customization?.primaryColor || theme.primaryColor,
         },
       }}
       padding={0}
@@ -174,18 +210,30 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
       <AppShell.Navbar p='md'>
         <AppShell.Section grow mb='md'>
           {!minimized && (
-            <Group preventGrowOverflow={false}>
-              <Logo className={classes.logo} />
-              <Text
-                className={classes.siteName}
-                fw='bold'
-                style={{ cursor: 'pointer' }}
-                onClick={() => navigate('/')}
-              >
-                Thesis Management
-              </Text>
-              <ColorSchemeToggleButton ml='auto' />
-            </Group>
+            <Stack spacing="xs">
+              <Group preventGrowOverflow={false}>
+                <Logo className={classes.logo} />
+                <Text
+                  className={classes.siteName}
+                  fw='bold'
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate('/')}
+                >
+                  Thesis Management
+                </Text>
+                <ColorSchemeToggleButton ml='auto' />
+              </Group>
+              
+              {userGroups.length > 0 && (
+                <Select
+                  placeholder="Select Research Group"
+                  data={groupOptions}
+                  value={currentGroup?.id}
+                  onChange={handleGroupChange}
+                  clearable
+                />
+              )}
+            </Stack>
           )}
           {!minimized && <Divider my='sm' />}
           {minimized && (
@@ -196,7 +244,8 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
           {links
             .filter(
               (item) =>
-                !item.groups || item.groups.some((role) => auth.user?.groups.includes(role)),
+                (!item.groups || item.groups.some((role) => auth.user?.groups.includes(role))) &&
+                (!item.requiresGroup || currentGroup),
             )
             .map((item) => (
               <Link

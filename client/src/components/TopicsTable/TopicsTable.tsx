@@ -6,23 +6,27 @@ import { useNavigate } from 'react-router'
 import { Badge, Center, Stack, Text } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import React from 'react'
+import { useGroupContext } from '../../providers/GroupContext/context'
 
-type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | string
+type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | 'group' | string
 
 interface ITopicsTableProps {
   columns?: TopicColumn[]
   extraColumns?: Record<string, DataTableColumn<ITopic>>
   noBorder?: boolean
+  hideGroupColumn?: boolean
 }
 
 const TopicsTable = (props: ITopicsTableProps) => {
   const {
     extraColumns = {},
-    columns = ['title', 'types', 'supervisor', 'advisor'],
+    columns = ['title', 'types', 'supervisor', 'advisor', 'group'],
     noBorder = false,
+    hideGroupColumn = false,
   } = props
 
   const navigate = useNavigate()
+  const { currentGroup } = useGroupContext()
 
   const { topics, page, setPage, limit } = useTopicsContext()
 
@@ -83,8 +87,20 @@ const TopicsTable = (props: ITopicsTableProps) => {
       ellipsis: true,
       render: (record) => formatDate(record.createdAt),
     },
+    group: {
+      accessor: 'group',
+      title: 'Research Group',
+      width: 180,
+      ellipsis: true,
+      render: (topic) => <Text size='sm'>{topic.group?.name}</Text>,
+      hidden: hideGroupColumn || !!currentGroup,
+    },
     ...extraColumns,
   }
+
+  const visibleColumns = columns
+    .filter((column) => !columnConfig[column].hidden)
+    .map((column) => columnConfig[column])
 
   return (
     <DataTable
@@ -102,7 +118,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       onPageChange={(x) => setPage(x - 1)}
       records={topics?.content}
       idAccessor='topicId'
-      columns={columns.map((column) => columnConfig[column])}
+      columns={visibleColumns}
       onRowClick={({ record }) => navigate(`/topics/${record.topicId}`)}
     />
   )
