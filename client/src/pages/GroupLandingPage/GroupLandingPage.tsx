@@ -22,11 +22,11 @@ const GroupLandingPage: React.FC = () => {
 
   return (
     <Container size='xl' py='xl'>
-      <Stack spacing='xl'>
-        <Group position='apart'>
+      <Stack gap='xl'>
+        <Group justify='space-between'>
           <div>
             <Title order={1}>{selectedGroup.name}</Title>
-            <Text size='lg' color='dimmed' mt='xs'>
+            <Text size='lg' c='dimmed' mt='xs'>
               {selectedGroup.description}
             </Text>
           </div>
@@ -36,14 +36,14 @@ const GroupLandingPage: React.FC = () => {
         </Group>
 
         <Grid>
-          <Grid.Col xs={12}>
+          <Grid.Col span={12}>
             <Title order={2} mb='md'>
               Open Topics
             </Title>
             <TopicsTable groupId={selectedGroup.id} />
           </Grid.Col>
 
-          <Grid.Col xs={12}>
+          <Grid.Col span={12}>
             <Title order={2} mb='md'>
               Published Theses
             </Title>

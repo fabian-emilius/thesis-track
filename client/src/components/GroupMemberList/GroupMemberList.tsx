@@ -22,12 +22,12 @@ const GroupMemberList: React.FC<GroupMemberListProps> = ({ members, onAddMember,
   }
 
   return (
-    <Stack spacing='md'>
+    <Stack gap='md'>
       {members.map((member) => (
-        <Group key={member.userId} position='apart'>
+        <Group key={member.userId} justify='space-between'>
           <div>
             <Text>{member.userId}</Text>
-            <Text size='sm' color='dimmed'>
+            <Text size='sm' c='dimmed'>
               {member.role}
             </Text>
           </div>

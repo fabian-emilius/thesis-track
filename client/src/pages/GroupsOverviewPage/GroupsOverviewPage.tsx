@@ -17,7 +17,7 @@ const GroupsOverviewPage: React.FC = () => {
 
   return (
     <Container size='xl' py='xl'>
-      <Group position='apart' mb='xl'>
+      <Group justify='space-between' mb='xl'>
         <Title order={1}>Research Groups</Title>
         <Button component={Link} to='/groups/create'>
           Create Group
@@ -26,7 +26,7 @@ const GroupsOverviewPage: React.FC = () => {
 
       <Grid>
         {groups.map((group) => (
-          <Grid.Col key={group.id} xs={12} sm={6} md={4} lg={3}>
+          <Grid.Col key={group.id} span={{ base: 12, sm: 6, md: 4, lg: 3 }}>
             <GroupCard group={group} />
           </Grid.Col>
         ))}

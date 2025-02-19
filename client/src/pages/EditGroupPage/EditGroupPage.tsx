@@ -68,6 +68,7 @@ const EditGroupPage: React.FC = () => {
   if (loading) return <PageLoader />
   if (error) return <div>Error: {error.message}</div>
   if (!selectedGroup) return <div>Group not found</div>
+  if (!slug) return <div>Invalid group URL</div>
 
   return (
     <Container size='md' py='xl'>
@@ -140,7 +141,7 @@ const EditGroupPage: React.FC = () => {
           </Title>
 
           <Stack gap='md'>
-            {selectedGroup.members?.map((member) => (
+            {selectedGroup.members?.map((member: GroupMember) => (
               <Group key={member.userId} justify='space-between'>
                 <div>
                   <Text size='sm'>{member.userId}</Text>
@@ -167,7 +168,7 @@ const EditGroupPage: React.FC = () => {
               <GroupRoleSelect value={newMemberRole} onChange={setNewMemberRole} />
               <Button
                 onClick={() => {
-                  if (newMemberEmail && slug) {
+                  if (newMemberEmail) {
                     addGroupMember(slug, newMemberEmail, newMemberRole)
                     setNewMemberEmail('')
                   }

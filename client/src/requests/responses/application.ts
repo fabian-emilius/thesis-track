@@ -1,27 +1,18 @@
-import { ILightUser, IUser } from './user'
 import { ITopic } from './topic'
-
-export enum ApplicationState {
-  NOT_ASSESSED = 'NOT_ASSESSED',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-}
+import { ILightUser } from './user'
 
 export interface IApplication {
   applicationId: string
-  user: IUser
-  topic: ITopic | null
+  groupId: string
+  topic?: ITopic
   thesisTitle: string | null
-  thesisType: string | null
-  motivation: string
-  state: ApplicationState
+  thesisType: string
   desiredStartDate: string
-  comment: string
+  motivation: string
+  state: string
   createdAt: string
-  reviewers: Array<{
-    user: ILightUser
-    reason: string
-    reviewedAt: string
-  }> | null
+  createdBy: ILightUser
   reviewedAt: string | null
+  reviewedBy: ILightUser | null
+  reviewComment: string | null
 }

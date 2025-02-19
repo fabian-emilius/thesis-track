@@ -10,6 +10,7 @@ export interface Group {
   acceptanceInstructions: string
   createdAt: string
   updatedAt: string
+  members: GroupMember[]
 }
 
 export interface GroupMember {

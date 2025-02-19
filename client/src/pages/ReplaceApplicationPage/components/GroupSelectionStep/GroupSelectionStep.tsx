@@ -46,9 +46,10 @@ const GroupSelectionStep: React.FC<GroupSelectionStepProps> = ({ onComplete }) =
       <SimpleGrid
         cols={3}
         spacing='lg'
+        verticalSpacing='lg'
         breakpoints={[
-          { maxWidth: 'md', cols: 2, spacing: 'md' },
-          { maxWidth: 'sm', cols: 1, spacing: 'sm' },
+          { maxWidth: 'md', cols: 2, verticalSpacing: 'md', spacing: 'md' },
+          { maxWidth: 'sm', cols: 1, verticalSpacing: 'sm', spacing: 'sm' },
         ]}
       >
         {groups.map((group) => (
