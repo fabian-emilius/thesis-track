@@ -1,8 +1,8 @@
-import { Container, Title, Alert } from '@mantine/core';
-import { useNavigate } from 'react-router-dom';
+import { Container, Title } from '@mantine/core';
+import { useNavigate } from 'react-router';
 import { GroupSettingsForm } from '../../components/GroupSettingsForm/GroupSettingsForm';
 
-export function CreateGroupPage() {
+function CreateGroupPage() {
   const navigate = useNavigate();
 
   const handleCreateGroup = async (values: any) => {
@@ -26,3 +26,5 @@ export function CreateGroupPage() {
     </Container>
   );
 }
+
+export default CreateGroupPage;

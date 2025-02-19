@@ -1,17 +1,14 @@
-import { ILightUser } from './user'
+import { IUser } from './user';
+import { Group } from '../../types/group';
 
 export interface ITopic {
-  topicId: string
-  title: string
-  thesisTypes: string[] | null
-  problemStatement: string
-  requirements: string
-  goals: string
-  references: string
-  closedAt: string | null
-  updatedAt: string
-  createdAt: string
-  createdBy: ILightUser
-  advisors: ILightUser[]
-  supervisors: ILightUser[]
+  topicId: string;
+  title: string;
+  description: string;
+  thesisTypes?: string[];
+  advisors: IUser[];
+  supervisors: IUser[];
+  createdAt: string;
+  closedAt?: string;
+  group?: Group;
 }

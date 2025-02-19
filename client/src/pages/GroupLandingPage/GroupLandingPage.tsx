@@ -1,8 +1,8 @@
-import { Container, Title, Text, Stack, Group as MantineGroup, Button } from '@mantine/core';
-import { Link, useParams } from 'react-router-dom';
+import { Container, Title, Text, Stack, Group, Button } from '@mantine/core';
+import { Link, useParams } from 'react-router';
 import { useGroupContext } from '../../providers/GroupContext/context';
 
-export function GroupLandingPage() {
+function GroupLandingPage() {
   const { groupSlug } = useParams();
   const { currentGroup, isGroupAdmin } = useGroupContext();
 
@@ -16,8 +16,8 @@ export function GroupLandingPage() {
 
   return (
     <Container size="xl" py="xl">
-      <Stack spacing="xl">
-        <MantineGroup position="apart">
+      <Stack gap="xl">
+        <Group justify="space-between">
           <div>
             <Title order={1}>{currentGroup.name}</Title>
             <Text c="dimmed" mt="sm">
@@ -34,7 +34,7 @@ export function GroupLandingPage() {
               Manage Group
             </Button>
           )}
-        </MantineGroup>
+        </Group>
 
         {/* Add group-specific content here */}
         {/* Topics, theses, and other relevant information */}
@@ -42,3 +42,5 @@ export function GroupLandingPage() {
     </Container>
   );
 }
+
+export default GroupLandingPage;

@@ -1,11 +1,7 @@
-import { TextInput, Textarea, Stack, Button, ColorInput } from '@mantine/core';
+import { TextInput, Textarea, Stack, Button, ColorInput, FileInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Group, GroupSettings } from '../../types/group';
-import { UploadArea } from '../UploadArea/UploadArea';
 
-/**
- * Props for the GroupSettingsForm component
- */
 interface GroupSettingsFormProps {
   /** Existing group data for editing, undefined for new group creation */
   group?: Group;
@@ -15,9 +11,6 @@ interface GroupSettingsFormProps {
   isLoading?: boolean;
 }
 
-/**
- * Form values interface matching the group settings structure
- */
 interface GroupFormValues {
   name: string;
   slug: string;
@@ -71,7 +64,7 @@ export function GroupSettingsForm({ group, onSubmit, isLoading }: GroupSettingsF
 
   return (
     <form onSubmit={form.onSubmit(onSubmit)}>
-      <Stack spacing="md">
+      <Stack gap="md">
         <TextInput
           required
           label="Group Name"
@@ -110,11 +103,11 @@ export function GroupSettingsForm({ group, onSubmit, isLoading }: GroupSettingsF
           {...form.getInputProps('settings.customization.secondaryColor')}
         />
 
-        <UploadArea
+        <FileInput
           label="Group Logo"
           accept="image/*"
-          maxSize={5 * 1024 * 1024} // 5MB
-          onDrop={(files) => form.setFieldValue('logo', files[0])}
+          placeholder="Upload logo"
+          onChange={(file) => form.setFieldValue('logo', file)}
         />
 
         <Button type="submit" loading={isLoading}>
@@ -124,3 +117,5 @@ export function GroupSettingsForm({ group, onSubmit, isLoading }: GroupSettingsF
     </form>
   );
 }
+
+export default GroupSettingsForm;

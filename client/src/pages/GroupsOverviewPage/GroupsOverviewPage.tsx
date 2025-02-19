@@ -2,12 +2,12 @@ import { Container, SimpleGrid, Title, Text, Stack } from '@mantine/core';
 import { useGroupContext } from '../../providers/GroupContext/context';
 import { GroupCard } from '../../components/GroupCard/GroupCard';
 
-export function GroupsOverviewPage() {
+function GroupsOverviewPage() {
   const { userGroups } = useGroupContext();
 
   return (
     <Container size="xl" py="xl">
-      <Stack spacing="lg">
+      <Stack gap="lg">
         <div>
           <Title order={1}>Research Groups</Title>
           <Text c="dimmed" mt="sm">
@@ -31,3 +31,5 @@ export function GroupsOverviewPage() {
     </Container>
   );
 }
+
+export default GroupsOverviewPage;

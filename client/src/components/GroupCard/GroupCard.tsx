@@ -1,13 +1,10 @@
-import { Card, Text, Group as MantineGroup, Button, Image } from '@mantine/core';
-import { Link } from 'react-router-dom';
-import { Group } from '../../types/group';
+import { Card, Text, Group, Button, Image } from '@mantine/core';
+import { Link } from 'react-router';
+import { Group as GroupType } from '../../types/group';
 
-/**
- * Props for the GroupCard component
- */
 interface GroupCardProps {
   /** The group data to display */
-  group: Group;
+  group: GroupType;
 }
 
 /**
@@ -32,11 +29,11 @@ export function GroupCard({ group }: GroupCardProps) {
         </Card.Section>
       )}
 
-      <MantineGroup position="apart" mt="md" mb="xs">
+      <Group justify="space-between" mt="md" mb="xs">
         <Text fw={500} size="lg">
           {group.name}
         </Text>
-      </MantineGroup>
+      </Group>
 
       <Text size="sm" c="dimmed" lineClamp={3}>
         {group.description}
@@ -64,3 +61,5 @@ export function GroupCard({ group }: GroupCardProps) {
     </Card>
   );
 }
+
+export default GroupCard;

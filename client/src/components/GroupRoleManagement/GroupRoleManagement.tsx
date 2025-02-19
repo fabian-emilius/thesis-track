@@ -1,6 +1,5 @@
-import { Table, Select, Button, Group as MantineGroup, Text } from '@mantine/core';
+import { Table, Select, Button, Group, Text } from '@mantine/core';
 import { useState } from 'react';
-import { UserMultiSelect } from '../UserMultiSelect/UserMultiSelect';
 import { GroupRole } from '../../types/group';
 
 interface GroupRoleManagementProps {
@@ -31,18 +30,20 @@ export function GroupRoleManagement({
 
   return (
     <div>
-      <MantineGroup position="apart" mb="md">
+      <Group justify="space-between" mb="md">
         <Text size="lg" fw={500}>
           Group Members
         </Text>
 
-        <MantineGroup spacing="sm">
-          <UserMultiSelect
+        <Group gap="sm">
+          <Select
             label=""
             placeholder="Select user"
-            value={selectedUser ? [selectedUser] : []}
-            onChange={(value) => setSelectedUser(value[0] || '')}
-            maxSelectedValues={1}
+            value={selectedUser}
+            onChange={(value) => setSelectedUser(value || '')}
+            data={[]} // TODO: Add user data
+            searchable
+            clearable
           />
 
           <Select
@@ -53,7 +54,7 @@ export function GroupRoleManagement({
               { value: 'supervisor', label: 'Supervisor' },
               { value: 'advisor', label: 'Advisor' },
             ]}
-            style={{ width: 120 }}
+            w={120}
           />
 
           <Button
@@ -63,23 +64,23 @@ export function GroupRoleManagement({
           >
             Add Member
           </Button>
-        </MantineGroup>
-      </MantineGroup>
+        </Group>
+      </Group>
 
       <Table>
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>User</Table.Th>
+            <Table.Th>Role</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
           {roles.map((role) => (
-            <tr key={`${role.groupId}-${role.role}`}>
-              <td>{role.groupId}</td>
-              <td style={{ textTransform: 'capitalize' }}>{role.role}</td>
-              <td>
+            <Table.Tr key={`${role.groupId}-${role.role}`}>
+              <Table.Td>{role.groupId}</Table.Td>
+              <Table.Td style={{ textTransform: 'capitalize' }}>{role.role}</Table.Td>
+              <Table.Td>
                 <Button
                   variant="subtle"
                   color="red"
@@ -89,11 +90,13 @@ export function GroupRoleManagement({
                 >
                   Remove
                 </Button>
-              </td>
-            </tr>
+              </Table.Td>
+            </Table.Tr>
           ))}
-        </tbody>
+        </Table.Tbody>
       </Table>
     </div>
   );
 }
+
+export default GroupRoleManagement;

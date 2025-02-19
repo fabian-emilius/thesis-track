@@ -1,10 +1,10 @@
 import { Container, Tabs, Title, Alert } from '@mantine/core';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { useGroupContext } from '../../providers/GroupContext/context';
 import { GroupSettingsForm } from '../../components/GroupSettingsForm/GroupSettingsForm';
 import { GroupRoleManagement } from '../../components/GroupRoleManagement/GroupRoleManagement';
 
-export function GroupSettingsPage() {
+function GroupSettingsPage() {
   const { groupSlug } = useParams();
   const { currentGroup, userGroupRoles, isGroupAdmin } = useGroupContext();
 
@@ -76,3 +76,5 @@ export function GroupSettingsPage() {
     </Container>
   );
 }
+
+export default GroupSettingsPage;

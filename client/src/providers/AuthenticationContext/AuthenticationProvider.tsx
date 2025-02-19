@@ -14,6 +14,7 @@ import { IUser } from '../../requests/responses/user'
 import { doRequest } from '../../requests/request'
 import { showSimpleError } from '../../utils/notification'
 import { ApiError, getApiResponseErrorMessage } from '../../requests/handler'
+import { GroupRole } from '../../types/group'
 
 export const keycloak = new Keycloak({
   realm: GLOBAL_CONFIG.keycloak.realm,
@@ -26,6 +27,7 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
 
   const [universityId, setUniversityId] = useState<string>()
   const [user, setUser] = useState<IUser>()
+  const [groupRoles, setGroupRoles] = useState<GroupRole[]>([])
   const [authenticationTokens, setAuthenticationTokens] = useAuthenticationTokens()
   const {
     signal: readySignal,
@@ -76,6 +78,11 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
           access_token: accessToken,
           refresh_token: refreshToken,
         })
+
+        // Set group roles from token
+        if (decodedAccessToken?.group_roles) {
+          setGroupRoles(decodedAccessToken.group_roles)
+        }
       } else {
         setAuthenticationTokens(undefined)
       }
@@ -143,8 +150,14 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
       const decodedAccessToken = jwtDecode<IDecodedAccessToken>(authenticationTokens.access_token)
 
       setUniversityId(decodedAccessToken['preferred_username'] || undefined)
+
+      // Set group roles from token
+      if (decodedAccessToken.group_roles) {
+        setGroupRoles(decodedAccessToken.group_roles)
+      }
     } else {
       setUniversityId(undefined)
+      setGroupRoles([])
     }
   }, [authenticationTokens?.access_token, isReady])
 
@@ -174,6 +187,7 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
       isAuthenticated: !!authenticationTokens?.access_token,
       user: authenticationTokens?.access_token ? user : undefined,
       groups: [],
+      groupRoles,
       updateInformation: async (data, avatar, examinationReport, cv, degreeReport) => {
         const formData = new FormData()
 
@@ -238,6 +252,7 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
     !!authenticationTokens?.access_token,
     authenticationTokens?.refresh_token,
     location.origin,
+    groupRoles,
   ])
 
   return (

@@ -3,11 +3,13 @@ import { JwtPayload } from 'jwt-decode'
 import { IUser } from '../../requests/responses/user'
 import { IUpdateUserInformationPayload } from '../../requests/payloads/user'
 import { PartialNull } from '../../utils/validation'
+import { GroupRole } from '../../types/group'
 
 export interface IAuthenticationContext {
   isAuthenticated: boolean
   user: IUser | undefined
   groups: string[]
+  groupRoles: GroupRole[]
   updateInformation: (
     data: PartialNull<IUpdateUserInformationPayload>,
     avatar: File | undefined,
@@ -27,6 +29,7 @@ export interface IDecodedAccessToken extends JwtPayload {
   email: string
   preferred_username: string
   resource_access: Partial<Record<string, { roles: string[] }>>
+  group_roles?: GroupRole[]
   [key: string]: any
 }
 
