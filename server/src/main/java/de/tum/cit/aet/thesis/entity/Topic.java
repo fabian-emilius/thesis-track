@@ -23,6 +23,11 @@ public class Topic {
     private UUID id;
 
     @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private ResearchGroup group;
+
+    @NotNull
     @Column(name = "title", nullable = false)
     private String title;
 

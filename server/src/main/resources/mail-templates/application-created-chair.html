@@ -1,10 +1,14 @@
 <div th:replace="~{fragments/salutation :: main}"></div>
 
-<p th:inline="text">there is a new thesis application by <strong>[[${application.user.firstName}]]&nbsp;[[${application.user.lastName}]]</strong>.</p>
+<p th:inline="text">there is a new thesis application by <strong>[[${application.user.firstName}]]&nbsp;[[${application.user.lastName}]]</strong> in the research group <strong>[[${application.group.name}]]</strong>.</p>
 <p th:inline="text">We received the following thesis application details:</p>
 
 <hr/>
 
+<p th:inline="text">
+  <strong>Research Group:</strong><br/>
+  [[${application.group.name}]]
+</p>
 <p th:inline="text">
   <strong>Name:</strong><br/>
   [[${application.user.firstName}]]&nbsp;[[${application.user.lastName}]]

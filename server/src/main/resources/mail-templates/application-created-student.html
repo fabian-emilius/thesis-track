@@ -1,10 +1,14 @@
 <div th:replace="~{fragments/salutation :: main}"></div>
 
-<p th:inline="text">With this email, we confirm your thesis application.</p>
+<p th:inline="text">With this email, we confirm your thesis application for the research group <strong>[[${application.group.name}]]</strong>.</p>
 <p th:inline="text">We received the following details:</p>
 
 <hr>
 
+<p th:inline="text">
+  <strong>Research Group:</strong><br/>
+  [[${application.group.name}]]
+</p>
 <p th:inline="text">
   <strong>Name:</strong><br/>
   [[${application.user.firstName}]]&nbsp;[[${application.user.lastName}]]
@@ -64,3 +68,5 @@
 </p>
 
 <p th:inline="text"><strong>You can find the submitted files in the attachment part of this email.</strong></p>
+
+<div th:if="${application.group.mailFooter != null}" th:utext="${application.group.mailFooter}"></div>

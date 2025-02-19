@@ -38,6 +38,7 @@ public class TopicService {
             String[] types,
             boolean includeClosed,
             String searchQuery,
+            UUID groupId,
             int page,
             int limit,
             String sortBy,
@@ -55,6 +56,7 @@ public class TopicService {
                 typesFilter,
                 includeClosed,
                 searchQueryFilter,
+                groupId,
                 PageRequest.of(page, limit, Sort.by(order))
         );
     }
@@ -62,6 +64,7 @@ public class TopicService {
     @Transactional
     public Topic createTopic(
             User creator,
+            UUID groupId,
             String title,
             Set<String> thesisTypes,
             String problemStatement,
@@ -82,6 +85,7 @@ public class TopicService {
         topic.setUpdatedAt(Instant.now());
         topic.setCreatedAt(Instant.now());
         topic.setCreatedBy(creator);
+        topic.setGroupId(groupId);
 
         topic = topicRepository.save(topic);
 
@@ -103,6 +107,9 @@ public class TopicService {
             List<UUID> supervisorIds,
             List<UUID> advisorIds
     ) {
+        if (!updater.hasGroupAccess(topic.getGroupId())) {
+            throw new ResourceInvalidParametersException("User does not have access to this group");
+        }
         topic.setTitle(title);
         topic.setThesisTypes(thesisTypes);
         topic.setProblemStatement(problemStatement);

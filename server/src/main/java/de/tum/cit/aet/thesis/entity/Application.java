@@ -26,6 +26,11 @@ public class Application {
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private ResearchGroup group;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -73,7 +78,11 @@ public class Application {
     private List<ApplicationReviewer> reviewers = new ArrayList<>();
 
     public boolean hasReadAccess(User user) {
-        if (user.hasAnyGroup("admin", "advisor", "supervisor")) {
+        if (user.hasAnyGroup("admin")) {
+            return true;
+        }
+        
+        if (user.hasAnyGroup("advisor", "supervisor") && user.isMemberOf(group)) {
             return true;
         }
 
@@ -89,7 +98,10 @@ public class Application {
     }
 
     public boolean hasManagementAccess(User user) {
-        return user.hasAnyGroup("admin", "advisor", "supervisor");
+        if (user.hasAnyGroup("admin")) {
+            return true;
+        }
+        return user.hasAnyGroup("advisor", "supervisor") && user.isMemberOf(group);
     }
 
     public Optional<ApplicationReviewer> getReviewer(User user) {

@@ -48,6 +48,7 @@ public class ApplicationService {
     public Page<Application> getAll(
             UUID userId,
             UUID reviewerId,
+            UUID groupId,
             String searchQuery,
             ApplicationState[] states,
             String[] previous,
@@ -70,6 +71,7 @@ public class ApplicationService {
         return applicationRepository.searchApplications(
                 userId,
                 statesFilter != null && !statesFilter.contains(ApplicationState.REJECTED) ? reviewerId : null,
+                groupId,
                 searchQueryFilter,
                 statesFilter,
                 previousFilter,
@@ -81,7 +83,7 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application createApplication(User user, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+    public Application createApplication(User user, ResearchGroup group, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
         Topic topic = topicId == null ? null : topicService.findById(topicId);
 
         if (topic != null && topic.getClosedAt() != null) {
@@ -90,6 +92,7 @@ public class ApplicationService {
 
         Application application = new Application();
         application.setUser(user);
+        application.setGroup(group);
 
         application.setTopic(topic);
         application.setThesisTitle(thesisTitle);
@@ -108,7 +111,10 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application updateApplication(Application application, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+    public Application updateApplication(Application application, ResearchGroup group, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+        if (!application.getGroup().getId().equals(group.getId())) {
+            throw new ResourceInvalidParametersException("Cannot update application: group mismatch");
+        }
         application.setTopic(topicId == null ? null : topicService.findById(topicId));
         application.setThesisTitle(thesisTitle);
         application.setThesisType(thesisType);
@@ -272,8 +278,8 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
-    public boolean applicationExists(User user, UUID topicId) {
-        return applicationRepository.existsPendingApplication(user.getId(), topicId);
+    public boolean applicationExists(User user, UUID topicId, UUID groupId) {
+        return applicationRepository.existsPendingApplication(user.getId(), topicId, groupId);
     }
 
     public Application findById(UUID applicationId) {
