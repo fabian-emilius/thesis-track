@@ -7,7 +7,15 @@ import { Badge, Center, Stack, Text } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import React from 'react'
 
-type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | 'group' | string
+type TopicColumn =
+  | 'title'
+  | 'types'
+  | 'advisor'
+  | 'supervisor'
+  | 'state'
+  | 'createdAt'
+  | 'group'
+  | string
 
 interface ITopicsTableProps {
   columns?: TopicColumn[]
@@ -89,9 +97,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       accessor: 'group',
       title: 'Group',
       width: 150,
-      render: (topic) => (
-        <Text size='sm'>{topic.group?.name || 'No Group'}</Text>
-      ),
+      render: (topic) => <Text size='sm'>{topic.group?.name || 'No Group'}</Text>,
     },
     ...extraColumns,
   }
@@ -112,7 +118,9 @@ const TopicsTable = (props: ITopicsTableProps) => {
       onPageChange={(x) => setPage(x - 1)}
       records={topics?.content}
       idAccessor='topicId'
-      columns={columns.filter(column => !groupId || column !== 'group').map((column) => columnConfig[column])}
+      columns={columns
+        .filter((column) => !groupId || column !== 'group')
+        .map((column) => columnConfig[column])}
       onRowClick={({ record }) => navigate(`/topics/${record.topicId}`)}
     />
   )

@@ -27,7 +27,10 @@ const GroupsProvider: React.FC<GroupsProviderProps> = ({ children }) => {
   /**
    * Updates loading state for a specific operation
    */
-  const setOperationLoading = (operation: keyof GroupsContextValue['loadingStates'], isLoading: boolean) => {
+  const setOperationLoading = (
+    operation: keyof GroupsContextValue['loadingStates'],
+    isLoading: boolean,
+  ) => {
     setLoadingStates((prev) => ({ ...prev, [operation]: isLoading }))
     setLoading(isLoading)
   }
@@ -74,75 +77,87 @@ const GroupsProvider: React.FC<GroupsProviderProps> = ({ children }) => {
     }
   }, [])
 
-  const createGroup = useCallback(async (data: Partial<Group>) => {
-    setOperationLoading('createGroup', true)
-    try {
-      // TODO: Implement API call
-      await fetch('/api/v2/groups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      await fetchGroups()
-      setError(null)
-    } catch (err) {
-      handleError(err)
-    } finally {
-      setOperationLoading('createGroup', false)
-    }
-  }, [fetchGroups])
+  const createGroup = useCallback(
+    async (data: Partial<Group>) => {
+      setOperationLoading('createGroup', true)
+      try {
+        // TODO: Implement API call
+        await fetch('/api/v2/groups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        await fetchGroups()
+        setError(null)
+      } catch (err) {
+        handleError(err)
+      } finally {
+        setOperationLoading('createGroup', false)
+      }
+    },
+    [fetchGroups],
+  )
 
-  const updateGroup = useCallback(async (slug: string, data: Partial<Group>) => {
-    setOperationLoading('updateGroup', true)
-    try {
-      // TODO: Implement API call
-      await fetch(`/api/v2/groups/${slug}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-      await fetchGroups()
-      setError(null)
-    } catch (err) {
-      handleError(err)
-    } finally {
-      setOperationLoading('updateGroup', false)
-    }
-  }, [fetchGroups])
+  const updateGroup = useCallback(
+    async (slug: string, data: Partial<Group>) => {
+      setOperationLoading('updateGroup', true)
+      try {
+        // TODO: Implement API call
+        await fetch(`/api/v2/groups/${slug}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        })
+        await fetchGroups()
+        setError(null)
+      } catch (err) {
+        handleError(err)
+      } finally {
+        setOperationLoading('updateGroup', false)
+      }
+    },
+    [fetchGroups],
+  )
 
-  const addGroupMember = useCallback(async (slug: string, userId: string, role: GroupMember['role']) => {
-    setOperationLoading('addMember', true)
-    try {
-      // TODO: Implement API call
-      await fetch(`/api/v2/groups/${slug}/members`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, role }),
-      })
-      await fetchGroup(slug)
-      setError(null)
-    } catch (err) {
-      handleError(err)
-    } finally {
-      setOperationLoading('addMember', false)
-    }
-  }, [fetchGroup])
+  const addGroupMember = useCallback(
+    async (slug: string, userId: string, role: GroupMember['role']) => {
+      setOperationLoading('addMember', true)
+      try {
+        // TODO: Implement API call
+        await fetch(`/api/v2/groups/${slug}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, role }),
+        })
+        await fetchGroup(slug)
+        setError(null)
+      } catch (err) {
+        handleError(err)
+      } finally {
+        setOperationLoading('addMember', false)
+      }
+    },
+    [fetchGroup],
+  )
 
-  const removeGroupMember = useCallback(async (slug: string, userId: string) => {
-    setOperationLoading('removeMember', true)
-    try {
-      // TODO: Implement API call
-      await fetch(`/api/v2/groups/${slug}/members/${userId}`, {
-        method: 'DELETE',
-      })
-      await fetchGroup(slug)
-      setError(null)
-    } catch (err) {
-      handleError(err)
-    } finally {
-      setOperationLoading('removeMember', false)
-    }
-  }, [fetchGroup])
+  const removeGroupMember = useCallback(
+    async (slug: string, userId: string) => {
+      setOperationLoading('removeMember', true)
+      try {
+        // TODO: Implement API call
+        await fetch(`/api/v2/groups/${slug}/members/${userId}`, {
+          method: 'DELETE',
+        })
+        await fetchGroup(slug)
+        setError(null)
+      } catch (err) {
+        handleError(err)
+      } finally {
+        setOperationLoading('removeMember', false)
+      }
+    },
+    [fetchGroup],
+  )
 
   return (
     <GroupsContext.Provider

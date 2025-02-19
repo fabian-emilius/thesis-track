@@ -44,18 +44,10 @@ const GroupLogoUpload: React.FC<GroupLogoUploadProps> = ({
     >
       <Group justify='center' gap='xl' style={{ minHeight: rem(220), pointerEvents: 'none' }}>
         <Dropzone.Accept>
-          <IconUpload
-            size='3.2rem'
-            stroke={1.5}
-            color={theme.colors[theme.primaryColor][6]}
-          />
+          <IconUpload size='3.2rem' stroke={1.5} color={theme.colors[theme.primaryColor][6]} />
         </Dropzone.Accept>
         <Dropzone.Reject>
-          <IconX
-            size='3.2rem'
-            stroke={1.5}
-            color={theme.colors.red[6]}
-          />
+          <IconX size='3.2rem' stroke={1.5} color={theme.colors.red[6]} />
         </Dropzone.Reject>
         <Dropzone.Idle>
           <IconPhoto size='3.2rem' stroke={1.5} />

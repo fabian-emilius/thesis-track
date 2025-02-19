@@ -9,7 +9,11 @@ interface GroupMemberListProps {
   onRemoveMember: (userId: string) => void
 }
 
-const GroupMemberList: React.FC<GroupMemberListProps> = ({ members, onAddMember, onRemoveMember }) => {
+const GroupMemberList: React.FC<GroupMemberListProps> = ({
+  members,
+  onAddMember,
+  onRemoveMember,
+}) => {
   const [newMemberEmail, setNewMemberEmail] = useState('')
   const [newMemberRole, setNewMemberRole] = useState<GroupMember['role']>('ADVISOR')
 

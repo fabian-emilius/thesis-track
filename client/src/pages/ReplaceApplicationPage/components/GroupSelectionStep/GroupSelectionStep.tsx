@@ -23,7 +23,7 @@ const GroupSelectionStep: React.FC<GroupSelectionStepProps> = ({ onComplete }) =
   }, [fetchGroups])
 
   if (loading) return <PageLoader />
-  
+
   if (error) {
     return (
       <Alert icon={<IconAlertCircle size='1rem' />} title='Error' color='red'>

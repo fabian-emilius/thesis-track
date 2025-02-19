@@ -63,10 +63,7 @@ const ReplaceApplicationPage = () => {
     <Stack>
       <Title>{applicationId ? 'Edit Application' : 'Submit Application'}</Title>
       <Stepper
-        active={Math.max(
-          step,
-          selectedGroupId ? 2 : topicId || applicationId ? 1 : 0,
-        )}
+        active={Math.max(step, selectedGroupId ? 2 : topicId || applicationId ? 1 : 0)}
         onStepClick={updateStep}
       >
         <Stepper.Step label='First Step' description='Select Group'>

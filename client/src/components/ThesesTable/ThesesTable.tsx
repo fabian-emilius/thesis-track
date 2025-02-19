@@ -108,9 +108,7 @@ const ThesesTable = (props: IThesesTableProps) => {
       accessor: 'group',
       title: 'Group',
       width: 150,
-      render: (thesis) => (
-        <Text size='sm'>{thesis.group?.name || 'No Group'}</Text>
-      ),
+      render: (thesis) => <Text size='sm'>{thesis.group?.name || 'No Group'}</Text>,
     },
     ...extraColumns,
   }
@@ -141,7 +139,9 @@ const ThesesTable = (props: IThesesTableProps) => {
       }}
       records={theses?.content}
       idAccessor='thesisId'
-      columns={columns.filter(column => !groupId || column !== 'group').map((column) => columnConfig[column])}
+      columns={columns
+        .filter((column) => !groupId || column !== 'group')
+        .map((column) => columnConfig[column])}
       onRowClick={({ record: thesis }) => onThesisClick(thesis)}
     />
   )

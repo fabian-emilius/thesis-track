@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from 'react'
-import { Container, Title, TextInput, Textarea, Button, Stack, Group, Card, Text } from '@mantine/core'
+import {
+  Container,
+  Title,
+  TextInput,
+  Textarea,
+  Button,
+  Stack,
+  Group,
+  Card,
+  Text,
+} from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useGroups } from '../../providers/GroupsProvider/hooks'
@@ -20,8 +30,15 @@ interface GroupFormValues {
 const EditGroupPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const { selectedGroup, loading, error, fetchGroup, updateGroup, addGroupMember, removeGroupMember } =
-    useGroups()
+  const {
+    selectedGroup,
+    loading,
+    error,
+    fetchGroup,
+    updateGroup,
+    addGroupMember,
+    removeGroupMember,
+  } = useGroups()
   const [newMemberEmail, setNewMemberEmail] = useState('')
   const [newMemberRole, setNewMemberRole] = useState<GroupMember['role']>('ADVISOR')
 

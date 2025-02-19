@@ -36,7 +36,8 @@ const CreateGroupPage: React.FC = () => {
         /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)
           ? null
           : 'Slug must be lowercase, alphanumeric with hyphens',
-      description: (value) => (value.length < 10 ? 'Description must be at least 10 characters' : null),
+      description: (value) =>
+        value.length < 10 ? 'Description must be at least 10 characters' : null,
     },
   })
 

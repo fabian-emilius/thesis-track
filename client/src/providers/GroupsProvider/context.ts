@@ -30,27 +30,27 @@ export interface GroupsContextValue {
   error: GroupError | null
   /** Currently selected group */
   selectedGroup?: Group
-  
+
   /**
    * Fetches all available groups
    * @throws {GroupError} If the fetch operation fails
    */
   fetchGroups: () => Promise<void>
-  
+
   /**
    * Fetches a specific group by slug
    * @param slug - The unique slug identifier of the group
    * @throws {GroupError} If the fetch operation fails
    */
   fetchGroup: (slug: string) => Promise<void>
-  
+
   /**
    * Creates a new group
    * @param data - Partial group data for creation
    * @throws {GroupError} If the creation fails
    */
   createGroup: (data: Partial<Group>) => Promise<void>
-  
+
   /**
    * Updates an existing group
    * @param slug - The unique slug identifier of the group
@@ -58,7 +58,7 @@ export interface GroupsContextValue {
    * @throws {GroupError} If the update fails
    */
   updateGroup: (slug: string, data: Partial<Group>) => Promise<void>
-  
+
   /**
    * Adds a new member to a group
    * @param slug - The unique slug identifier of the group
@@ -67,7 +67,7 @@ export interface GroupsContextValue {
    * @throws {GroupError} If adding the member fails
    */
   addGroupMember: (slug: string, userId: string, role: GroupMember['role']) => Promise<void>
-  
+
   /**
    * Removes a member from a group
    * @param slug - The unique slug identifier of the group
