@@ -1,7 +1,10 @@
 package de.tum.cit.aet.thesis.service.interfaces;
 
+import de.tum.cit.aet.thesis.constant.GroupRole;
 import de.tum.cit.aet.thesis.entity.ResearchGroup;
 import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.request.exception.ResourceAlreadyExistsException;
+import de.tum.cit.aet.thesis.request.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +35,7 @@ public interface IGroupService {
      * @return The research group
      * @throws ResourceNotFoundException if group not found
      */
-    ResearchGroup getGroupBySlug(String slug);
+    ResearchGroup getGroupBySlug(String slug) throws ResourceNotFoundException;
 
     /**
      * Creates a new research group.
@@ -42,7 +45,7 @@ public interface IGroupService {
      * @return The created group
      * @throws ResourceAlreadyExistsException if group with slug exists
      */
-    ResearchGroup createGroup(ResearchGroup group, User creator);
+    ResearchGroup createGroup(ResearchGroup group, User creator) throws ResourceAlreadyExistsException;
 
     /**
      * Updates an existing research group.
@@ -52,7 +55,7 @@ public interface IGroupService {
      * @return The updated group
      * @throws ResourceNotFoundException if group not found
      */
-    ResearchGroup updateGroup(String slug, ResearchGroup updatedGroup);
+    ResearchGroup updateGroup(String slug, ResearchGroup updatedGroup) throws ResourceNotFoundException;
 
     /**
      * Updates the logo of a research group.
@@ -61,5 +64,5 @@ public interface IGroupService {
      * @param logoFilename The filename of the new logo
      * @throws ResourceNotFoundException if group not found
      */
-    void updateGroupLogo(String slug, String logoFilename);
+    void updateGroupLogo(String slug, String logoFilename) throws ResourceNotFoundException;
 }

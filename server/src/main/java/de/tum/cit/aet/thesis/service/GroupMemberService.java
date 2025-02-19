@@ -5,9 +5,9 @@ import de.tum.cit.aet.thesis.entity.GroupMember;
 import de.tum.cit.aet.thesis.entity.GroupMemberId;
 import de.tum.cit.aet.thesis.entity.ResearchGroup;
 import de.tum.cit.aet.thesis.entity.User;
-import de.tum.cit.aet.thesis.exception.ValidationException;
+import de.tum.cit.aet.thesis.exception.ResourceInvalidParametersException;
 import de.tum.cit.aet.thesis.repository.GroupMemberRepository;
-import de.tum.cit.aet.thesis.service.IGroupMemberService;
+import de.tum.cit.aet.thesis.service.api.IGroupMemberService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class GroupMemberService implements IGroupMemberService {
     @Transactional(readOnly = true)
     public List<GroupMember> getGroupMembers(@NotNull UUID groupId) {
         if (groupId == null) {
-            throw new ValidationException("Group ID cannot be null");
+            throw new ResourceInvalidParametersException("Group ID cannot be null");
         }
         return memberRepository.findAllByGroupId(groupId);
     }
@@ -55,7 +55,7 @@ public class GroupMemberService implements IGroupMemberService {
     @Transactional(readOnly = true)
     public List<GroupMember> getUserMemberships(@NotNull UUID userId) {
         if (userId == null) {
-            throw new ValidationException("User ID cannot be null");
+            throw new ResourceInvalidParametersException("User ID cannot be null");
         }
         return memberRepository.findAllByUserId(userId);
     }
@@ -73,11 +73,11 @@ public class GroupMemberService implements IGroupMemberService {
     @Transactional
     public GroupMember addMember(@NotNull ResearchGroup group, @NotNull User user, @NotNull GroupRole role) {
         if (group == null || user == null || role == null) {
-            throw new ValidationException("Group, user and role must not be null");
+            throw new ResourceInvalidParametersException("Group, user and role must not be null");
         }
         
         if (isMember(group.getId(), user.getId())) {
-            throw new ValidationException("User is already a member of this group");
+            throw new ResourceInvalidParametersException("User is already a member of this group");
         }
 
         GroupMember member = new GroupMember();
@@ -102,7 +102,7 @@ public class GroupMemberService implements IGroupMemberService {
     @Transactional
     public GroupMember addGroupAdmin(@NotNull ResearchGroup group, @NotNull User user) {
         if (group == null || user == null) {
-            throw new ValidationException("Group and user must not be null");
+            throw new ResourceInvalidParametersException("Group and user must not be null");
         }
         return addMember(group, user, GroupRole.GROUP_ADMIN);
     }
@@ -118,7 +118,7 @@ public class GroupMemberService implements IGroupMemberService {
     @Transactional
     public void removeMember(@NotNull UUID groupId, @NotNull UUID userId) {
         if (groupId == null || userId == null) {
-            throw new ValidationException("Group ID and User ID must not be null");
+            throw new ResourceInvalidParametersException("Group ID and User ID must not be null");
         }
         memberRepository.deleteByGroupIdAndUserId(groupId, userId);
     }
@@ -136,7 +136,7 @@ public class GroupMemberService implements IGroupMemberService {
     @Transactional(readOnly = true)
     public boolean hasRole(@NotNull UUID groupId, @NotNull UUID userId, @NotNull GroupRole role) {
         if (groupId == null || userId == null || role == null) {
-            throw new ValidationException("Group ID, User ID and Role must not be null");
+            throw new ResourceInvalidParametersException("Group ID, User ID and Role must not be null");
         }
         return memberRepository.existsByGroupIdAndUserIdAndRole(groupId, userId, role);
     }

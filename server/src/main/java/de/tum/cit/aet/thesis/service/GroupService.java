@@ -1,11 +1,12 @@
-package de.tum.cit.aet.thesis.service;
+package de.tum.cit.aet.thesis.service.impl;
 
 import de.tum.cit.aet.thesis.entity.ResearchGroup;
 import de.tum.cit.aet.thesis.entity.User;
-import de.tum.cit.aet.thesis.enums.GroupRole;
+import de.tum.cit.aet.thesis.constants.GroupRole;
 import de.tum.cit.aet.thesis.exception.request.ResourceAlreadyExistsException;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
 import de.tum.cit.aet.thesis.repository.ResearchGroupRepository;
+import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @Service
 @Validated
 @RequiredArgsConstructor
-public class GroupService implements IGroupService {
+public class GroupService implements de.tum.cit.aet.thesis.service.IGroupService {
     private final ResearchGroupRepository groupRepository;
     private final GroupMemberService groupMemberService;
     private final AuthenticationService authService;
@@ -78,7 +79,7 @@ public class GroupService implements IGroupService {
     @Transactional
     public ResearchGroup createGroup(@Valid @NotNull ResearchGroup group, @NotNull User creator) {
         if (group.getSlug() == null || group.getSlug().isBlank()) {
-            throw new IllegalArgumentException("Group slug cannot be empty");
+            throw new ResourceInvalidParametersException("Group slug cannot be empty");
         }
         if (groupRepository.existsBySlug(group.getSlug())) {
             throw new ResourceAlreadyExistsException("Group with slug '" + group.getSlug() + "' already exists");

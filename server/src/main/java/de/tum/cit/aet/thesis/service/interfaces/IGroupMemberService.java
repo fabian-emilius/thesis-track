@@ -1,9 +1,11 @@
 package de.tum.cit.aet.thesis.service.interfaces;
 
-import de.tum.cit.aet.thesis.constants.GroupRole;
+import de.tum.cit.aet.thesis.constants.enums.GroupRole;
 import de.tum.cit.aet.thesis.entity.GroupMember;
 import de.tum.cit.aet.thesis.entity.ResearchGroup;
 import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.exception.NotFoundException;
+import de.tum.cit.aet.thesis.exception.ValidationException;
 
 import java.util.List;
 import java.util.UUID;
