@@ -173,13 +173,15 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
     label: group.name,
   }))
 
-  const handleGroupChange = (groupId: string) => {
-    const group = userGroups.find((g) => g.id === groupId)
-    if (group) {
-      setCurrentGroup(group)
-      // Navigate to group landing page if we're on a group-specific page
-      if (location.pathname.includes('/groups/')) {
-        navigate(`/groups/${group.slug}`)
+  const handleGroupChange = (groupId: string | null) => {
+    if (groupId) {
+      const group = userGroups.find((g) => g.id === groupId)
+      if (group) {
+        setCurrentGroup(group)
+        // Navigate to group landing page if we're on a group-specific page
+        if (location.pathname.includes('/groups/')) {
+          navigate(`/groups/${group.slug}`)
+        }
       }
     }
   }
@@ -210,7 +212,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
       <AppShell.Navbar p='md'>
         <AppShell.Section grow mb='md'>
           {!minimized && (
-            <Stack spacing="xs">
+            <Stack gap="xs">
               <Group preventGrowOverflow={false}>
                 <Logo className={classes.logo} />
                 <Text

@@ -61,6 +61,7 @@ export function GroupRoleManagement({
             onClick={handleAddRole}
             disabled={!selectedUser || !selectedRole}
             loading={isLoading}
+            size="sm"
           >
             Add Member
           </Button>
@@ -84,7 +85,7 @@ export function GroupRoleManagement({
                 <Button
                   variant="subtle"
                   color="red"
-                  compact
+                  size="sm"
                   onClick={() => onRemoveRole(role.groupId)}
                   loading={isLoading}
                 >
