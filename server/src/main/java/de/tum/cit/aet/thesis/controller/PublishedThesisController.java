@@ -1,70 +1,56 @@
 package de.tum.cit.aet.thesis.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.web.bind.annotation.*;
 import de.tum.cit.aet.thesis.constants.ThesisState;
 import de.tum.cit.aet.thesis.constants.ThesisVisibility;
-import de.tum.cit.aet.thesis.dto.PaginationDto;
-import de.tum.cit.aet.thesis.dto.PublishedThesisDto;
 import de.tum.cit.aet.thesis.entity.Thesis;
 import de.tum.cit.aet.thesis.service.ThesisService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
 import java.util.UUID;
 
-@Slf4j
 @RestController
-@RequestMapping("/v2/published-theses")
+@RequestMapping("/v2/groups/{groupId}/published-theses")
+@RequiredArgsConstructor
 public class PublishedThesisController {
     private final ThesisService thesisService;
 
-    @Autowired
-    public PublishedThesisController(ThesisService thesisService) {
-        this.thesisService = thesisService;
-    }
-
     @GetMapping
-    public ResponseEntity<PaginationDto<PublishedThesisDto>> getTheses(
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "50") Integer limit,
-            @RequestParam(required = false, defaultValue = "endDate") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String sortOrder
+    public ResponseEntity<Page<Thesis>> getPublishedTheses(
+            @PathVariable UUID groupId,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String searchQuery,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortOrder
     ) {
-        Page<Thesis> theses = thesisService.getAll(
-                null,
-                Set.of(ThesisVisibility.PUBLIC),
-                null,
-                new ThesisState[]{ThesisState.FINISHED},
-                null,
-                page,
-                limit,
-                sortBy,
-                sortOrder
-        );
+        Sort.Direction direction = sortOrder.equalsIgnoreCase("asc") ? 
+                Sort.Direction.ASC : Sort.Direction.DESC;
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        return ResponseEntity.ok(PaginationDto.fromSpringPage(theses.map(PublishedThesisDto::fromThesisEntity)));
+        // Only return finished and public theses
+        return ResponseEntity.ok(thesisService.searchTheses(
+                groupId, type, ThesisState.FINISHED, searchQuery, pageRequest));
     }
 
-    @GetMapping("/{thesisId}/thesis")
-    public ResponseEntity<Resource> getThesisFile(
+    @GetMapping("/{thesisId}")
+    public ResponseEntity<Thesis> getPublishedThesis(
+            @PathVariable UUID groupId,
             @PathVariable UUID thesisId
     ) {
         Thesis thesis = thesisService.findById(thesisId);
-
-        if (!thesis.hasReadAccess(null)) {
-            throw new AccessDeniedException("You do not have the required permissions to view this thesis");
+        
+        // Verify thesis is public and finished
+        if (thesis.getState() != ThesisState.FINISHED || 
+            thesis.getVisibility() != ThesisVisibility.PUBLIC) {
+            return ResponseEntity.notFound().build();
         }
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("inline; filename=thesis_%s.pdf", thesisId))
-                .body(thesisService.getThesisFile(thesis.getLatestFile("THESIS").orElseThrow()));
+        
+        return ResponseEntity.ok(thesis);
     }
 }

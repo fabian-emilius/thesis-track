@@ -68,6 +68,11 @@ public class Thesis {
     @JoinColumn(name = "application_id")
     private Application application;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
     @Column(name = "final_grade")
     private String finalGrade;
 
@@ -157,10 +162,18 @@ public class Thesis {
             return true;
         }
 
+        // Check if user is a supervisor in the group
+        for (GroupMember member : group.getMembers()) {
+            if (member.getUser().getId().equals(user.getId()) && 
+                member.getRole() == GroupRole.SUPERVISOR) {
+                return true;
+            }
+        }
+
+        // Check thesis-specific supervisor role
         for (ThesisRole role : roles) {
             if (
                     role.getId().getRole().equals(ThesisRoleName.SUPERVISOR) &&
-                    user.hasAnyGroup("supervisor") &&
                     role.getUser().getId().equals(user.getId())
             ) {
                 return true;
@@ -179,10 +192,18 @@ public class Thesis {
             return true;
         }
 
+        // Check if user is an advisor in the group
+        for (GroupMember member : group.getMembers()) {
+            if (member.getUser().getId().equals(user.getId()) && 
+                member.getRole() == GroupRole.ADVISOR) {
+                return true;
+            }
+        }
+
+        // Check thesis-specific advisor role
         for (ThesisRole role : roles) {
             if (
                     role.getId().getRole().equals(ThesisRoleName.ADVISOR) &&
-                    user.hasAnyGroup("advisor") &&
                     role.getUser().getId().equals(user.getId())
             ) {
                 return true;
@@ -227,12 +248,24 @@ public class Thesis {
             return true;
         }
 
-        if (visibility.equals(ThesisVisibility.INTERNAL) && user.hasAnyGroup("advisor", "supervisor")) {
-            return true;
+        // Check group membership for internal visibility
+        if (visibility.equals(ThesisVisibility.INTERNAL)) {
+            for (GroupMember member : group.getMembers()) {
+                if (member.getUser().getId().equals(user.getId())) {
+                    return true;
+                }
+            }
+            return false;
         }
 
-        if (visibility.equals(ThesisVisibility.STUDENT) && user.hasAnyGroup("student", "advisor", "supervisor")) {
-            return true;
+        // Check group membership for student visibility
+        if (visibility.equals(ThesisVisibility.STUDENT)) {
+            for (GroupMember member : group.getMembers()) {
+                if (member.getUser().getId().equals(user.getId())) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         return false;

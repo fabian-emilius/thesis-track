@@ -64,7 +64,51 @@ public class Topic {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
     @OneToMany(mappedBy = "topic", fetch = FetchType.EAGER)
     @OrderBy("position ASC")
     private List<TopicRole> roles = new ArrayList<>();
+
+    public boolean hasReadAccess(User user) {
+        if (user == null) {
+            return false;
+        }
+
+        if (user.hasAnyGroup("admin")) {
+            return true;
+        }
+
+        // Check if user is a member of the group
+        for (GroupMember member : group.getMembers()) {
+            if (member.getUser().getId().equals(user.getId())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean hasWriteAccess(User user) {
+        if (user == null) {
+            return false;
+        }
+
+        if (user.hasAnyGroup("admin")) {
+            return true;
+        }
+
+        // Check if user is a supervisor or admin in the group
+        for (GroupMember member : group.getMembers()) {
+            if (member.getUser().getId().equals(user.getId()) && 
+                (member.getRole() == GroupRole.GROUP_ADMIN || member.getRole() == GroupRole.SUPERVISOR)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

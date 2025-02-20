@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div th:fragment="acceptance-template">
+        <div th:if="${groupAcceptanceTemplate}" th:utext="${groupAcceptanceTemplate}"></div>
+        <div th:unless="${groupAcceptanceTemplate}">
+            <p>Your application has been accepted. Congratulations!</p>
+        </div>
+    </div>
+
+    <div th:fragment="post-acceptance-instructions">
+        <div th:if="${groupPostAcceptanceInstructions}" th:utext="${groupPostAcceptanceInstructions}"></div>
+        <div th:unless="${groupPostAcceptanceInstructions}">
+            <p>Please follow the standard thesis process as outlined in our guidelines.</p>
+        </div>
+    </div>
+
+    <div th:fragment="email-footer">
+        <hr/>
+        <div th:if="${groupEmailFooter}" th:utext="${groupEmailFooter}"></div>
+        <div th:unless="${groupEmailFooter}">
+            <p>Best regards,<br/>Your Thesis Management Team</p>
+        </div>
+    </div>
+</body>
+</html>

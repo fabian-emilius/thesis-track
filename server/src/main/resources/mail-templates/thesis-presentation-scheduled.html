@@ -1,34 +1,30 @@
-<div th:replace="~{fragments/salutation :: main}"></div>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Thesis Presentation Scheduled</title>
+</head>
+<body>
+    <div th:replace="~{fragments/salutation :: salutation}"></div>
 
-<p th:inline="text">
-  [[${presentation.createdBy.firstName}]] [[${presentation.createdBy.lastName}]] scheduled a presentation for thesis "[[${thesis.title}]]"
-</p>
+    <p>A presentation has been scheduled for the thesis:</p>
+    <h2 th:text="${thesis.title}"></h2>
 
-<p th:inline="text">
-  <strong>Type</strong><br />
-  [[${DataFormatter.formatEnum(presentation.type)}]]
-</p>
+    <div>
+        <p><strong>Date:</strong> <span th:text="${#temporals.format(presentation.scheduledAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+        <p><strong>Location:</strong> <span th:text="${presentation.location}"></span></p>
+        <p th:if="${presentation.notes}" th:text="${presentation.notes}"></p>
+    </div>
 
-<p th:inline="text">
-  <strong>Location</strong><br />
-  [[${DataFormatter.formatOptionalString(presentation.location)}]]
-</p >
+    <div th:replace="~{fragments/thesis-link :: thesis-link}"></div>
 
-<p th:inline="text">
-  <strong>Stream URL</strong><br />
-  [[${DataFormatter.formatOptionalString(presentation.streamUrl)}]]
-</p>
+    <div th:if="${group}">
+        <p>This presentation is organized by <span th:text="${group.name}"></span>.</p>
+        <p th:if="${group.externalLink}">For more information, visit: <a th:href="${group.externalLink}" th:text="${group.externalLink}"></a></p>
+    </div>
 
-<p th:inline="text">
-  <strong>Language</strong><br />
-  [[${DataFormatter.formatConstantName(presentation.language)}]]
-</p>
+    <div th:replace="~{fragments/notification-settings :: settings}"></div>
 
-<p th:inline="text">
-  <strong>Scheduled At</strong><br />
-  [[${DataFormatter.formatDateTime(presentation.scheduledAt)}]]
-</p>
-
-<div th:replace="~{fragments/thesis-link :: main}"></div>
-
-<div th:replace="~{fragments/notification-settings :: main}"></div>
+    <div th:replace="~{fragments/group-content :: email-footer}"></div>
+</body>
+</html>

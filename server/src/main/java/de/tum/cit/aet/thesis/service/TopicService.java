@@ -10,6 +10,7 @@ import de.tum.cit.aet.thesis.constants.ThesisRoleName;
 import de.tum.cit.aet.thesis.entity.Topic;
 import de.tum.cit.aet.thesis.entity.TopicRole;
 import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.entity.Group;
 import de.tum.cit.aet.thesis.entity.key.TopicRoleId;
 import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
@@ -26,15 +27,22 @@ public class TopicService {
     private final TopicRepository topicRepository;
     private final TopicRoleRepository topicRoleRepository;
     private final UserRepository userRepository;
+    private final GroupContextService groupContextService;
 
     @Autowired
-    public TopicService(TopicRepository topicRepository, TopicRoleRepository topicRoleRepository, UserRepository userRepository) {
+    public TopicService(
+            TopicRepository topicRepository, 
+            TopicRoleRepository topicRoleRepository, 
+            UserRepository userRepository,
+            GroupContextService groupContextService) {
         this.topicRepository = topicRepository;
         this.topicRoleRepository = topicRoleRepository;
         this.userRepository = userRepository;
+        this.groupContextService = groupContextService;
     }
 
     public Page<Topic> getAll(
+            UUID groupId,
             String[] types,
             boolean includeClosed,
             String searchQuery,
@@ -43,6 +51,9 @@ public class TopicService {
             String sortBy,
             String sortOrder
     ) {
+        // Validate group access
+        groupContextService.validateGroupAccess(groupId);
+
         Sort.Order order = new Sort.Order(
                 sortOrder.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC,
                 HibernateHelper.getColumnName(Topic.class, sortBy)
@@ -52,6 +63,7 @@ public class TopicService {
         String[] typesFilter = types == null || types.length == 0 ? null : types;
 
         return topicRepository.searchTopics(
+                groupId,
                 typesFilter,
                 includeClosed,
                 searchQueryFilter,
@@ -61,6 +73,7 @@ public class TopicService {
 
     @Transactional
     public Topic createTopic(
+            UUID groupId,
             User creator,
             String title,
             Set<String> thesisTypes,
@@ -71,6 +84,10 @@ public class TopicService {
             List<UUID> supervisorIds,
             List<UUID> advisorIds
     ) {
+        // Validate group access and supervisor rights
+        Group group = groupContextService.validateGroupAccess(groupId);
+        groupContextService.validateGroupSupervisorAccess(groupId);
+
         Topic topic = new Topic();
 
         topic.setTitle(title);
@@ -82,6 +99,7 @@ public class TopicService {
         topic.setUpdatedAt(Instant.now());
         topic.setCreatedAt(Instant.now());
         topic.setCreatedBy(creator);
+        topic.setGroup(group);
 
         topic = topicRepository.save(topic);
 
@@ -103,6 +121,9 @@ public class TopicService {
             List<UUID> supervisorIds,
             List<UUID> advisorIds
     ) {
+        // Validate group access and supervisor rights
+        groupContextService.validateGroupSupervisorAccess(topic.getGroup().getId());
+
         topic.setTitle(title);
         topic.setThesisTypes(thesisTypes);
         topic.setProblemStatement(problemStatement);
@@ -117,8 +138,13 @@ public class TopicService {
     }
 
     public Topic findById(UUID topicId) {
-        return topicRepository.findById(topicId)
+        Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Topic with id %s not found.", topicId)));
+        
+        // Validate group access
+        groupContextService.validateGroupAccess(topic.getGroup().getId());
+        
+        return topic;
     }
 
     private void assignTopicRoles(Topic topic, User assigner, List<UUID> advisorIds, List<UUID> supervisorIds) {

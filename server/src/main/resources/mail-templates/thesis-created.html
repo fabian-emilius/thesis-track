@@ -1,16 +1,23 @@
-<div th:replace="~{fragments/salutation :: main}"></div>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Thesis Created</title>
+</head>
+<body>
+    <div th:replace="~{fragments/salutation :: salutation}"></div>
 
-<p th:inline="text">
-  [[${creatingUser.firstName}]] [[${creatingUser.lastName}]] created and assigned a thesis to you: <a target="_blank" rel="noopener noreferrer nofollow" th:href="${thesisUrl}">[[${thesisUrl}]]</a>
-</p>
+    <p>A new thesis has been created:</p>
+    <h2 th:text="${thesis.title}"></h2>
 
-<p th:inline="text">
-  <strong>Title</strong>: [[${thesis.title}]]<br />
-  <strong>Supervisor</strong>: [[${DataFormatter.formatUsers(thesis.supervisors)}]]<br />
-  <strong>Advisor</strong>: [[${DataFormatter.formatUsers(thesis.advisors)}]]<br />
-  <strong>Student</strong>: [[${DataFormatter.formatUsers(thesis.students)}]]<br />
-</p>
+    <div th:replace="~{fragments/thesis-link :: thesis-link}"></div>
 
-<p th:inline="text">
-  The next step is that you write a proposal and submit it on <a target="_blank" rel="noopener noreferrer nofollow" th:href="${thesisUrl}">[[${thesisUrl}]]</a>
-</p>
+    <div th:if="${group}">
+        <p>This thesis is managed by <span th:text="${group.name}"></span>.</p>
+    </div>
+
+    <div th:replace="~{fragments/notification-settings :: settings}"></div>
+
+    <div th:replace="~{fragments/group-content :: email-footer}"></div>
+</body>
+</html>

@@ -1,20 +1,26 @@
 package de.tum.cit.aet.thesis.service;
 
+import de.tum.cit.aet.thesis.constants.GroupRole;
+import de.tum.cit.aet.thesis.entity.GroupMember;
+import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.repository.GroupMemberRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import de.tum.cit.aet.thesis.entity.User;
 
 import org.springframework.http.HttpHeaders;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,6 +28,8 @@ public class AccessManagementService {
     private static final Logger log = LoggerFactory.getLogger(AccessManagementService.class);
 
     private final WebClient webClient;
+    private final GroupMemberRepository groupMemberRepository;
+    private final UserService userService;
 
     private final String keycloakRealmName;
     private final String serviceClientId;
@@ -37,11 +45,15 @@ public class AccessManagementService {
             @Value("${thesis-management.keycloak.realm-name}") String keycloakRealmName,
             @Value("${thesis-management.keycloak.service-client.id}") String serviceClientId,
             @Value("${thesis-management.keycloak.service-client.secret}") String serviceClientSecret,
-            @Value("${thesis-management.keycloak.service-client.student-group-name}") String studentGroupName
+            @Value("${thesis-management.keycloak.service-client.student-group-name}") String studentGroupName,
+            GroupMemberRepository groupMemberRepository,
+            UserService userService
     ) {
         this.keycloakRealmName = keycloakRealmName;
         this.serviceClientId = serviceClientId;
         this.serviceClientSecret = serviceClientSecret;
+        this.groupMemberRepository = groupMemberRepository;
+        this.userService = userService;
 
         this.webClient = WebClient.builder()
                 .baseUrl(keycloakHost)
@@ -54,6 +66,41 @@ public class AccessManagementService {
             log.warn("Could not fetch group id from configured student group", exception);
         }
         this.studentGroupId = studentGroupId;
+    }
+
+    public boolean isGroupMember(UUID groupId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+
+        User user = userService.getCurrentUser();
+        return groupMemberRepository.existsByGroupIdAndUserId(groupId, user.getId());
+    }
+
+    public boolean isGroupAdmin(UUID groupId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+
+        User user = userService.getCurrentUser();
+        Optional<GroupMember> member = groupMemberRepository.findByGroupIdAndUserId(groupId, user.getId());
+        return member.map(m -> m.getRole() == GroupRole.GROUP_ADMIN).orElse(false);
+    }
+
+    public boolean isGroupSupervisor(UUID groupId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+
+        User user = userService.getCurrentUser();
+        Optional<GroupMember> member = groupMemberRepository.findByGroupIdAndUserId(groupId, user.getId());
+        return member.map(m -> m.getRole() == GroupRole.SUPERVISOR).orElse(false);
+    }
+
+    public boolean isGroupAdvisor(UUID groupId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+
+        User user = userService.getCurrentUser();
+        Optional<GroupMember> member = groupMemberRepository.findByGroupIdAndUserId(groupId, user.getId());
+        return member.map(m -> m.getRole() == GroupRole.ADVISOR).orElse(false);
     }
 
     public void addStudentGroup(User user) {
