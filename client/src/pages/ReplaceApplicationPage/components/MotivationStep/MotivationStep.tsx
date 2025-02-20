@@ -12,6 +12,7 @@ import { GLOBAL_CONFIG } from '../../../../config/global'
 import { IApplication } from '../../../../requests/responses/application'
 import TopicAccordionItem from '../../../../components/TopicAccordionItem/TopicAccordionItem'
 import { formatThesisType } from '../../../../utils/format'
+import { useCurrentGroup } from '../../../../providers/GroupContext/hooks'
 
 interface IMotivationStepProps {
   topic: ITopic | undefined
@@ -28,7 +29,7 @@ interface IMotivationStepForm {
 
 const MotivationStep = (props: IMotivationStepProps) => {
   const { topic, application, onComplete } = props
-
+  const currentGroup = useCurrentGroup()
   const [loading, setLoading] = useState(false)
 
   const mergedTopic = application?.topic || topic
@@ -72,6 +73,11 @@ const MotivationStep = (props: IMotivationStepProps) => {
   }, [application?.applicationId])
 
   const onSubmit = async (values: IMotivationStepForm) => {
+    if (!currentGroup) {
+      showSimpleError('Please select a group first')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -81,6 +87,7 @@ const MotivationStep = (props: IMotivationStepProps) => {
           method: application ? 'PUT' : 'POST',
           requiresAuth: true,
           data: {
+            groupId: currentGroup.id,
             topicId: mergedTopic?.topicId,
             thesisTitle: values.thesisTitle || null,
             thesisType: values.thesisType,

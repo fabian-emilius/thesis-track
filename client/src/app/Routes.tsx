@@ -27,6 +27,12 @@ const ReviewApplicationPage = lazy(
 const ThesisPage = lazy(() => import('../pages/ThesisPage/ThesisPage'))
 const LandingPage = lazy(() => import('../pages/LandingPage/LandingPage'))
 
+// New group-related page imports
+const GroupOverviewPage = lazy(() => import('../pages/GroupOverviewPage/GroupOverviewPage'))
+const GroupLandingPage = lazy(() => import('../pages/GroupLandingPage/GroupLandingPage'))
+const GroupSettingsPage = lazy(() => import('../pages/GroupSettingsPage/GroupSettingsPage'))
+const AdminGroupPage = lazy(() => import('../pages/AdminGroupPage/AdminGroupPage'))
+
 const AppRoutes = () => {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -136,6 +142,41 @@ const AppRoutes = () => {
               </AuthenticatedArea>
             }
           />
+
+          {/* New group-related routes */}
+          <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea>
+                <GroupOverviewPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/:groupSlug'
+            element={
+              <AuthenticatedArea>
+                <GroupLandingPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/:groupSlug/settings'
+            element={
+              <AuthenticatedArea>
+                <GroupSettingsPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/admin/groups/new'
+            element={
+              <AuthenticatedArea requiredGroups={['admin']}>
+                <AdminGroupPage />
+              </AuthenticatedArea>
+            }
+          />
+
           <Route path='/about' element={<AboutPage />} />
           <Route path='/imprint' element={<ImprintPage />} />
           <Route path='/privacy' element={<PrivacyPage />} />
