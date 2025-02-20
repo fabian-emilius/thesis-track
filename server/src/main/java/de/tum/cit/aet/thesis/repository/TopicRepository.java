@@ -19,4 +19,10 @@ public interface TopicRepository extends JpaRepository<Topic, UUID> {
     Page<Topic> findByGroupIdAndUserIdAndClosedAtIsNull(UUID groupId, UUID userId, Pageable pageable);
     
     List<Topic> findByGroupId(UUID groupId);
+
+    @Query("SELECT COUNT(t) FROM Topic t WHERE t.group.id = :groupId AND t.closedAt IS NULL")
+    Long countOpenTopics(UUID groupId);
+
+    @Query("SELECT COUNT(t) FROM Topic t WHERE t.group.id = :groupId AND t.closedAt IS NULL")
+    Long countOpenTopics(UUID groupId);
 }

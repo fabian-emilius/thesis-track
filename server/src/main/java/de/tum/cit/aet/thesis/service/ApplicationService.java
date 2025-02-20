@@ -10,6 +10,9 @@ import de.tum.cit.aet.thesis.repository.ApplicationReviewerRepository;
 import de.tum.cit.aet.thesis.repository.GroupRepository;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
 import de.tum.cit.aet.thesis.exception.request.AccessDeniedException;
+import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
+
+import java.time.Instant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,8 +44,16 @@ public class ApplicationService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Application> getApplications(UUID groupId, Pageable pageable) {
+    public Page<Application> getApplications(UUID groupId, String search, Pageable pageable) {
+        if (search != null && !search.isBlank()) {
+            return applicationRepository.findByGroupIdAndTopicTitleContainingIgnoreCase(groupId, search, pageable);
+        }
         return applicationRepository.findByGroupId(groupId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public long countUnreviewedApplications(UUID groupId) {
+        return applicationRepository.countByGroupIdAndState(groupId, ApplicationState.PENDING);
     }
 
     @Transactional(readOnly = true)
@@ -69,14 +80,16 @@ public class ApplicationService {
     }
 
     @Transactional
-    public Application createApplication(Application application, UUID groupId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
-
+    public Application createApplication(Application application) {
         User currentUser = authenticationService.getCurrentUser();
+        if (application.getTopic() == null) {
+            throw new ResourceInvalidParametersException("Topic is required");
+        }
+        
         application.setUser(currentUser);
-        application.setGroup(group);
+        application.setGroup(application.getTopic().getGroup());
         application.setState(ApplicationState.PENDING);
+        application.setCreatedAt(Instant.now());
 
         Application savedApplication = applicationRepository.save(application);
         mailingService.sendApplicationCreatedNotification(savedApplication);

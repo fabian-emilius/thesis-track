@@ -22,4 +22,7 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
     Page<Application> findByGroupIdAndReviewerId(UUID groupId, UUID userId, Pageable pageable);
     
     List<Application> findByGroupIdAndState(UUID groupId, ApplicationState state);
+    
+    @Query("SELECT COUNT(a) FROM Application a WHERE a.group.id = :groupId AND a.state = :state")
+    Long countUnreviewedApplications(UUID groupId, ApplicationState state);
 }

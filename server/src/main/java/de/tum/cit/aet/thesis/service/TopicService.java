@@ -8,6 +8,7 @@ import de.tum.cit.aet.thesis.repository.TopicRepository;
 import de.tum.cit.aet.thesis.repository.TopicRoleRepository;
 import de.tum.cit.aet.thesis.repository.GroupRepository;
 import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
+import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
 import de.tum.cit.aet.thesis.exception.request.AccessDeniedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,8 +38,22 @@ public class TopicService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Topic> getTopics(UUID groupId, Pageable pageable) {
+    public Page<Topic> getTopics(UUID groupId, String search, Pageable pageable) {
+        if (groupId == null) {
+            throw new ResourceInvalidParametersException("Group ID must not be null");
+        }
+        if (search != null && !search.isBlank()) {
+            return topicRepository.findByGroupIdAndTitleContainingIgnoreCaseAndClosedAtIsNull(groupId, search.trim(), pageable);
+        }
         return topicRepository.findByGroupIdAndClosedAtIsNull(groupId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public long countOpenTopics(UUID groupId) {
+        if (groupId == null) {
+            throw new ResourceInvalidParametersException("Group ID must not be null");
+        }
+        return topicRepository.countByGroupIdAndClosedAtIsNull(groupId);
     }
 
     @Transactional(readOnly = true)
@@ -60,17 +75,24 @@ public class TopicService {
     }
 
     @Transactional
-    public Topic createTopic(Topic topic, UUID groupId) {
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+    public Topic createTopic(Topic topic) {
+        if (topic == null) {
+            throw new ResourceInvalidParametersException("Topic must not be null");
+        }
 
         User currentUser = authenticationService.getCurrentUser();
+        Group group = topic.getGroup();
+        
+        if (group == null) {
+            throw new ResourceInvalidParametersException("Topic must have a group assigned");
+        }
+        
         if (!currentUser.hasGroupRole(group, "ADMIN", "SUPERVISOR")) {
             throw new AccessDeniedException("No permission to create topics");
         }
 
-        topic.setGroup(group);
         topic.setCreatedBy(currentUser);
+        topic.setClosedAt(null);
         return topicRepository.save(topic);
     }
 
