@@ -1,13 +1,13 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router';
-import { Group, GroupRole } from '../../types/group';
-import { GroupContext } from './context';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router'
+import { Group, GroupRole } from '../../types/group'
+import { GroupContext } from './context'
 
 /**
  * Props for the GroupProvider component
  */
 interface GroupProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 /**
@@ -19,11 +19,11 @@ interface GroupProviderProps {
  * - Group permission checks
  */
 export function GroupProvider({ children }: GroupProviderProps) {
-  const [currentGroup, setCurrentGroup] = useState<Group>();
-  const [userGroups, setUserGroups] = useState<Group[]>([]);
-  const [userGroupRoles, setUserGroupRoles] = useState<GroupRole[]>([]);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [currentGroup, setCurrentGroup] = useState<Group>()
+  const [userGroups, setUserGroups] = useState<Group[]>([])
+  const [userGroupRoles, setUserGroupRoles] = useState<GroupRole[]>([])
+  const location = useLocation()
+  const navigate = useNavigate()
 
   // Fetch user groups and roles on mount
   useEffect(() => {
@@ -35,52 +35,52 @@ export function GroupProvider({ children }: GroupProviderProps) {
         // setUserGroups(data.groups);
         // setUserGroupRoles(data.roles);
       } catch (error) {
-        console.error('Failed to fetch user groups:', error);
+        console.error('Failed to fetch user groups:', error)
       }
-    };
+    }
 
-    fetchUserGroups();
-  }, []);
+    fetchUserGroups()
+  }, [])
 
   // Update current group based on URL path
   useEffect(() => {
-    const groupSlug = location.pathname.split('/').find((part) => 
-      userGroups.some((group) => group.slug === part)
-    );
+    const groupSlug = location.pathname
+      .split('/')
+      .find((part) => userGroups.some((group) => group.slug === part))
 
     if (groupSlug) {
-      const group = userGroups.find((g) => g.slug === groupSlug);
+      const group = userGroups.find((g) => g.slug === groupSlug)
       if (group && group !== currentGroup) {
-        setCurrentGroup(group);
+        setCurrentGroup(group)
       }
     }
-  }, [location.pathname, userGroups, currentGroup]);
+  }, [location.pathname, userGroups, currentGroup])
 
   // Check if user has a specific role in a group
   const hasGroupRole = useCallback(
     (groupId: string, role: string) => {
       return userGroupRoles.some(
-        (groupRole) => groupRole.groupId === groupId && groupRole.role === role
-      );
+        (groupRole) => groupRole.groupId === groupId && groupRole.role === role,
+      )
     },
-    [userGroupRoles]
-  );
+    [userGroupRoles],
+  )
 
   // Convenience methods for common role checks
   const isGroupAdmin = useCallback(
     (groupId: string) => hasGroupRole(groupId, 'admin'),
-    [hasGroupRole]
-  );
+    [hasGroupRole],
+  )
 
   const isGroupSupervisor = useCallback(
     (groupId: string) => hasGroupRole(groupId, 'supervisor'),
-    [hasGroupRole]
-  );
+    [hasGroupRole],
+  )
 
   const isGroupAdvisor = useCallback(
     (groupId: string) => hasGroupRole(groupId, 'advisor'),
-    [hasGroupRole]
-  );
+    [hasGroupRole],
+  )
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
@@ -94,12 +94,16 @@ export function GroupProvider({ children }: GroupProviderProps) {
       isGroupSupervisor,
       isGroupAdvisor,
     }),
-    [currentGroup, userGroups, userGroupRoles, hasGroupRole, isGroupAdmin, isGroupSupervisor, isGroupAdvisor]
-  );
+    [
+      currentGroup,
+      userGroups,
+      userGroupRoles,
+      hasGroupRole,
+      isGroupAdmin,
+      isGroupSupervisor,
+      isGroupAdvisor,
+    ],
+  )
 
-  return (
-    <GroupContext.Provider value={contextValue}>
-      {children}
-    </GroupContext.Provider>
-  );
+  return <GroupContext.Provider value={contextValue}>{children}</GroupContext.Provider>
 }

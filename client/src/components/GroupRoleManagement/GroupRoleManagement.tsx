@@ -1,13 +1,13 @@
-import { Table, Select, Button, Group, Text } from '@mantine/core';
-import { useState } from 'react';
-import { GroupRole } from '../../types/group';
+import { Table, Select, Button, Group, Text } from '@mantine/core'
+import { useState } from 'react'
+import { GroupRole } from '../../types/group'
 
 interface GroupRoleManagementProps {
-  groupId: string;
-  roles: GroupRole[];
-  onAddRole: (userId: string, role: string) => void;
-  onRemoveRole: (userId: string) => void;
-  isLoading?: boolean;
+  groupId: string
+  roles: GroupRole[]
+  onAddRole: (userId: string, role: string) => void
+  onRemoveRole: (userId: string) => void
+  isLoading?: boolean
 }
 
 export function GroupRoleManagement({
@@ -17,28 +17,28 @@ export function GroupRoleManagement({
   onRemoveRole,
   isLoading,
 }: GroupRoleManagementProps) {
-  const [selectedUser, setSelectedUser] = useState('');
-  const [selectedRole, setSelectedRole] = useState('advisor');
+  const [selectedUser, setSelectedUser] = useState('')
+  const [selectedRole, setSelectedRole] = useState('advisor')
 
   const handleAddRole = () => {
     if (selectedUser && selectedRole) {
-      onAddRole(selectedUser, selectedRole);
-      setSelectedUser('');
-      setSelectedRole('advisor');
+      onAddRole(selectedUser, selectedRole)
+      setSelectedUser('')
+      setSelectedRole('advisor')
     }
-  };
+  }
 
   return (
     <div>
-      <Group justify="space-between" mb="md">
-        <Text size="lg" fw={500}>
+      <Group justify='space-between' mb='md'>
+        <Text size='lg' fw={500}>
           Group Members
         </Text>
 
-        <Group gap="sm">
+        <Group gap='sm'>
           <Select
-            label=""
-            placeholder="Select user"
+            label=''
+            placeholder='Select user'
             value={selectedUser}
             onChange={(value) => setSelectedUser(value || '')}
             data={[]} // TODO: Add user data
@@ -61,7 +61,7 @@ export function GroupRoleManagement({
             onClick={handleAddRole}
             disabled={!selectedUser || !selectedRole}
             loading={isLoading}
-            size="sm"
+            size='sm'
           >
             Add Member
           </Button>
@@ -83,9 +83,9 @@ export function GroupRoleManagement({
               <Table.Td style={{ textTransform: 'capitalize' }}>{role.role}</Table.Td>
               <Table.Td>
                 <Button
-                  variant="subtle"
-                  color="red"
-                  size="sm"
+                  variant='subtle'
+                  color='red'
+                  size='sm'
                   onClick={() => onRemoveRole(role.groupId)}
                   loading={isLoading}
                 >
@@ -97,7 +97,7 @@ export function GroupRoleManagement({
         </Table.Tbody>
       </Table>
     </div>
-  );
+  )
 }
 
-export default GroupRoleManagement;
+export default GroupRoleManagement

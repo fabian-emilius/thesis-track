@@ -8,7 +8,15 @@ import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import React from 'react'
 import { useGroupContext } from '../../providers/GroupContext/context'
 
-type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | 'group' | string
+type TopicColumn =
+  | 'title'
+  | 'types'
+  | 'advisor'
+  | 'supervisor'
+  | 'state'
+  | 'createdAt'
+  | 'group'
+  | string
 
 interface ITopicsTableProps {
   columns?: TopicColumn[]

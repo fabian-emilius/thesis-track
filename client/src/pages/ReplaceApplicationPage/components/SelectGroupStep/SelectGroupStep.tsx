@@ -12,7 +12,7 @@ export function SelectGroupStep({ onComplete }: SelectGroupStepProps) {
 
   if (userGroups.length === 0) {
     return (
-      <Text c="dimmed" ta="center" mt="xl">
+      <Text c='dimmed' ta='center' mt='xl'>
         No research groups available. Please contact your administrator.
       </Text>
     )
@@ -21,18 +21,14 @@ export function SelectGroupStep({ onComplete }: SelectGroupStepProps) {
   return (
     <SimpleGrid
       cols={3}
-      spacing="lg"
+      spacing='lg'
       breakpoints={[
         { maxWidth: 'md', cols: 2, spacing: 'md' },
         { maxWidth: 'sm', cols: 1, spacing: 'sm' },
       ]}
     >
       {userGroups.map((group) => (
-        <div
-          key={group.id}
-          style={{ cursor: 'pointer' }}
-          onClick={() => onComplete(group)}
-        >
+        <div key={group.id} style={{ cursor: 'pointer' }} onClick={() => onComplete(group)}>
           <GroupCard group={group} />
         </div>
       ))}

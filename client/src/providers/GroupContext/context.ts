@@ -1,5 +1,5 @@
-import { createContext, useContext } from 'react';
-import { GroupContextType } from '../../types/group';
+import { createContext, useContext } from 'react'
+import { GroupContextType } from '../../types/group'
 
 export const GroupContext = createContext<GroupContextType>({
   userGroups: [],
@@ -9,6 +9,6 @@ export const GroupContext = createContext<GroupContextType>({
   isGroupAdmin: () => false,
   isGroupSupervisor: () => false,
   isGroupAdvisor: () => false,
-});
+})
 
-export const useGroupContext = () => useContext(GroupContext);
+export const useGroupContext = () => useContext(GroupContext)

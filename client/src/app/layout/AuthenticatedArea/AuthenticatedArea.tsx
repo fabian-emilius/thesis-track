@@ -212,7 +212,7 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
       <AppShell.Navbar p='md'>
         <AppShell.Section grow mb='md'>
           {!minimized && (
-            <Stack gap="xs">
+            <Stack gap='xs'>
               <Group preventGrowOverflow={false}>
                 <Logo className={classes.logo} />
                 <Text
@@ -225,10 +225,10 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
                 </Text>
                 <ColorSchemeToggleButton ml='auto' />
               </Group>
-              
+
               {userGroups.length > 0 && (
                 <Select
-                  placeholder="Select Research Group"
+                  placeholder='Select Research Group'
                   data={groupOptions}
                   value={currentGroup?.id}
                   onChange={handleGroupChange}
