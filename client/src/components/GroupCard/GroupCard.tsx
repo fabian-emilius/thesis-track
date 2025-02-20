@@ -1,12 +1,17 @@
-import { Card, Image, Text, Button, Group as MantineGroup } from '@mantine/core';
+import { Card, Image, Text, Button, Group } from '@mantine/core';
 import { Link } from 'react-router-dom';
-import { Group } from '../../types/group';
+import { Group as GroupType } from '../../types/group';
 import { useGroupContext } from '../../providers/GroupContext/context';
 
 interface GroupCardProps {
-  group: Group;
+  /** The group to display */
+  group: GroupType;
 }
 
+/**
+ * Card component for displaying group information
+ * Includes group logo, name, description, and action buttons
+ */
 export function GroupCard({ group }: GroupCardProps) {
   const { isGroupAdmin } = useGroupContext();
 
@@ -33,7 +38,7 @@ export function GroupCard({ group }: GroupCardProps) {
         </Text>
       )}
 
-      <MantineGroup mt="md">
+      <Group gap="sm" mt="md">
         <Button
           component={Link}
           to={`/groups/${group.slug}`}
@@ -52,7 +57,7 @@ export function GroupCard({ group }: GroupCardProps) {
             Manage
           </Button>
         )}
-      </MantineGroup>
+      </Group>
     </Card>
   );
 }

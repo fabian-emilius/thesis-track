@@ -2,15 +2,15 @@ import { Container, SimpleGrid, Title, Button, Group } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import { useGroupContext } from '../../providers/GroupContext/context';
 import { GroupCard } from '../../components/GroupCard/GroupCard';
-import { useAuthentication } from '../../hooks/authentication';
+import { useHasGroupAccess } from '../../hooks/authentication';
 
 export function GroupsOverviewPage() {
   const { availableGroups } = useGroupContext();
-  const { isAdmin } = useAuthentication();
+  const isAdmin = useHasGroupAccess('admin');
 
   return (
     <Container size="xl" py="xl">
-      <Group position="apart" mb="xl">
+      <Group justify="space-between" mb="xl">
         <Title>Available Groups</Title>
         {isAdmin && (
           <Button component={Link} to="/admin/groups/new" variant="filled">

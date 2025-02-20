@@ -1,4 +1,4 @@
-import { Table, Select, Button, Group as MantineGroup, Text, LoadingOverlay } from '@mantine/core';
+import { Table, Select, Button, Group, Text, LoadingOverlay } from '@mantine/core';
 import { useState } from 'react';
 import { GroupMember, GroupRole } from '../../types/group';
 import { useGroupContext } from '../../providers/GroupContext/context';
@@ -99,13 +99,13 @@ export function GroupRoleManagement({
               <td>
                 <Select
                   value={member.role}
-                  onChange={(value: GroupRole) => handleRoleUpdate(member.userId, value)}
+                  onChange={(value: GroupRole) => value && handleRoleUpdate(member.userId, value)}
                   data={ROLE_OPTIONS}
                   disabled={updatingUser === member.userId || isLoading}
                 />
               </td>
               <td>
-                <MantineGroup spacing="xs">
+                <Group gap="xs">
                   <Button
                     variant="subtle"
                     color="red"
@@ -115,7 +115,7 @@ export function GroupRoleManagement({
                   >
                     Remove
                   </Button>
-                </MantineGroup>
+                </Group>
               </td>
             </tr>
           ))}

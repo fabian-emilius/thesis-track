@@ -2,12 +2,12 @@ import { Container, Title } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
 import { useGroupContext } from '../../providers/GroupContext/context';
 import { GroupSettingsForm } from '../../components/GroupSettingsForm/GroupSettingsForm';
-import { useAuthentication } from '../../hooks/authentication';
+import { useHasGroupAccess } from '../../hooks/authentication';
 
 export function CreateGroupPage() {
   const navigate = useNavigate();
   const { createGroup } = useGroupContext();
-  const { isAdmin } = useAuthentication();
+  const isAdmin = useHasGroupAccess('admin');
 
   if (!isAdmin) {
     navigate('/groups', { replace: true });

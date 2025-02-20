@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
 import PageLoader from '../components/PageLoader/PageLoader'
 import { GroupProvider } from '../providers/GroupContext/GroupProvider'
@@ -29,10 +29,10 @@ const ThesisPage = lazy(() => import('../pages/ThesisPage/ThesisPage'))
 const LandingPage = lazy(() => import('../pages/LandingPage/LandingPage'))
 
 // Group Pages
-const GroupsOverviewPage = lazy(() => import('../pages/GroupsOverviewPage/GroupsOverviewPage'))
-const GroupLandingPage = lazy(() => import('../pages/GroupLandingPage/GroupLandingPage'))
-const GroupSettingsPage = lazy(() => import('../pages/GroupSettingsPage/GroupSettingsPage'))
-const CreateGroupPage = lazy(() => import('../pages/CreateGroupPage/CreateGroupPage'))
+const GroupsOverviewPage = lazy(() => import('../pages/GroupsOverviewPage/GroupsOverviewPage').then(m => ({ default: m.GroupsOverviewPage })))
+const GroupLandingPage = lazy(() => import('../pages/GroupLandingPage/GroupLandingPage').then(m => ({ default: m.GroupLandingPage })))
+const GroupSettingsPage = lazy(() => import('../pages/GroupSettingsPage/GroupSettingsPage').then(m => ({ default: m.GroupSettingsPage })))
+const CreateGroupPage = lazy(() => import('../pages/CreateGroupPage/CreateGroupPage').then(m => ({ default: m.CreateGroupPage })))
 
 const AppRoutes = () => {
   return (

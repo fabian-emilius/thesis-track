@@ -2,7 +2,7 @@ import { Container, Title, Text, Stack, Group, Button } from '@mantine/core';
 import { Link, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useGroupContext } from '../../providers/GroupContext/context';
-import { TopicsTable } from '../../components/TopicsTable/TopicsTable';
+import TopicsTable from '../../components/TopicsTable/TopicsTable';
 
 export function GroupLandingPage() {
   const { groupSlug } = useParams();
@@ -22,7 +22,7 @@ export function GroupLandingPage() {
   return (
     <Container size="xl" py="xl">
       <Stack spacing="xl">
-        <Group position="apart">
+        <Group justify="space-between">
           <div>
             <Title>{currentGroup.name}</Title>
             {currentGroup.description && (

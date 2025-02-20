@@ -2,7 +2,7 @@ import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Group, GroupContextType, GroupMember, GroupRole } from '../../types/group';
 import { GroupContext } from './context';
-import { useAuthentication } from '../../hooks/authentication';
+import { useUser } from '../../hooks/authentication';
 import { notifications } from '@mantine/notifications';
 
 interface GroupProviderProps {
@@ -18,7 +18,7 @@ interface GroupProviderProps {
  * - Group CRUD operations
  */
 export const GroupProvider = ({ children }: GroupProviderProps) => {
-  const { user } = useAuthentication();
+  const user = useUser();
   const navigate = useNavigate();
   const { groupSlug } = useParams();
 
