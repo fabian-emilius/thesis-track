@@ -1,10 +1,5 @@
 package de.tum.cit.aet.thesis.constants;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@AllArgsConstructor
-@Getter
 public enum ThesisState {
     PROPOSAL("PROPOSAL"),
     WRITING("WRITING"),
@@ -15,4 +10,12 @@ public enum ThesisState {
     DROPPED_OUT("DROPPED_OUT");
 
     private final String value;
+
+    ThesisState(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

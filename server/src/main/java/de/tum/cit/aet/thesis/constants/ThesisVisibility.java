@@ -1,10 +1,5 @@
 package de.tum.cit.aet.thesis.constants;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@AllArgsConstructor
-@Getter
 public enum ThesisVisibility {
     PRIVATE("PRIVATE"),
     INTERNAL("INTERNAL"),
@@ -12,4 +7,12 @@ public enum ThesisVisibility {
     PUBLIC("PUBLIC");
 
     private final String value;
+
+    ThesisVisibility(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
 }

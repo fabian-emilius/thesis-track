@@ -31,11 +31,6 @@ public class Thesis {
     private Group group;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id", nullable = false)
-    private Group group;
-
-    @NotNull
     @Column(name = "title", nullable = false)
     private String title;
 
@@ -124,37 +119,31 @@ public class Thesis {
 
     public List<User> getStudents() {
         List<User> result = new ArrayList<>();
-
         for (ThesisRole role : getRoles()) {
             if (role.getId().getRole() == ThesisRoleName.STUDENT) {
                 result.add(role.getUser());
             }
         }
-
         return result;
     }
 
     public List<User> getAdvisors() {
         List<User> result = new ArrayList<>();
-
         for (ThesisRole role : getRoles()) {
             if (role.getId().getRole() == ThesisRoleName.ADVISOR) {
                 result.add(role.getUser());
             }
         }
-
         return result;
     }
 
     public List<User> getSupervisors() {
         List<User> result = new ArrayList<>();
-
         for (ThesisRole role : getRoles()) {
             if (role.getId().getRole() == ThesisRoleName.SUPERVISOR) {
                 result.add(role.getUser());
             }
         }
-
         return result;
     }
 
@@ -168,11 +157,9 @@ public class Thesis {
         }
 
         for (ThesisRole role : roles) {
-            if (
-                    role.getId().getRole().equals(ThesisRoleName.SUPERVISOR) &&
-                    user.hasAnyGroup("supervisor") &&
-                    role.getUser().getId().equals(user.getId())
-            ) {
+            if (role.getId().getRole().equals(ThesisRoleName.SUPERVISOR) &&
+                user.hasAnyGroup("supervisor") &&
+                role.getUser().getId().equals(user.getId())) {
                 return true;
             }
         }
@@ -190,11 +177,9 @@ public class Thesis {
         }
 
         for (ThesisRole role : roles) {
-            if (
-                    role.getId().getRole().equals(ThesisRoleName.ADVISOR) &&
-                    user.hasAnyGroup("advisor") &&
-                    role.getUser().getId().equals(user.getId())
-            ) {
+            if (role.getId().getRole().equals(ThesisRoleName.ADVISOR) &&
+                user.hasAnyGroup("advisor") &&
+                role.getUser().getId().equals(user.getId())) {
                 return true;
             }
         }
@@ -212,7 +197,8 @@ public class Thesis {
         }
 
         for (ThesisRole role : roles) {
-            if (role.getId().getRole().equals(ThesisRoleName.STUDENT) && role.getUser().getId().equals(user.getId())) {
+            if (role.getId().getRole().equals(ThesisRoleName.STUDENT) &&
+                role.getUser().getId().equals(user.getId())) {
                 return true;
             }
         }
@@ -254,7 +240,6 @@ public class Thesis {
                 return Optional.of(presentation);
             }
         }
-
         return Optional.empty();
     }
 
@@ -264,7 +249,6 @@ public class Thesis {
                 return Optional.of(item);
             }
         }
-
         return Optional.empty();
     }
 
@@ -274,7 +258,6 @@ public class Thesis {
                 return Optional.of(item);
             }
         }
-
         return Optional.empty();
     }
 
@@ -284,7 +267,6 @@ public class Thesis {
                 return Optional.of(item);
             }
         }
-
         return Optional.empty();
     }
 
@@ -294,7 +276,6 @@ public class Thesis {
                 return Optional.of(item);
             }
         }
-
         return Optional.empty();
     }
 }
