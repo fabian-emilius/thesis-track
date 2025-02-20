@@ -1,7 +1,7 @@
 import React from 'react'
 import { IApplication } from '../../requests/responses/application'
 import { DataTable, DataTableColumn } from 'mantine-datatable'
-import { Badge, Center } from '@mantine/core'
+import { Badge, Center, Text } from '@mantine/core'
 import { formatApplicationState, formatDate, formatThesisType } from '../../utils/format'
 import { useApplicationsContext } from '../../providers/ApplicationsProvider/hooks'
 import { IApplicationsSort } from '../../providers/ApplicationsProvider/context'
@@ -15,24 +15,46 @@ type ApplicationColumn =
   | 'thesis_type'
   | 'reviewed_at'
   | 'created_at'
+  | 'group'
   | string
 
 interface IApplicationsTableProps {
   onApplicationClick: (application: IApplication) => unknown
   columns?: ApplicationColumn[]
   extraColumns?: Record<string, DataTableColumn<IApplication>>
+  groupId?: string
+  showGroupInfo?: boolean
 }
 
 const ApplicationsTable = (props: IApplicationsTableProps) => {
   const {
     onApplicationClick,
-    columns = ['state', 'thesis_title', 'thesis_type', 'user', 'created_at'],
+    columns = ['state', 'thesis_title', 'thesis_type', 'user', ...(showGroupInfo ? ['group'] : []), 'created_at'],
     extraColumns = {},
+    groupId,
+    showGroupInfo = false
   } = props
 
-  const { applications, sort, setSort, page, setPage, limit } = useApplicationsContext()
+  const { applications, sort, setSort, page, setPage, limit, setFilters } = useApplicationsContext()
+
+  React.useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      groupId: groupId || undefined
+    }))
+  }, [groupId, setFilters])
 
   const columnConfig: Record<ApplicationColumn, DataTableColumn<IApplication>> = {
+    group: {
+      accessor: 'topic.group.name',
+      title: 'Group',
+      width: 150,
+      render: (application) => (
+        <Text size="sm">
+          {application.topic?.group?.name || '-'}
+        </Text>
+      ),
+    },
     state: {
       accessor: 'state',
       title: 'State',

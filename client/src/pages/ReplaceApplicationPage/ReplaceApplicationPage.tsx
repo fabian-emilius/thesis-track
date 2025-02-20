@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router'
 import { useTopic } from '../../hooks/fetcher'
 import { Card, Center, Stack, Stepper, Text, Title } from '@mantine/core'
 import { useEffect, useState } from 'react'
+import SelectGroupStep from './components/SelectGroupStep/SelectGroupStep'
 import SelectTopicStep from './components/SelectTopicStep/SelectTopicStep'
 import StudentInformationStep from './components/StudentInformationStep/StudentInformationStep'
 import MotivationStep from './components/MotivationStep/MotivationStep'
@@ -40,13 +41,15 @@ const ReplaceApplicationPage = () => {
   const topic = useTopic(topicId)
 
   const [step, setStep] = useState(0)
+  const [selectedGroup, setSelectedGroup] = useState<string | undefined>()
 
   const updateStep = (value: number) => {
     if (value > step) {
       return
     }
 
-    if (value === 0 && topicId) {
+    if (value === 0) {
+      setSelectedGroup(undefined)
       navigate(`/submit-application`, { replace: true })
     }
 
@@ -57,23 +60,32 @@ const ReplaceApplicationPage = () => {
   return (
     <Stack>
       <Title>{applicationId ? 'Edit Application' : 'Submit Application'}</Title>
-      <Stepper active={Math.max(step, topicId || applicationId ? 1 : 0)} onStepClick={updateStep}>
-        <Stepper.Step label='First Step' description='Select Topic'>
+      <Stepper active={Math.max(step, applicationId ? 2 : 0)} onStepClick={updateStep}>
+        <Stepper.Step label='First Step' description='Select Group'>
+          <SelectGroupStep
+            onComplete={(groupId) => {
+              setSelectedGroup(groupId)
+              setStep(1)
+            }}
+          />
+        </Stepper.Step>
+        <Stepper.Step label='Second Step' description='Select Topic'>
           <TopicsProvider limit={100}>
             <SelectTopicStep
+              groupId={selectedGroup}
               onComplete={(x) => {
                 navigate(`/submit-application/${x?.topicId || ''}`, { replace: true })
-                setStep(1)
+                setStep(2)
               }}
             />
           </TopicsProvider>
         </Stepper.Step>
-        <Stepper.Step label='Second step' description='Update Information'>
-          <StudentInformationStep onComplete={() => setStep(2)} />
+        <Stepper.Step label='Third step' description='Update Information'>
+          <StudentInformationStep onComplete={() => setStep(3)} />
         </Stepper.Step>
         <Stepper.Step label='Final step' description='Submit your Application'>
           <MotivationStep
-            onComplete={() => setStep(3)}
+            onComplete={() => setStep(4)}
             topic={topic || undefined}
             application={application}
           />

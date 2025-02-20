@@ -7,26 +7,42 @@ import { Badge, Center, Stack, Text } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import React from 'react'
 
-type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | string
+type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | 'group' | string
 
 interface ITopicsTableProps {
   columns?: TopicColumn[]
   extraColumns?: Record<string, DataTableColumn<ITopic>>
   noBorder?: boolean
+  groupId?: string
 }
 
 const TopicsTable = (props: ITopicsTableProps) => {
   const {
     extraColumns = {},
-    columns = ['title', 'types', 'supervisor', 'advisor'],
+    columns = props.groupId 
+      ? ['title', 'types', 'supervisor', 'advisor']
+      : ['title', 'types', 'supervisor', 'advisor', 'group'],
     noBorder = false,
   } = props
 
   const navigate = useNavigate()
 
-  const { topics, page, setPage, limit } = useTopicsContext()
+  const { topics, page, setPage, limit, setFilters } = useTopicsContext()
+
+React.useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      groupId: props.groupId || undefined,
+    }))
+  }, [props.groupId, setFilters])
 
   const columnConfig: Record<TopicColumn, DataTableColumn<ITopic>> = {
+    group: {
+      accessor: 'group',
+      title: 'Group',
+      width: 150,
+      render: (topic) => (topic.group ? topic.group.name : '-'),
+    },
     state: {
       accessor: 'state',
       title: 'State',

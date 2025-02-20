@@ -1,8 +1,11 @@
 import React, { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
 import PageLoader from '../components/PageLoader/PageLoader'
+import { GroupProtectedRoute } from '../components/GroupProtectedRoute/GroupProtectedRoute'
+import { PublicArea } from './layout/PublicArea/PublicArea'
 
+const GroupsOverviewPage = lazy(() => import('../pages/GroupsOverviewPage/GroupsOverviewPage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage'))
 const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage'))
 const ImprintPage = lazy(() => import('../pages/ImprintPage/ImprintPage'))
@@ -33,18 +36,83 @@ const AppRoutes = () => {
       <BrowserRouter>
         <Routes>
           <Route
+            path='/groups'
+            element={
+              <AuthenticatedArea>
+                <GroupsOverviewPage />
+              </AuthenticatedArea>
+            }
+          />
+          <Route
+            path='/groups/:groupSlug/*'
+            element={
+              <PublicArea>
+                <Routes>
+                <Route path='dashboard' element={
+                  <GroupProtectedRoute>
+                    <DashboardPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='theses' element={
+                  <GroupProtectedRoute>
+                    <BrowseThesesPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='theses/:thesisId' element={
+                  <GroupProtectedRoute>
+                    <ThesisPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='overview' element={
+                  <GroupProtectedRoute>
+                    <ThesisOverviewPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='topics' element={
+                  <GroupProtectedRoute requiredRole='advisor' requireAuthentication={true}>
+                    <ManageTopicsPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='topics/:topicId' element={
+                  <GroupProtectedRoute requireAuthentication={false}>
+                    <TopicPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='presentations' element={
+                  <GroupProtectedRoute requireAuthentication={false}>
+                    <PresentationOverviewPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='presentations/:presentationId' element={
+                  <GroupProtectedRoute requireAuthentication={false}>
+                    <PresentationPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='applications/:applicationId?' element={
+                  <GroupProtectedRoute requiredRole='advisor' requireAuthentication={true}>
+                    <ReviewApplicationPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='submit-application/:topicId?' element={
+                  <GroupProtectedRoute>
+                    <ReplaceApplicationPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='edit-application/:applicationId' element={
+                  <GroupProtectedRoute>
+                    <ReplaceApplicationPage />
+                  </GroupProtectedRoute>
+                } />
+                <Route path='' element={<Navigate to='dashboard' replace />} />
+              </Routes>
+              </PublicArea>
+            }
+          />
+          <Route
             path='/management/thesis-applications/:applicationId?'
             element={<Navigate to='/applications' replace />}
           />
           <Route path='/applications/thesis' element={<Navigate to='/' replace />} />
-          <Route
-            path='/dashboard'
-            element={
-              <AuthenticatedArea>
-                <DashboardPage />
-              </AuthenticatedArea>
-            }
-          />
           <Route
             path='/settings/:tab?'
             element={
@@ -53,94 +121,11 @@ const AppRoutes = () => {
               </AuthenticatedArea>
             }
           />
-          <Route
-            path='/submit-application/:topicId?'
-            element={
-              <AuthenticatedArea>
-                <ReplaceApplicationPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/edit-application/:applicationId'
-            element={
-              <AuthenticatedArea>
-                <ReplaceApplicationPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/presentations'
-            element={
-              <AuthenticatedArea requireAuthentication={false}>
-                <PresentationOverviewPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/presentations/:presentationId'
-            element={
-              <AuthenticatedArea size='md' requireAuthentication={false}>
-                <PresentationPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/topics'
-            element={
-              <AuthenticatedArea requiredGroups={['admin', 'advisor', 'supervisor']}>
-                <ManageTopicsPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/topics/:topicId'
-            element={
-              <AuthenticatedArea size='md' requireAuthentication={false}>
-                <TopicPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/applications/:applicationId?'
-            element={
-              <AuthenticatedArea
-                collapseNavigation={true}
-                requiredGroups={['admin', 'advisor', 'supervisor']}
-              >
-                <ReviewApplicationPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/theses'
-            element={
-              <AuthenticatedArea>
-                <BrowseThesesPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/theses/:thesisId'
-            element={
-              <AuthenticatedArea>
-                <ThesisPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route
-            path='/overview'
-            element={
-              <AuthenticatedArea>
-                <ThesisOverviewPage />
-              </AuthenticatedArea>
-            }
-          />
-          <Route path='/about' element={<AboutPage />} />
-          <Route path='/imprint' element={<ImprintPage />} />
-          <Route path='/privacy' element={<PrivacyPage />} />
-          <Route path='/logout' element={<LogoutPage />} />
-          <Route path='/' element={<LandingPage />} />
+          <Route path='/about' element={<PublicArea><AboutPage /></PublicArea>} />
+          <Route path='/imprint' element={<PublicArea><ImprintPage /></PublicArea>} />
+          <Route path='/privacy' element={<PublicArea><PrivacyPage /></PublicArea>} />
+          <Route path='/logout' element={<PublicArea><LogoutPage /></PublicArea>} />
+          <Route path='/' element={<Navigate to='/groups' replace />} />
           <Route path='*' element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
