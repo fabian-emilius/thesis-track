@@ -1,283 +1,127 @@
 package de.tum.cit.aet.thesis.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import de.tum.cit.aet.thesis.constants.ApplicationRejectReason;
-import de.tum.cit.aet.thesis.constants.ApplicationReviewReason;
-import de.tum.cit.aet.thesis.entity.*;
+import de.tum.cit.aet.thesis.entity.Application;
+import de.tum.cit.aet.thesis.entity.ApplicationReviewer;
+import de.tum.cit.aet.thesis.entity.User;
+import de.tum.cit.aet.thesis.entity.Group;
 import de.tum.cit.aet.thesis.constants.ApplicationState;
-import de.tum.cit.aet.thesis.entity.key.ApplicationReviewerId;
-import de.tum.cit.aet.thesis.exception.request.ResourceInvalidParametersException;
-import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
 import de.tum.cit.aet.thesis.repository.ApplicationRepository;
 import de.tum.cit.aet.thesis.repository.ApplicationReviewerRepository;
-import de.tum.cit.aet.thesis.repository.TopicRepository;
+import de.tum.cit.aet.thesis.repository.GroupRepository;
+import de.tum.cit.aet.thesis.exception.request.ResourceNotFoundException;
+import de.tum.cit.aet.thesis.exception.request.AccessDeniedException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.UUID;
 
 @Service
 public class ApplicationService {
     private final ApplicationRepository applicationRepository;
+    private final ApplicationReviewerRepository reviewerRepository;
+    private final GroupRepository groupRepository;
+    private final AuthenticationService authenticationService;
     private final MailingService mailingService;
-    private final TopicRepository topicRepository;
-    private final ThesisService thesisService;
-    private final TopicService topicService;
-    private final ApplicationReviewerRepository applicationReviewerRepository;
 
     @Autowired
-    public ApplicationService(
-            ApplicationRepository applicationRepository,
-            MailingService mailingService,
-            TopicRepository topicRepository,
-            ThesisService thesisService,
-            TopicService topicService,
-            ApplicationReviewerRepository applicationReviewerRepository) {
+    public ApplicationService(ApplicationRepository applicationRepository,
+                            ApplicationReviewerRepository reviewerRepository,
+                            GroupRepository groupRepository,
+                            AuthenticationService authenticationService,
+                            MailingService mailingService) {
         this.applicationRepository = applicationRepository;
+        this.reviewerRepository = reviewerRepository;
+        this.groupRepository = groupRepository;
+        this.authenticationService = authenticationService;
         this.mailingService = mailingService;
-        this.topicRepository = topicRepository;
-        this.thesisService = thesisService;
-        this.topicService = topicService;
-        this.applicationReviewerRepository = applicationReviewerRepository;
     }
 
-    public Page<Application> getAll(
-            UUID userId,
-            UUID reviewerId,
-            String searchQuery,
-            ApplicationState[] states,
-            String[] previous,
-            String[] topics,
-            String[] types,
-            boolean includeSuggestedTopics,
-            int page,
-            int limit,
-            String sortBy,
-            String sortOrder
-    ) {
-        Sort.Order order = new Sort.Order(sortOrder.equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy);
-
-        String searchQueryFilter = searchQuery == null || searchQuery.isEmpty() ? null : searchQuery.toLowerCase();
-        Set<ApplicationState> statesFilter = states == null || states.length == 0 ? null : new HashSet<>(Arrays.asList(states));
-        Set<String> topicsFilter = topics == null || topics.length == 0 ? null : new HashSet<>(Arrays.asList(topics));
-        Set<String> typesFilter = types == null || types.length == 0 ? null : new HashSet<>(Arrays.asList(types));
-        Set<String> previousFilter = previous == null || previous.length == 0 ? null : new HashSet<>(Arrays.asList(previous));
-
-        return applicationRepository.searchApplications(
-                userId,
-                statesFilter != null && !statesFilter.contains(ApplicationState.REJECTED) ? reviewerId : null,
-                searchQueryFilter,
-                statesFilter,
-                previousFilter,
-                topicsFilter,
-                typesFilter,
-                includeSuggestedTopics,
-                PageRequest.of(page, limit, Sort.by(order))
-        );
+    @Transactional(readOnly = true)
+    public Page<Application> getApplications(UUID groupId, Pageable pageable) {
+        return applicationRepository.findByGroupId(groupId, pageable);
     }
 
-    @Transactional
-    public Application createApplication(User user, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
-        Topic topic = topicId == null ? null : topicService.findById(topicId);
+    @Transactional(readOnly = true)
+    public Page<Application> getApplicationsByUser(UUID groupId, UUID userId, Pageable pageable) {
+        return applicationRepository.findByGroupIdAndUserId(groupId, userId, pageable);
+    }
 
-        if (topic != null && topic.getClosedAt() != null) {
-            throw new ResourceInvalidParametersException("This topic is already closed. You cannot submit new applications for it.");
+    @Transactional(readOnly = true)
+    public Page<Application> getApplicationsForReview(UUID groupId, UUID userId, Pageable pageable) {
+        return applicationRepository.findByGroupIdAndReviewerId(groupId, userId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Application getApplicationById(UUID id) {
+        Application application = applicationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
+
+        User currentUser = authenticationService.getCurrentUser();
+        if (!application.hasReadAccess(currentUser)) {
+            throw new AccessDeniedException("No access to this application");
         }
-
-        Application application = new Application();
-        application.setUser(user);
-
-        application.setTopic(topic);
-        application.setThesisTitle(thesisTitle);
-        application.setThesisType(thesisType);
-        application.setMotivation(motivation);
-        application.setComment("");
-        application.setState(ApplicationState.NOT_ASSESSED);
-        application.setDesiredStartDate(desiredStartDate);
-        application.setCreatedAt(Instant.now());
-
-        application = applicationRepository.save(application);
-
-        mailingService.sendApplicationCreatedEmail(application);
 
         return application;
     }
 
     @Transactional
-    public Application updateApplication(Application application, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
-        application.setTopic(topicId == null ? null : topicService.findById(topicId));
-        application.setThesisTitle(thesisTitle);
-        application.setThesisType(thesisType);
-        application.setMotivation(motivation);
-        application.setDesiredStartDate(desiredStartDate);
+    public Application createApplication(Application application, UUID groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
 
-        application = applicationRepository.save(application);
+        User currentUser = authenticationService.getCurrentUser();
+        application.setUser(currentUser);
+        application.setGroup(group);
+        application.setState(ApplicationState.PENDING);
 
-        return application;
+        Application savedApplication = applicationRepository.save(application);
+        mailingService.sendApplicationCreatedNotification(savedApplication);
+
+        return savedApplication;
     }
 
     @Transactional
-    public List<Application> accept(
-            User reviewingUser,
-            Application application,
-            String thesisTitle,
-            String thesisType,
-            String language,
-            List<UUID> advisorIds,
-            List<UUID> supervisorIds,
-            boolean notifyUser,
-            boolean closeTopic
-    ) {
-        List<Application> result = new ArrayList<>();
+    public Application updateApplication(UUID id, Application updatedApplication) {
+        Application application = getApplicationById(id);
 
-        application.setState(ApplicationState.ACCEPTED);
-        application.setReviewedAt(Instant.now());
-
-        application = reviewApplication(application, reviewingUser, ApplicationReviewReason.INTERESTED);
-
-        Thesis thesis = thesisService.createThesis(
-                reviewingUser,
-                thesisTitle,
-                thesisType,
-                language,
-                supervisorIds,
-                advisorIds,
-                List.of(application.getUser().getId()),
-                application,
-                false
-        );
-
-        application = applicationRepository.save(application);
-
-        Topic topic = application.getTopic();
-
-        if (topic != null && closeTopic) {
-            topic.setClosedAt(Instant.now());
-
-            result.addAll(rejectApplicationsForTopic(reviewingUser, topic, ApplicationRejectReason.TOPIC_FILLED, true));
-
-            application.setTopic(topicRepository.save(topic));
+        User currentUser = authenticationService.getCurrentUser();
+        if (!application.hasEditAccess(currentUser)) {
+            throw new AccessDeniedException("No permission to update this application");
         }
 
-        if (notifyUser) {
-            mailingService.sendApplicationAcceptanceEmail(application, thesis);
-        }
-
-        result.add(applicationRepository.save(application));
-
-        return result;
-    }
-
-    @Transactional
-    public List<Application> reject(User reviewingUser, Application application, ApplicationRejectReason reason, boolean notifyUser) {
-        application.setState(ApplicationState.REJECTED);
-        application.setRejectReason(reason);
-        application.setReviewedAt(Instant.now());
-
-        application = reviewApplication(application, reviewingUser, ApplicationReviewReason.NOT_INTERESTED);
-
-        List<Application> result = new ArrayList<>();
-
-        if (reason == ApplicationRejectReason.FAILED_STUDENT_REQUIREMENTS) {
-            List<Application> applications = applicationRepository.findAllByUser(application.getUser());
-
-            for (Application item : applications) {
-                if (item.getState() == ApplicationState.NOT_ASSESSED) {
-                    item.setState(ApplicationState.REJECTED);
-                    item.setRejectReason(reason);
-                    item.setReviewedAt(Instant.now());
-
-                    item = reviewApplication(item, reviewingUser, ApplicationReviewReason.NOT_INTERESTED);
-
-                    result.add(applicationRepository.save(item));
-                }
-            }
-        }
-
-        if (notifyUser) {
-            mailingService.sendApplicationRejectionEmail(application, reason);
-        }
-
-        result.add(applicationRepository.save(application));
-
-        return result;
-    }
-
-    @Transactional
-    public Topic closeTopic(User closer, Topic topic, ApplicationRejectReason reason, boolean notifyUser) {
-        topic.setClosedAt(Instant.now());
-
-        rejectApplicationsForTopic(closer, topic, reason, notifyUser);
-
-        return topicRepository.save(topic);
-    }
-
-    @Transactional
-    public List<Application> rejectApplicationsForTopic(User closer, Topic topic, ApplicationRejectReason reason, boolean notifyUser) {
-        List<Application> applications = applicationRepository.findAllByTopic(topic);
-        List<Application> result = new ArrayList<>();
-
-        for (Application application : applications) {
-            if (application.getState() != ApplicationState.NOT_ASSESSED) {
-                continue;
-            }
-
-            result.addAll(reject(closer, application, reason, notifyUser));
-        }
-
-        return result;
-    }
-
-    @Transactional
-    public Application reviewApplication(Application application, User reviewer, ApplicationReviewReason reason) {
-        ApplicationReviewer entity = application.getReviewer(reviewer).orElseGet(() -> {
-            ApplicationReviewerId id = new ApplicationReviewerId();
-            id.setApplicationId(application.getId());
-            id.setUserId(reviewer.getId());
-
-            ApplicationReviewer element = new ApplicationReviewer();
-            element.setId(id);
-            element.setApplication(application);
-            element.setUser(reviewer);
-
-            return element;
-        });
-
-        ApplicationReviewerId entityId = entity.getId();
-
-        entity.setReason(reason);
-        entity.setReviewedAt(Instant.now());
-
-        application.setReviewers(new ArrayList<>(application.getReviewers().stream().filter((element) -> !element.getId().equals(entityId)).toList()));
-
-        if (reason == ApplicationReviewReason.NOT_REVIEWED) {
-            applicationReviewerRepository.delete(entity);
-        } else {
-            entity = applicationReviewerRepository.save(entity);
-
-            application.getReviewers().add(entity);
-        }
+        application.setMotivation(updatedApplication.getMotivation());
+        application.setDesiredStartDate(updatedApplication.getDesiredStartDate());
+        application.setComment(updatedApplication.getComment());
 
         return applicationRepository.save(application);
     }
 
     @Transactional
-    public Application updateComment(Application application, String comment) {
+    public Application reviewApplication(UUID id, ApplicationState newState, String comment) {
+        Application application = getApplicationById(id);
+
+        User currentUser = authenticationService.getCurrentUser();
+        if (!application.hasManagementAccess(currentUser)) {
+            throw new AccessDeniedException("No permission to review this application");
+        }
+
+        application.setState(newState);
         application.setComment(comment);
+        application.setReviewedAt(Instant.now());
 
-        return applicationRepository.save(application);
-    }
+        ApplicationReviewer reviewer = new ApplicationReviewer();
+        reviewer.setApplication(application);
+        reviewer.setUser(currentUser);
+        reviewer.setReviewedAt(Instant.now());
+        reviewerRepository.save(reviewer);
 
-    public boolean applicationExists(User user, UUID topicId) {
-        return applicationRepository.existsPendingApplication(user.getId(), topicId);
-    }
+        Application savedApplication = applicationRepository.save(application);
+        mailingService.sendApplicationReviewedNotification(savedApplication);
 
-    public Application findById(UUID applicationId) {
-        return applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Application with id %s not found.", applicationId)));
+        return savedApplication;
     }
 }

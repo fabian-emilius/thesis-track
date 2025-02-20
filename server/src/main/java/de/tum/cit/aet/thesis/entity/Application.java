@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import de.tum.cit.aet.thesis.constants.ApplicationRejectReason;
 import de.tum.cit.aet.thesis.constants.ApplicationState;
+import de.tum.cit.aet.thesis.constants.GroupRole;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -72,8 +73,28 @@ public class Application {
     @OrderBy("reviewedAt ASC")
     private List<ApplicationReviewer> reviewers = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    private boolean hasGroupRole(User user, GroupRole... allowedRoles) {
+        if (group == null) return false;
+        
+        UserGroup userGroup = user.getGroupMembership(group);
+        if (userGroup == null) return false;
+
+        for (GroupRole role : allowedRoles) {
+            if (userGroup.getRole() == role) return true;
+        }
+        return false;
+    }
+
     public boolean hasReadAccess(User user) {
         if (user.hasAnyGroup("admin", "advisor", "supervisor")) {
+            return true;
+        }
+
+        if (hasGroupRole(user, GroupRole.ADMIN, GroupRole.SUPERVISOR, GroupRole.ADVISOR)) {
             return true;
         }
 
@@ -85,11 +106,19 @@ public class Application {
             return true;
         }
 
+        if (hasGroupRole(user, GroupRole.ADMIN)) {
+            return true;
+        }
+
         return this.user.getId().equals(user.getId());
     }
 
     public boolean hasManagementAccess(User user) {
-        return user.hasAnyGroup("admin", "advisor", "supervisor");
+        if (user.hasAnyGroup("admin", "advisor", "supervisor")) {
+            return true;
+        }
+
+        return hasGroupRole(user, GroupRole.ADMIN, GroupRole.SUPERVISOR, GroupRole.ADVISOR);
     }
 
     public Optional<ApplicationReviewer> getReviewer(User user) {

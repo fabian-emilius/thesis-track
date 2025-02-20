@@ -1,5 +1,6 @@
 package de.tum.cit.aet.thesis.entity;
 
+import de.tum.cit.aet.thesis.constants.GroupRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -67,4 +69,52 @@ public class Topic {
     @OneToMany(mappedBy = "topic", fetch = FetchType.EAGER)
     @OrderBy("position ASC")
     private List<TopicRole> roles = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    public boolean hasReadAccess(User user) {
+        // System admins always have access
+        if (user.hasAnyGroup("admin")) {
+            return true;
+        }
+
+        // Check if user has any role in the topic
+        if (roles.stream().anyMatch(role -> role.getUser().getId().equals(user.getId()))) {
+            return true;
+        }
+
+        // If topic belongs to a group, check group permissions
+        if (group != null) {
+            return user.getGroups().stream()
+                    .anyMatch(ug -> ug.getGroup().getId().equals(group.getId()));
+        }
+
+        return false;
+    }
+
+    public boolean hasEditAccess(User user) {
+        // System admins always have access
+        if (user.hasAnyGroup("admin")) {
+            return true;
+        }
+
+        // Check if user has supervisor role in the topic
+        if (roles.stream().anyMatch(role -> role.getUser().getId().equals(user.getId()))) {
+            return true;
+        }
+
+        // If topic belongs to a group, check if user is admin or supervisor
+        if (group != null) {
+            return user.getGroups().stream()
+                    .filter(ug -> ug.getGroup().getId().equals(group.getId()))
+                    .anyMatch(ug -> 
+                        ug.getRole() == GroupRole.ADMIN || 
+                        ug.getRole() == GroupRole.SUPERVISOR
+                    );
+        }
+
+        return false;
+    }
 }

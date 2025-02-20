@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import de.tum.cit.aet.thesis.entity.key.UserGroupId;
+import de.tum.cit.aet.thesis.constants.GroupRole;
 
 @Getter
 @Setter
@@ -17,4 +18,13 @@ public class UserGroup {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @MapsId("groupId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private GroupRole role;
 }
