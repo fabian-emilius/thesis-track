@@ -1,32 +1,28 @@
-import React from 'react';
-import { DataTable } from 'mantine-datatable';
-import { useTopicsContext } from '../../providers/TopicsProvider/hooks';
-import { useGroupFilter } from '../../hooks/utility';
-import { Text } from '@mantine/core';
-import { useCurrentGroup } from '../../providers/GroupContext/hooks';
-import { TopicWithGroup } from '../../types/group';
+import React from 'react'
+import { DataTable } from 'mantine-datatable'
+import { useTopicsContext } from '../../providers/TopicsProvider/hooks'
+import { useGroupFilter } from '../../hooks/utility'
+import { Text } from '@mantine/core'
+import { useCurrentGroup } from '../../providers/GroupContext/hooks'
+import { TopicWithGroup } from '../../types/group'
 
 /**
  * Component for displaying topics in a table format with group-based filtering
  * Automatically filters topics based on the current group context
  */
 const TopicsTable: React.FC = () => {
-  const { topics, loading } = useTopicsContext();
-  const currentGroup = useCurrentGroup();
-  const groupTopics = useGroupFilter<TopicWithGroup>(topics?.content);
+  const { topics, loading } = useTopicsContext()
+  const currentGroup = useCurrentGroup()
+  const groupTopics = useGroupFilter<TopicWithGroup>(topics?.content)
 
   if (!currentGroup) {
-    return (
-      <Text c="dimmed">
-        Please select a group to view topics.
-      </Text>
-    );
+    return <Text c='dimmed'>Please select a group to view topics.</Text>
   }
 
   return (
     <DataTable<TopicWithGroup>
       withBorder
-      borderRadius="sm"
+      borderRadius='sm'
       withColumnBorders
       striped
       highlightOnHover
@@ -39,10 +35,10 @@ const TopicsTable: React.FC = () => {
         { accessor: 'status', title: 'Status' },
       ]}
       onRowClick={(record) => {
-        window.location.href = `/topics/${record.id}`;
+        window.location.href = `/topics/${record.id}`
       }}
     />
-  );
-};
+  )
+}
 
-export default TopicsTable;
+export default TopicsTable

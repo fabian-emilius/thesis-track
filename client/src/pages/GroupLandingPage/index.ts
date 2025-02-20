@@ -1,1 +1,1 @@
-export { default } from './GroupLandingPage';
+export { default } from './GroupLandingPage'

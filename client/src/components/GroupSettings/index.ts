@@ -1,1 +1,1 @@
-export { default } from './GroupSettings';
+export { default } from './GroupSettings'

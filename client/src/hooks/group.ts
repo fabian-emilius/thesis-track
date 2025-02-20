@@ -1,7 +1,7 @@
-import { Group } from '../types/group';
-import { doRequest } from '../requests/request';
-import { showSimpleError } from '../utils/notification';
-import { getApiResponseErrorMessage } from '../requests/handler';
+import { Group } from '../types/group'
+import { doRequest } from '../requests/request'
+import { showSimpleError } from '../utils/notification'
+import { getApiResponseErrorMessage } from '../requests/handler'
 
 /**
  * Hook providing common group-related API operations
@@ -17,18 +17,18 @@ export const useGroupApi = () => {
       const response = await doRequest(`/v2/groups/${groupId}`, {
         method: 'GET',
         requiresAuth: true,
-      });
+      })
 
       if (response.ok) {
-        const data = await response.json();
-        return data as Group;
+        const data = await response.json()
+        return data as Group
       }
-      return undefined;
+      return undefined
     } catch (error) {
-      showSimpleError('Failed to fetch group details');
-      return undefined;
+      showSimpleError('Failed to fetch group details')
+      return undefined
     }
-  };
+  }
 
   /**
    * Updates a group's settings
@@ -42,18 +42,18 @@ export const useGroupApi = () => {
         method: 'PUT',
         requiresAuth: true,
         data,
-      });
+      })
 
       if (!response.ok) {
-        showSimpleError(getApiResponseErrorMessage(response));
+        showSimpleError(getApiResponseErrorMessage(response))
       }
 
-      return response.ok;
+      return response.ok
     } catch (error) {
-      showSimpleError('Failed to update group settings');
-      return false;
+      showSimpleError('Failed to update group settings')
+      return false
     }
-  };
+  }
 
   /**
    * Creates a new group
@@ -66,23 +66,23 @@ export const useGroupApi = () => {
         method: 'POST',
         requiresAuth: true,
         data,
-      });
+      })
 
       if (response.ok) {
-        const responseData = await response.json();
-        return responseData as Group;
+        const responseData = await response.json()
+        return responseData as Group
       }
-      showSimpleError(getApiResponseErrorMessage(response));
-      return undefined;
+      showSimpleError(getApiResponseErrorMessage(response))
+      return undefined
     } catch (error) {
-      showSimpleError('Failed to create group');
-      return undefined;
+      showSimpleError('Failed to create group')
+      return undefined
     }
-  };
+  }
 
   return {
     fetchGroupById,
     updateGroup,
     createGroup,
-  };
-};
+  }
+}

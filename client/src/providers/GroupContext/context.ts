@@ -1,5 +1,5 @@
-import { createContext } from 'react';
-import { GroupContextType } from '../../types/group';
+import { createContext } from 'react'
+import { GroupContextType } from '../../types/group'
 
 export const GroupContext = createContext<GroupContextType>({
   userGroups: [],
@@ -8,4 +8,4 @@ export const GroupContext = createContext<GroupContextType>({
   hasGroupRole: () => false,
   isGroupAdmin: () => false,
   loading: true,
-});
+})

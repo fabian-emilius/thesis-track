@@ -1,25 +1,27 @@
-import React from 'react';
-import { Container, Title, SimpleGrid, Text } from '@mantine/core';
-import GroupCard from '../../components/GroupCard/GroupCard';
-import { useGroup } from '../../providers/GroupContext/hooks';
+import React from 'react'
+import { Container, Title, SimpleGrid, Text } from '@mantine/core'
+import GroupCard from '../../components/GroupCard/GroupCard'
+import { useGroup } from '../../providers/GroupContext/hooks'
 
 const GroupOverviewPage: React.FC = () => {
-  const { userGroups, loading } = useGroup();
+  const { userGroups, loading } = useGroup()
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   return (
-    <Container size="xl" py="xl">
-      <Title order={1} mb="xl">Available Groups</Title>
-      
+    <Container size='xl' py='xl'>
+      <Title order={1} mb='xl'>
+        Available Groups
+      </Title>
+
       {userGroups.length === 0 ? (
-        <Text c="dimmed">No groups available.</Text>
+        <Text c='dimmed'>No groups available.</Text>
       ) : (
         <SimpleGrid
           cols={3}
-          spacing="lg"
+          spacing='lg'
           breakpoints={[
             { maxWidth: 'md', cols: 2, spacing: 'md' },
             { maxWidth: 'sm', cols: 1, spacing: 'sm' },
@@ -31,7 +33,7 @@ const GroupOverviewPage: React.FC = () => {
         </SimpleGrid>
       )}
     </Container>
-  );
-};
+  )
+}
 
-export default GroupOverviewPage;
+export default GroupOverviewPage
