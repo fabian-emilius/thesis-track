@@ -195,7 +195,12 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
     }
   }, [user.userId, topics, applications, adjustedFilters, sort, page, limit, isLoading])
 
-  if (!isLoading && hideIfEmpty && page === 0 && (!applications || applications.content.length === 0)) {
+  if (
+    !isLoading &&
+    hideIfEmpty &&
+    page === 0 &&
+    (!applications || applications.content.length === 0)
+  ) {
     return <>{emptyComponent}</>
   }
 

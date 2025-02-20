@@ -132,42 +132,48 @@ export interface IGroupContextOperations {
   /**
    * Sets the currently active group
    */
-  setCurrentGroup: (group: IGroupResponse | undefined) => void;
-  
+  setCurrentGroup: (group: IGroupResponse | undefined) => void
+
   /**
    * Fetches all available groups
    */
-  fetchGroups: () => Promise<void>;
-  
+  fetchGroups: () => Promise<void>
+
   /**
    * Creates a new group
    */
-  createGroup: (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IGroupResponse>;
-  
+  createGroup: (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IGroupResponse>
+
   /**
    * Updates an existing group's information
    */
-  updateGroup: (groupId: string, group: Partial<IGroup>) => Promise<IGroupResponse>;
-  
+  updateGroup: (groupId: string, group: Partial<IGroup>) => Promise<IGroupResponse>
+
   /**
    * Deletes a group
    */
-  deleteGroup: (groupId: string) => Promise<void>;
-  
+  deleteGroup: (groupId: string) => Promise<void>
+
   /**
    * Updates a group's settings
    */
-  updateGroupSettings: (groupId: string, settings: IUpdateGroupSettingsPayload) => Promise<IGroupSettingsResponse>;
-  
+  updateGroupSettings: (
+    groupId: string,
+    settings: IUpdateGroupSettingsPayload,
+  ) => Promise<IGroupSettingsResponse>
+
   /**
    * Adds a new member to a group
    */
-  addGroupMember: (groupId: string, payload: IAddGroupMemberPayload) => Promise<IGroupMemberResponse>;
-  
+  addGroupMember: (
+    groupId: string,
+    payload: IAddGroupMemberPayload,
+  ) => Promise<IGroupMemberResponse>
+
   /**
    * Removes a member from a group
    */
-  removeGroupMember: (groupId: string, userId: string) => Promise<void>;
+  removeGroupMember: (groupId: string, userId: string) => Promise<void>
 }
 
 /**
@@ -187,23 +193,23 @@ export type {
   IGroupResponse,
   IGroupMemberResponse,
   IGroupSettingsResponse,
-  
+
   // Base interfaces
   IGroup,
   IGroupMember,
   IGroupSettings,
   IGroupMemberUser,
-  
+
   // Payload types
   IUpdateGroupSettingsPayload,
   IAddGroupMemberPayload,
-  
+
   // Context types
   IGroupContextState,
   IGroupContextOperations,
   IGroupContextValue,
-  
+
   // Enums and constants
   GroupRole,
-  GroupOperation
+  GroupOperation,
 }

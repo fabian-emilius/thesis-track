@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react'
 import { GroupContext } from './context'
-import { 
+import {
   IGroup,
   IGroupResponse,
   IGroupContextValue,
@@ -8,7 +8,7 @@ import {
   IGroupSettingsResponse,
   IAddGroupMemberPayload,
   IUpdateGroupSettingsPayload,
-  GroupOperation
+  GroupOperation,
 } from './types'
 import { doRequest } from '../../requests/request'
 import { ApiError } from '../../requests/handler'
@@ -53,7 +53,7 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
       })
 
       if (response.ok) {
-        setGroups(prev => [...prev, response.data])
+        setGroups((prev) => [...prev, response.data])
         return response.data
       }
       throw new ApiError(response)
@@ -65,98 +65,112 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
     }
   }, [])
 
-  const updateGroup = useCallback(async (groupId: string, group: Partial<IGroup>) => {
-    setOperationInProgress('update')
-    setError(undefined)
-    try {
-      const response = await doRequest<IGroupResponse>(`/v2/groups/${groupId}`, {
-        method: 'PUT',
-        requiresAuth: true,
-        body: group,
-      })
+  const updateGroup = useCallback(
+    async (groupId: string, group: Partial<IGroup>) => {
+      setOperationInProgress('update')
+      setError(undefined)
+      try {
+        const response = await doRequest<IGroupResponse>(`/v2/groups/${groupId}`, {
+          method: 'PUT',
+          requiresAuth: true,
+          body: group,
+        })
 
-      if (response.ok) {
-        setGroups(prev => prev.map(g => g.id === groupId ? { ...g, ...response.data } : g))
-        if (currentGroup?.id === groupId) {
-          setCurrentGroup(response.data)
+        if (response.ok) {
+          setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, ...response.data } : g)))
+          if (currentGroup?.id === groupId) {
+            setCurrentGroup(response.data)
+          }
+          return response.data
         }
-        return response.data
+        throw new ApiError(response)
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : `Failed to update group ${groupId}`)
+        throw err
+      } finally {
+        setOperationInProgress(undefined)
       }
-      throw new ApiError(response)
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : `Failed to update group ${groupId}`)
-      throw err
-    } finally {
-      setOperationInProgress(undefined)
-    }
-  }, [currentGroup])
+    },
+    [currentGroup],
+  )
 
-  const deleteGroup = useCallback(async (groupId: string) => {
-    setOperationInProgress('delete')
-    setError(undefined)
-    try {
-      const response = await doRequest(`/v2/groups/${groupId}`, {
-        method: 'DELETE',
-        requiresAuth: true,
-      })
+  const deleteGroup = useCallback(
+    async (groupId: string) => {
+      setOperationInProgress('delete')
+      setError(undefined)
+      try {
+        const response = await doRequest(`/v2/groups/${groupId}`, {
+          method: 'DELETE',
+          requiresAuth: true,
+        })
 
-      if (response.ok) {
-        setGroups(prev => prev.filter(g => g.id !== groupId))
-        if (currentGroup?.id === groupId) {
-          setCurrentGroup(undefined)
+        if (response.ok) {
+          setGroups((prev) => prev.filter((g) => g.id !== groupId))
+          if (currentGroup?.id === groupId) {
+            setCurrentGroup(undefined)
+          }
+        } else {
+          throw new ApiError(response)
         }
-      } else {
-        throw new ApiError(response)
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : `Failed to delete group ${groupId}`)
+        throw err
+      } finally {
+        setOperationInProgress(undefined)
       }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : `Failed to delete group ${groupId}`)
-      throw err
-    } finally {
-      setOperationInProgress(undefined)
-    }
-  }, [currentGroup])
+    },
+    [currentGroup],
+  )
 
-  const updateGroupSettings = useCallback(async (groupId: string, settings: IUpdateGroupSettingsPayload) => {
-    setOperationInProgress('manage_settings')
-    setError(undefined)
-    try {
-      const response = await doRequest<IGroupSettingsResponse>(`/v2/groups/${groupId}/settings`, {
-        method: 'PUT',
-        requiresAuth: true,
-        body: settings,
-      })
+  const updateGroupSettings = useCallback(
+    async (groupId: string, settings: IUpdateGroupSettingsPayload) => {
+      setOperationInProgress('manage_settings')
+      setError(undefined)
+      try {
+        const response = await doRequest<IGroupSettingsResponse>(`/v2/groups/${groupId}/settings`, {
+          method: 'PUT',
+          requiresAuth: true,
+          body: settings,
+        })
 
-      if (!response.ok) {
-        throw new ApiError(response)
+        if (!response.ok) {
+          throw new ApiError(response)
+        }
+      } catch (err) {
+        setError(
+          err instanceof ApiError ? err.message : `Failed to update group settings for ${groupId}`,
+        )
+        throw err
+      } finally {
+        setOperationInProgress(undefined)
       }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : `Failed to update group settings for ${groupId}`)
-      throw err
-    } finally {
-      setOperationInProgress(undefined)
-    }
-  }, [])
+    },
+    [],
+  )
 
-  const addGroupMember = useCallback(async (groupId: string, { userId, role }: IAddGroupMemberPayload) => {
-    setOperationInProgress('manage_members')
-    setError(undefined)
-    try {
-      const response = await doRequest(`/v2/groups/${groupId}/members`, {
-        method: 'POST',
-        requiresAuth: true,
-        body: { userId, role },
-      })
+  const addGroupMember = useCallback(
+    async (groupId: string, { userId, role }: IAddGroupMemberPayload) => {
+      setOperationInProgress('manage_members')
+      setError(undefined)
+      try {
+        const response = await doRequest(`/v2/groups/${groupId}/members`, {
+          method: 'POST',
+          requiresAuth: true,
+          body: { userId, role },
+        })
 
-      if (!response.ok) {
-        throw new ApiError(response)
+        if (!response.ok) {
+          throw new ApiError(response)
+        }
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : `Failed to add member to group ${groupId}`)
+        throw err
+      } finally {
+        setOperationInProgress(undefined)
       }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : `Failed to add member to group ${groupId}`)
-      throw err
-    } finally {
-      setOperationInProgress(undefined)
-    }
-  }, [])
+    },
+    [],
+  )
 
   const removeGroupMember = useCallback(async (groupId: string, userId: string) => {
     setOperationInProgress('manage_members')
@@ -171,7 +185,9 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
         throw new ApiError(response)
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : `Failed to remove member from group ${groupId}`)
+      setError(
+        err instanceof ApiError ? err.message : `Failed to remove member from group ${groupId}`,
+      )
       throw err
     } finally {
       setOperationInProgress(undefined)
@@ -182,28 +198,39 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
     void fetchGroups()
   }, [])
 
-  const contextValue = useMemo<IGroupContextValue>(() => ({
-    currentGroup,
-    groups,
-    isLoading,
-    error,
-    operationInProgress,
-    setCurrentGroup,
-    fetchGroups,
-    createGroup,
-    updateGroup,
-    deleteGroup,
-    updateGroupSettings,
-    addGroupMember,
-    removeGroupMember,
-  }), [currentGroup, groups, isLoading, error, operationInProgress, fetchGroups, createGroup, updateGroup, deleteGroup,
-    updateGroupSettings, addGroupMember, removeGroupMember])
-
-  return (
-    <GroupContext.Provider value={contextValue}>
-      {children}
-    </GroupContext.Provider>
+  const contextValue = useMemo<IGroupContextValue>(
+    () => ({
+      currentGroup,
+      groups,
+      isLoading,
+      error,
+      operationInProgress,
+      setCurrentGroup,
+      fetchGroups,
+      createGroup,
+      updateGroup,
+      deleteGroup,
+      updateGroupSettings,
+      addGroupMember,
+      removeGroupMember,
+    }),
+    [
+      currentGroup,
+      groups,
+      isLoading,
+      error,
+      operationInProgress,
+      fetchGroups,
+      createGroup,
+      updateGroup,
+      deleteGroup,
+      updateGroupSettings,
+      addGroupMember,
+      removeGroupMember,
+    ],
   )
+
+  return <GroupContext.Provider value={contextValue}>{children}</GroupContext.Provider>
 }
 
 export default GroupProvider

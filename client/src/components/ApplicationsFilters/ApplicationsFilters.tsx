@@ -21,8 +21,10 @@ const ApplicationsFilters = (props: IApplicationsFiltersProps) => {
     <Grid gutter='sm'>
       {currentGroup && (
         <Grid.Col span={12}>
-          <Stack gap="xs">
-            <Text size="sm" fw={500}>Filtering applications for group:</Text>
+          <Stack gap='xs'>
+            <Text size='sm' fw={500}>
+              Filtering applications for group:
+            </Text>
             <Text>{currentGroup.name}</Text>
           </Stack>
         </Grid.Col>

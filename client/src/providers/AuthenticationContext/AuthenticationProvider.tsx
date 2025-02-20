@@ -144,14 +144,14 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
     if (authenticationTokens?.access_token) {
       const decodedAccessToken = jwtDecode<IDecodedAccessToken>(authenticationTokens.access_token)
       setUniversityId(decodedAccessToken['preferred_username'] || undefined)
-      
+
       const userGroups = Object.entries(decodedAccessToken.resource_access || {})
         .filter(([key]) => key.startsWith('group_'))
         .map(([key, value]) => ({
           groupId: key.replace('group_', ''),
-          roles: value.roles || []
-        }));
-      setGroups(userGroups || []);
+          roles: value.roles || [],
+        }))
+      setGroups(userGroups || [])
     } else {
       setUniversityId(undefined)
       setGroups([])
@@ -186,9 +186,9 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
       groups,
       userGroup: groups[0],
       hasGroupPermission: (permission: string) => {
-        const currentGroup = groups[0];
-        if (!currentGroup) return false;
-        return currentGroup.roles.includes(permission) || currentGroup.roles.includes('group_admin');
+        const currentGroup = groups[0]
+        if (!currentGroup) return false
+        return currentGroup.roles.includes(permission) || currentGroup.roles.includes('group_admin')
       },
       updateInformation: async (data, avatar, examinationReport, cv, degreeReport) => {
         const formData = new FormData()

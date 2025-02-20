@@ -5,32 +5,66 @@ import PageLoader from '../components/PageLoader'
 import { LazyExoticComponent } from 'react'
 import { useGroupContext } from '../providers/GroupContext/hooks'
 
-const GroupsPage = lazy(() => import('../pages/GroupsPage/GroupsPage')) as LazyExoticComponent<() => JSX.Element>
-const GroupManagementPage = lazy(() => import('../pages/GroupManagementPage/GroupManagementPage')) as LazyExoticComponent<() => JSX.Element>
-const GroupSettingsPage = lazy(() => import('../pages/GroupSettingsPage/GroupSettingsPage')) as LazyExoticComponent<() => JSX.Element>
-const NotFoundPage = lazy(() => import('../pages/NotFoundPage/NotFoundPage')) as LazyExoticComponent<() => JSX.Element>
-const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage')) as LazyExoticComponent<() => JSX.Element>
-const ImprintPage = lazy(() => import('../pages/ImprintPage/ImprintPage')) as LazyExoticComponent<() => JSX.Element>
-const AboutPage = lazy(() => import('../pages/AboutPage/AboutPage')) as LazyExoticComponent<() => JSX.Element>
-const ThesisOverviewPage = lazy(() => import('../pages/ThesisOverviewPage/ThesisOverviewPage')) as LazyExoticComponent<() => JSX.Element>
+const GroupsPage = lazy(() => import('../pages/GroupsPage/GroupsPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
+const GroupManagementPage = lazy(
+  () => import('../pages/GroupManagementPage/GroupManagementPage'),
+) as LazyExoticComponent<() => JSX.Element>
+const GroupSettingsPage = lazy(
+  () => import('../pages/GroupSettingsPage/GroupSettingsPage'),
+) as LazyExoticComponent<() => JSX.Element>
+const NotFoundPage = lazy(
+  () => import('../pages/NotFoundPage/NotFoundPage'),
+) as LazyExoticComponent<() => JSX.Element>
+const PrivacyPage = lazy(() => import('../pages/PrivacyPage/PrivacyPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
+const ImprintPage = lazy(() => import('../pages/ImprintPage/ImprintPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
+const AboutPage = lazy(() => import('../pages/AboutPage/AboutPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
+const ThesisOverviewPage = lazy(
+  () => import('../pages/ThesisOverviewPage/ThesisOverviewPage'),
+) as LazyExoticComponent<() => JSX.Element>
 const PresentationOverviewPage = lazy(
-  () => import('../pages/PresentationOverviewPage/PresentationOverviewPage')
+  () => import('../pages/PresentationOverviewPage/PresentationOverviewPage'),
 ) as LazyExoticComponent<() => JSX.Element>
-const BrowseThesesPage = lazy(() => import('../pages/BrowseThesesPage/BrowseThesesPage')) as LazyExoticComponent<() => JSX.Element>
-const DashboardPage = lazy(() => import('../pages/DashboardPage/DashboardPage')) as LazyExoticComponent<() => JSX.Element>
-const LogoutPage = lazy(() => import('../pages/LogoutPage/LogoutPage')) as LazyExoticComponent<() => JSX.Element>
-const SettingsPage = lazy(() => import('../pages/SettingsPage/SettingsPage')) as LazyExoticComponent<() => JSX.Element>
+const BrowseThesesPage = lazy(
+  () => import('../pages/BrowseThesesPage/BrowseThesesPage'),
+) as LazyExoticComponent<() => JSX.Element>
+const DashboardPage = lazy(
+  () => import('../pages/DashboardPage/DashboardPage'),
+) as LazyExoticComponent<() => JSX.Element>
+const LogoutPage = lazy(() => import('../pages/LogoutPage/LogoutPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
+const SettingsPage = lazy(
+  () => import('../pages/SettingsPage/SettingsPage'),
+) as LazyExoticComponent<() => JSX.Element>
 const ReplaceApplicationPage = lazy(
-  () => import('../pages/ReplaceApplicationPage/ReplaceApplicationPage')
+  () => import('../pages/ReplaceApplicationPage/ReplaceApplicationPage'),
 ) as LazyExoticComponent<() => JSX.Element>
-const ManageTopicsPage = lazy(() => import('../pages/ManageTopicsPage/ManageTopicsPage')) as LazyExoticComponent<() => JSX.Element>
-const TopicPage = lazy(() => import('../pages/TopicPage/TopicPage')) as LazyExoticComponent<() => JSX.Element>
-const PresentationPage = lazy(() => import('../pages/PresentationPage/PresentationPage')) as LazyExoticComponent<() => JSX.Element>
+const ManageTopicsPage = lazy(
+  () => import('../pages/ManageTopicsPage/ManageTopicsPage'),
+) as LazyExoticComponent<() => JSX.Element>
+const TopicPage = lazy(() => import('../pages/TopicPage/TopicPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
+const PresentationPage = lazy(
+  () => import('../pages/PresentationPage/PresentationPage'),
+) as LazyExoticComponent<() => JSX.Element>
 const ReviewApplicationPage = lazy(
-  () => import('../pages/ReviewApplicationPage/ReviewApplicationPage')
+  () => import('../pages/ReviewApplicationPage/ReviewApplicationPage'),
 ) as LazyExoticComponent<() => JSX.Element>
-const ThesisPage = lazy(() => import('../pages/ThesisPage/ThesisPage')) as LazyExoticComponent<() => JSX.Element>
-const LandingPage = lazy(() => import('../pages/LandingPage/LandingPage')) as LazyExoticComponent<() => JSX.Element>
+const ThesisPage = lazy(() => import('../pages/ThesisPage/ThesisPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
+const LandingPage = lazy(() => import('../pages/LandingPage/LandingPage')) as LazyExoticComponent<
+  () => JSX.Element
+>
 
 const AppRoutes = () => {
   const { currentGroup } = useGroupContext()
@@ -43,9 +77,18 @@ const AppRoutes = () => {
             element={<Navigate to={`/groups/${currentGroup?.slug}/applications`} replace />}
           />
           <Route path='/applications/thesis' element={<Navigate to='/' replace />} />
-          <Route path='/topics' element={<Navigate to={`/groups/${currentGroup?.slug}/topics`} replace />} />
-          <Route path='/theses' element={<Navigate to={`/groups/${currentGroup?.slug}/theses`} replace />} />
-          <Route path='/applications' element={<Navigate to={`/groups/${currentGroup?.slug}/applications`} replace />} />
+          <Route
+            path='/topics'
+            element={<Navigate to={`/groups/${currentGroup?.slug}/topics`} replace />}
+          />
+          <Route
+            path='/theses'
+            element={<Navigate to={`/groups/${currentGroup?.slug}/theses`} replace />}
+          />
+          <Route
+            path='/applications'
+            element={<Navigate to={`/groups/${currentGroup?.slug}/applications`} replace />}
+          />
           <Route
             path='/dashboard'
             element={

@@ -16,22 +16,16 @@ export const GroupSelectionStep: React.FC<GroupSelectionStepProps> = ({ onGroupS
   }
 
   if (error) {
-    return <Text c="red">{error}</Text>
+    return <Text c='red'>{error}</Text>
   }
 
   return (
-    <Stack gap="xl">
-      <Text size="lg">
-        Select a research group to submit your thesis application to:
-      </Text>
+    <Stack gap='xl'>
+      <Text size='lg'>Select a research group to submit your thesis application to:</Text>
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+      <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing='lg'>
         {groups.map((group) => (
-          <div
-            key={group.id}
-            onClick={() => onGroupSelect(group.id)}
-            style={{ cursor: 'pointer' }}
-          >
+          <div key={group.id} onClick={() => onGroupSelect(group.id)} style={{ cursor: 'pointer' }}>
             <GroupCard group={group} />
           </div>
         ))}

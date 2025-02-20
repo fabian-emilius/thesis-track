@@ -82,7 +82,7 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
   ])
 
   useEffect(() => {
-    setFilters(prev => ({ ...prev, groupId: currentGroup?.id }))
+    setFilters((prev) => ({ ...prev, groupId: currentGroup?.id }))
   }, [currentGroup])
 
   const contextState = useMemo<IThesesContext>(() => {
@@ -91,7 +91,7 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
       filters,
       setFilters: (value) => {
         setPage(0)
-        setFilters(prev => ({ ...value, groupId: currentGroup?.id }))
+        setFilters((prev) => ({ ...value, groupId: currentGroup?.id }))
       },
       sort,
       setSort: (value) => {

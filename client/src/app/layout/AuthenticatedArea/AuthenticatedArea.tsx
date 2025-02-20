@@ -55,7 +55,13 @@ const links: Array<{
   groups: string[] | undefined
   requiresGroup?: boolean
 }> = [
-  { link: '/dashboard', label: 'Dashboard', icon: NewspaperClipping, groups: undefined, requiresGroup: false },
+  {
+    link: '/dashboard',
+    label: 'Dashboard',
+    icon: NewspaperClipping,
+    groups: undefined,
+    requiresGroup: false,
+  },
   {
     link: '/presentations',
     label: 'Presentations',
@@ -201,11 +207,11 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
               </Text>
               {groups?.length > 0 && (
                 <Select
-                  placeholder="Select Group"
+                  placeholder='Select Group'
                   value={currentGroup?.id}
-                  onChange={(value) => setCurrentGroup(groups.find(g => g.id === value))}
-                  data={groups.map(g => ({ value: g.id, label: g.name }))}
-                  ml="auto"
+                  onChange={(value) => setCurrentGroup(groups.find((g) => g.id === value))}
+                  data={groups.map((g) => ({ value: g.id, label: g.name }))}
+                  ml='auto'
                   clearable={false}
                 />
               )}
@@ -226,7 +232,11 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
             .map((item) => (
               <Link
                 className={minimized ? classes.minimizedLink : classes.fullLink}
-                data-active={location.pathname.startsWith(item.requiresGroup ? getGroupPath(item.link) : item.link) || undefined}
+                data-active={
+                  location.pathname.startsWith(
+                    item.requiresGroup ? getGroupPath(item.link) : item.link,
+                  ) || undefined
+                }
                 key={item.label}
                 to={item.requiresGroup ? getGroupPath(item.link) : item.link}
               >

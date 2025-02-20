@@ -9,11 +9,7 @@ interface GroupListProps {
 
 export const GroupList: React.FC<GroupListProps> = ({ groups }) => {
   return (
-    <SimpleGrid
-      cols={{ base: 1, sm: 2, lg: 3 }}
-      spacing="lg"
-      verticalSpacing="lg"
-    >
+    <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing='lg' verticalSpacing='lg'>
       {groups.map((group) => (
         <GroupCard key={group.id} group={group} />
       ))}

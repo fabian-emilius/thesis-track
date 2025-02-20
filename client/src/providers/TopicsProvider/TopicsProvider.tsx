@@ -20,7 +20,7 @@ const TopicsProvider = (props: PropsWithChildren<ITopicsProviderProps>) => {
   const { currentGroup } = useGroup()
   const [filters, setFilters] = useState<ITopicsFilters>({
     includeClosed: includeClosedTopics,
-    groupId: currentGroup?.groupId
+    groupId: currentGroup?.groupId,
   })
 
   useEffect(() => {
@@ -60,9 +60,9 @@ const TopicsProvider = (props: PropsWithChildren<ITopicsProviderProps>) => {
 
   useEffect(() => {
     if (currentGroup?.groupId !== filters.groupId) {
-      setFilters(prev => ({
+      setFilters((prev) => ({
         ...prev,
-        groupId: currentGroup?.groupId
+        groupId: currentGroup?.groupId,
       }))
     }
   }, [currentGroup, filters.groupId])

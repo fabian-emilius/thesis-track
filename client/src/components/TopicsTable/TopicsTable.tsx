@@ -52,10 +52,10 @@ const TopicsTable: React.FC<ITopicsTableProps> = (props) => {
       title: 'Title',
       cellsStyle: () => ({ minWidth: 200 }),
       render: (topic) => (
-        <Group gap="xs">
+        <Group gap='xs'>
           <Text>{topic.title}</Text>
           {topic.group && topic.group.id !== currentGroup?.id && (
-            <Badge size="sm" variant="light">
+            <Badge size='sm' variant='light'>
               {topic.group.name}
             </Badge>
           )}

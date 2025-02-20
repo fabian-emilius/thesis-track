@@ -20,7 +20,7 @@ export const GroupSettingsPage = () => {
   const [members, setMembers] = useState<IGroupMemberResponse[]>([])
   const [isInitialLoading, setIsInitialLoading] = useState(true)
 
-  const group = groups.find(g => g.slug === groupSlug)
+  const group = groups.find((g) => g.slug === groupSlug)
 
   useEffect(() => {
     async function loadData() {
@@ -36,7 +36,7 @@ export const GroupSettingsPage = () => {
           doRequest<IGroupMemberResponse[]>(`/v2/groups/${group.id}/members`, {
             method: 'GET',
             requiresAuth: true,
-          })
+          }),
         ])
 
         if (settingsResponse.ok && membersResponse.ok) {
@@ -82,7 +82,8 @@ export const GroupSettingsPage = () => {
       showSimpleSuccess('Group settings updated successfully')
       setError(null)
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update group settings'
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update group settings'
       setError(errorMessage)
       showSimpleError(errorMessage)
     } finally {
@@ -92,9 +93,12 @@ export const GroupSettingsPage = () => {
 
   if (!group) {
     return (
-      <Container size="xl">
-        <Alert icon={<IconAlertCircle size={16} />} title="Not Found" color="red">
-          <Text>The requested group could not be found. It may have been deleted or you may not have access.</Text>
+      <Container size='xl'>
+        <Alert icon={<IconAlertCircle size={16} />} title='Not Found' color='red'>
+          <Text>
+            The requested group could not be found. It may have been deleted or you may not have
+            access.
+          </Text>
         </Alert>
       </Container>
     )
@@ -102,31 +106,31 @@ export const GroupSettingsPage = () => {
 
   if (isInitialLoading) {
     return (
-      <Container size="xl" pos="relative">
+      <Container size='xl' pos='relative'>
         <LoadingOverlay visible={true} />
       </Container>
     )
   }
 
   return (
-    <Container size="xl" pos="relative">
+    <Container size='xl' pos='relative'>
       <LoadingOverlay visible={loading} />
       {error && (
-        <Alert icon={<IconAlertCircle size={16} />} title="Error" color="red" mb="xl">
+        <Alert icon={<IconAlertCircle size={16} />} title='Error' color='red' mb='xl'>
           {error}
         </Alert>
       )}
 
-      <Stack gap="xl">
+      <Stack gap='xl'>
         <Title order={1}>{group.name} Settings</Title>
 
-        <Tabs defaultValue="general">
+        <Tabs defaultValue='general'>
           <Tabs.List>
-            <Tabs.Tab value="general">General</Tabs.Tab>
-            <Tabs.Tab value="members">Members</Tabs.Tab>
+            <Tabs.Tab value='general'>General</Tabs.Tab>
+            <Tabs.Tab value='members'>Members</Tabs.Tab>
           </Tabs.List>
 
-          <Tabs.Panel value="general" pt="xl">
+          <Tabs.Panel value='general' pt='xl'>
             <GroupSettingsForm
               group={group}
               settings={settings}
@@ -135,11 +139,8 @@ export const GroupSettingsPage = () => {
             />
           </Tabs.Panel>
 
-          <Tabs.Panel value="members" pt="xl">
-            <GroupMemberManager
-              groupId={group.id}
-              members={members}
-            />
+          <Tabs.Panel value='members' pt='xl'>
+            <GroupMemberManager groupId={group.id} members={members} />
           </Tabs.Panel>
         </Tabs>
       </Stack>

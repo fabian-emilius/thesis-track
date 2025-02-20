@@ -35,7 +35,8 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
   const { applications, sort, setSort, page, setPage, limit } = useApplicationsContext()
   const { currentGroup } = useGroupContext()
 
-  const columnConfig: Record<ApplicationColumn, DataTableColumn<IApplication>> & Record<string, DataTableColumn<IApplication>> = {
+  const columnConfig: Record<ApplicationColumn, DataTableColumn<IApplication>> &
+    Record<string, DataTableColumn<IApplication>> = {
     state: {
       accessor: 'state',
       title: 'State',
@@ -60,17 +61,17 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
         if (!group) return null
         return (
           <Tooltip label={group.description} multiline maw={200}>
-            <Group gap="xs">
+            <Group gap='xs'>
               {group.logoUrl && (
-                <img 
-                  src={group.logoUrl} 
-                  alt={group.name} 
-                  width={20} 
-                  height={20} 
+                <img
+                  src={group.logoUrl}
+                  alt={group.name}
+                  width={20}
+                  height={20}
                   style={{ objectFit: 'contain' }}
                 />
               )}
-              <Text size="sm" lineClamp={1}>
+              <Text size='sm' lineClamp={1}>
                 {group.name}
               </Text>
             </Group>
@@ -140,8 +141,8 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
           })
         }
       }}
-      records={applications?.content?.filter(app => 
-        !currentGroup?.id || app.topic?.group?.id === currentGroup.id
+      records={applications?.content?.filter(
+        (app) => !currentGroup?.id || app.topic?.group?.id === currentGroup.id,
       )}
       idAccessor='applicationId'
       columns={columns.map((column) => columnConfig[column])}

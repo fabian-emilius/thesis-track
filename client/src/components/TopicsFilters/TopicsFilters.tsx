@@ -18,7 +18,7 @@ const TopicsFilters = (props: ITopicsFiltersProps) => {
   return (
     <Stack>
       {selectedGroup && (
-        <Text size="sm" c="dimmed" mb="xs">
+        <Text size='sm' c='dimmed' mb='xs'>
           Filtering topics for group: {selectedGroup.name}
         </Text>
       )}

@@ -145,5 +145,5 @@ export const MotivationStep = (props: IMotivationStepProps): React.ReactElement 
   )
 }
 
-export default MotivationStep;
-export type { IMotivationStepForm, IMotivationStepProps };
+export default MotivationStep
+export type { IMotivationStepForm, IMotivationStepProps }

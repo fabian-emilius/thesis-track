@@ -14,14 +14,14 @@ export const GroupsPage = () => {
   if (error) {
     return (
       <Container>
-        <Text c="red">{error}</Text>
+        <Text c='red'>{error}</Text>
       </Container>
     )
   }
 
   return (
-    <Container size="xl">
-      <Stack gap="xl">
+    <Container size='xl'>
+      <Stack gap='xl'>
         <Title order={1}>Research Groups</Title>
         <GroupList groups={groups} />
       </Stack>

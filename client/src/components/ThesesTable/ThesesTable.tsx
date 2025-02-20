@@ -34,7 +34,7 @@ const ThesesTable = (props: IThesesTableProps) => {
   const {
     columns = ['state', 'title', 'type', 'students', 'advisors', 'group', 'start_date', 'end_date'],
     extraColumns = {},
-    groupContext = true
+    groupContext = true,
   } = props
 
   const { theses, sort, setSort, page, setPage, limit } = useThesesContext()
@@ -42,93 +42,100 @@ const ThesesTable = (props: IThesesTableProps) => {
 
   const navigate = useNavigate()
 
-  const onThesisClick = useCallback((thesis: IThesis) => {
-    const thesisGroup = (thesis.group as IGroup | null) ?? undefined
-    const path = groupContext && thesisGroup 
-      ? `/groups/${thesisGroup.slug}/theses/${thesis.thesisId}`
-      : `/theses/${thesis.thesisId}`
-    navigate(path)
-  }, [groupContext, navigate])
+  const onThesisClick = useCallback(
+    (thesis: IThesis) => {
+      const thesisGroup = (thesis.group as IGroup | null) ?? undefined
+      const path =
+        groupContext && thesisGroup
+          ? `/groups/${thesisGroup.slug}/theses/${thesis.thesisId}`
+          : `/theses/${thesis.thesisId}`
+      navigate(path)
+    },
+    [groupContext, navigate],
+  )
 
-  const columnConfig = React.useMemo<Record<ThesisColumn, DataTableColumn<IThesis>>>(() => ({
-    group: {
-      accessor: 'group',
-      title: 'Group',
-      width: 150,
-      render: (thesis) => {
-        const group = (thesis.group as IGroup | null) ?? undefined
-        return group ? (
-          <Tooltip label={group.description} multiline w={200}>
-            <Badge size="sm" variant="light" color="blue">
-              {group.name}
-            </Badge>
-          </Tooltip>
-        ) : null
+  const columnConfig = React.useMemo<Record<ThesisColumn, DataTableColumn<IThesis>>>(
+    () => ({
+      group: {
+        accessor: 'group',
+        title: 'Group',
+        width: 150,
+        render: (thesis) => {
+          const group = (thesis.group as IGroup | null) ?? undefined
+          return group ? (
+            <Tooltip label={group.description} multiline w={200}>
+              <Badge size='sm' variant='light' color='blue'>
+                {group.name}
+              </Badge>
+            </Tooltip>
+          ) : null
+        },
       },
-    },
-    state: {
-      accessor: 'state',
-      title: 'State',
-      textAlign: 'center',
-      width: 150,
-      render: (thesis) => {
-        return (
-          <Center>
-            <ThesisStateBadge state={thesis.state} />
-          </Center>
-        )
+      state: {
+        accessor: 'state',
+        title: 'State',
+        textAlign: 'center',
+        width: 150,
+        render: (thesis) => {
+          return (
+            <Center>
+              <ThesisStateBadge state={thesis.state} />
+            </Center>
+          )
+        },
       },
-    },
-    supervisors: {
-      accessor: 'supervisors',
-      title: 'Supervisor',
-      width: 180,
-      render: (thesis) => <AvatarUserList users={thesis.supervisors} />,
-    },
-    advisors: {
-      accessor: 'advisors',
-      title: 'Advisor(s)',
-      ellipsis: true,
-      width: 180,
-      render: (thesis) => <AvatarUserList users={thesis.advisors} />,
-    },
-    students: {
-      accessor: 'students',
-      title: 'Student(s)',
-      ellipsis: true,
-      width: 180,
-      render: (thesis) => <AvatarUserList users={thesis.students} />,
-    },
-    type: {
-      accessor: 'type',
-      title: 'Type',
-      ellipsis: true,
-      width: 150,
-      render: (thesis) => formatThesisType(thesis.type),
-    },
-    title: {
-      accessor: 'title',
-      title: 'Title',
-      cellsStyle: () => ({ minWidth: 200 }),
-    },
-    start_date: {
-      accessor: 'startDate',
-      title: 'Start Date',
-      sortable: true,
-      ellipsis: true,
-      width: 130,
-      render: (thesis) => formatDate(thesis.startDate, { withTime: false }),
-    },
-    end_date: {
-      accessor: 'endDate',
-      title: 'End Date',
-      sortable: true,
-      ellipsis: true,
-      width: 130,
-      render: (thesis) => formatDate(thesis.endDate, { withTime: false }),
-    },
-    ...extraColumns,
-  }), [extraColumns])
+      supervisors: {
+        accessor: 'supervisors',
+        title: 'Supervisor',
+        width: 180,
+        render: (thesis) => <AvatarUserList users={thesis.supervisors} />,
+      },
+      advisors: {
+        accessor: 'advisors',
+        title: 'Advisor(s)',
+        ellipsis: true,
+        width: 180,
+        render: (thesis) => <AvatarUserList users={thesis.advisors} />,
+      },
+      students: {
+        accessor: 'students',
+        title: 'Student(s)',
+        ellipsis: true,
+        width: 180,
+        render: (thesis) => <AvatarUserList users={thesis.students} />,
+      },
+      type: {
+        accessor: 'type',
+        title: 'Type',
+        ellipsis: true,
+        width: 150,
+        render: (thesis) => formatThesisType(thesis.type),
+      },
+      title: {
+        accessor: 'title',
+        title: 'Title',
+        cellsStyle: () => ({ minWidth: 200 }),
+      },
+      start_date: {
+        accessor: 'startDate',
+        title: 'Start Date',
+        sortable: true,
+        ellipsis: true,
+        width: 130,
+        render: (thesis) => formatDate(thesis.startDate, { withTime: false }),
+      },
+      end_date: {
+        accessor: 'endDate',
+        title: 'End Date',
+        sortable: true,
+        ellipsis: true,
+        width: 130,
+        render: (thesis) => formatDate(thesis.endDate, { withTime: false }),
+      },
+      ...extraColumns,
+    }),
+    [extraColumns],
+  )
 
   return (
     <DataTable

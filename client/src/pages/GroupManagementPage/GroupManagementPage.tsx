@@ -54,16 +54,16 @@ export const GroupManagementPage: React.FC = () => {
   }
 
   return (
-    <Container size="xl">
-      <Stack gap="xl">
-        <Group justify="space-between">
+    <Container size='xl'>
+      <Stack gap='xl'>
+        <Group justify='space-between'>
           <Title order={1}>Manage Groups</Title>
           <Button onClick={open}>Create New Group</Button>
         </Group>
 
         <DataTable
           withBorder
-          borderRadius="sm"
+          borderRadius='sm'
           withColumnBorders
           striped
           highlightOnHover
@@ -75,19 +75,11 @@ export const GroupManagementPage: React.FC = () => {
               accessor: 'actions',
               title: 'Actions',
               render: (group) => (
-                <Group gap="xs">
-                  <Button
-                    variant="light"
-                    component="a"
-                    href={`/groups/${group.slug}/settings`}
-                  >
+                <Group gap='xs'>
+                  <Button variant='light' component='a' href={`/groups/${group.slug}/settings`}>
                     Settings
                   </Button>
-                  <Button
-                    variant="light"
-                    color="red"
-                    onClick={() => handleDeleteGroup(group.id)}
-                  >
+                  <Button variant='light' color='red' onClick={() => handleDeleteGroup(group.id)}>
                     Delete
                   </Button>
                 </Group>
@@ -97,16 +89,8 @@ export const GroupManagementPage: React.FC = () => {
         />
       </Stack>
 
-      <Modal
-        opened={opened}
-        onClose={close}
-        title="Create New Group"
-        size="lg"
-      >
-        <GroupSettingsForm
-          onSubmit={handleCreateGroup}
-          isLoading={loading}
-        />
+      <Modal opened={opened} onClose={close} title='Create New Group' size='lg'>
+        <GroupSettingsForm onSubmit={handleCreateGroup} isLoading={loading} />
       </Modal>
     </Container>
   )

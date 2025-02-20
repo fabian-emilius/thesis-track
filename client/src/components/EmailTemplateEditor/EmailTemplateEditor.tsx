@@ -24,35 +24,35 @@ interface EmailTemplateEditorProps {
   /** Optional error message */
   error?: string
   /** Optional array of variables that can be used in the template */
-  variables?: Array<{ 
+  variables?: Array<{
     /** The name of the variable to be used like {{variableName}} */
     name: string
     /** Description of what the variable represents */
-    description: string 
+    description: string
   }>
 }
 
 /**
  * A rich text editor component for editing email templates with variable support.
- * 
+ *
  * @component
  * @example
  * ```tsx
  * // Basic usage
  * const [content, setContent] = useState('<p>Hello!</p>')
- * 
+ *
  * <EmailTemplateEditor
  *   value={content}
  *   onChange={setContent}
  *   label="Welcome Email Template"
  * />
- * 
+ *
  * // With variables
  * const variables = [
  *   { name: 'userName', description: 'The recipient\'s full name' },
  *   { name: 'groupName', description: 'The name of the user\'s group' }
  * ]
- * 
+ *
  * <EmailTemplateEditor
  *   value={content}
  *   onChange={setContent}
@@ -72,11 +72,7 @@ export const EmailTemplateEditor = ({
   variables,
 }: EmailTemplateEditorProps): JSX.Element => {
   const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Underline,
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-    ],
+    extensions: [StarterKit, Underline, TextAlign.configure({ types: ['heading', 'paragraph'] })],
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
@@ -84,14 +80,14 @@ export const EmailTemplateEditor = ({
   })
 
   return (
-    <Stack gap="xs">
+    <Stack gap='xs'>
       {variables && (
-        <Stack gap="xs">
+        <Stack gap='xs'>
           <TextInput
-            label="Available Variables"
-            description="Click to copy"
+            label='Available Variables'
+            description='Click to copy'
             readOnly
-            value={variables.map(v => `{{${v.name}}}`).join(' ')}
+            value={variables.map((v) => `{{${v.name}}}`).join(' ')}
             onClick={(e) => {
               const input = e.currentTarget
               input.select()
@@ -101,11 +97,11 @@ export const EmailTemplateEditor = ({
           {variables.map((variable) => (
             <TextInput
               key={variable.name}
-              size="xs"
+              size='xs'
               label={`{{${variable.name}}}`}
               description={variable.description}
               readOnly
-              variant="filled"
+              variant='filled'
             />
           ))}
         </Stack>
