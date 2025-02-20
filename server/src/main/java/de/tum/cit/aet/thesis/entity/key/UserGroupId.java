@@ -22,6 +22,14 @@ public class UserGroupId implements java.io.Serializable {
     @Column(name = "group_id", nullable = false)
     private UUID groupId;
 
+    public UserGroupId() {
+    }
+
+    public UserGroupId(UUID userId, UUID groupId) {
+        this.userId = userId;
+        this.groupId = groupId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

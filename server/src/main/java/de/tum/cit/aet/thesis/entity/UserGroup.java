@@ -11,7 +11,7 @@ import de.tum.cit.aet.thesis.entity.key.UserGroupId;
 @Table(name = "user_groups")
 public class UserGroup {
     @EmbeddedId
-    private UserGroupId id;
+    private UserGroupId id = new UserGroupId();
 
     @MapsId("userId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -25,4 +25,15 @@ public class UserGroup {
 
     @Column(nullable = false)
     private String role;
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+        if (group != null && id != null) {
+            id.setGroupId(group.getId());
+        }
+    }
 }
