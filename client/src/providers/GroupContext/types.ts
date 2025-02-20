@@ -1,15 +1,14 @@
+// Type definitions
+/**
+ * Type for group operations that can be performed
+ * @type {GroupOperation}
+ */
+export type GroupOperation = 'create' | 'update' | 'delete' | 'manage_members' | 'manage_settings'
+
+// Interface definitions
 /**
  * Represents a research or academic group within the thesis management system.
  * Groups are organizational units that can manage theses, topics and members.
- * @interface IGroup
- * @property {string} id - Unique identifier for the group
- * @property {string} slug - URL-friendly identifier for the group
- * @property {string} name - Display name of the group
- * @property {string} description - Detailed description of the group's focus and activities
- * @property {string} [logoUrl] - Optional URL to the group's logo image
- * @property {string} [externalLink] - Optional URL to the group's external website
- * @property {string} createdAt - ISO timestamp of when the group was created
- * @property {string} updatedAt - ISO timestamp of the group's last update
  */
 /**
  * API response interface for group data
@@ -113,22 +112,10 @@ export interface IGroupMember extends Pick<IGroupMemberResponse, 'userId' | 'rol
  */
 export interface IAddGroupMemberPayload extends IGroupMember {}
 
+// Context interfaces
 /**
- * Context value interface for managing groups within the application.
- * Provides state and methods for group operations.
- * @interface IGroupContextValue
- * @property {IGroup} [currentGroup] - Currently selected group
- * @property {IGroup[]} groups - List of all available groups
- * @property {boolean} isLoading - Loading state indicator
- * @property {string} [error] - Error message if operation failed
- * @property {function} setCurrentGroup - Sets the currently active group
- * @property {function} fetchGroups - Retrieves all available groups
- * @property {function} createGroup - Creates a new group
- * @property {function} updateGroup - Updates an existing group's information
- * @property {function} deleteGroup - Removes a group
- * @property {function} updateGroupSettings - Updates a group's settings
- * @property {function} addGroupMember - Adds a new member to a group
- * @property {function} removeGroupMember - Removes a member from a group
+ * State interface for group context
+ * @interface IGroupContextState
  */
 export interface IGroupContextState {
   currentGroup?: IGroupResponse
@@ -137,35 +124,86 @@ export interface IGroupContextState {
   error?: string
 }
 
+/**
+ * Operations interface for group context
+ * @interface IGroupContextOperations
+ */
 export interface IGroupContextOperations {
-  setCurrentGroup: (group: IGroupResponse | undefined) => void
-  fetchGroups: () => Promise<void>
-  createGroup: (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IGroupResponse>
-  updateGroup: (groupId: string, group: Partial<IGroup>) => Promise<IGroupResponse>
-  deleteGroup: (groupId: string) => Promise<void>
-  updateGroupSettings: (groupId: string, settings: IUpdateGroupSettingsPayload) => Promise<void>
-  addGroupMember: (groupId: string, payload: IAddGroupMemberPayload) => Promise<void>
-  removeGroupMember: (groupId: string, userId: string) => Promise<void>
+  /**
+   * Sets the currently active group
+   */
+  setCurrentGroup: (group: IGroupResponse | undefined) => void;
+  
+  /**
+   * Fetches all available groups
+   */
+  fetchGroups: () => Promise<void>;
+  
+  /**
+   * Creates a new group
+   */
+  createGroup: (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IGroupResponse>;
+  
+  /**
+   * Updates an existing group's information
+   */
+  updateGroup: (groupId: string, group: Partial<IGroup>) => Promise<IGroupResponse>;
+  
+  /**
+   * Deletes a group
+   */
+  deleteGroup: (groupId: string) => Promise<void>;
+  
+  /**
+   * Updates a group's settings
+   */
+  updateGroupSettings: (groupId: string, settings: IUpdateGroupSettingsPayload) => Promise<IGroupSettingsResponse>;
+  
+  /**
+   * Adds a new member to a group
+   */
+  addGroupMember: (groupId: string, payload: IAddGroupMemberPayload) => Promise<IGroupMemberResponse>;
+  
+  /**
+   * Removes a member from a group
+   */
+  removeGroupMember: (groupId: string, userId: string) => Promise<void>;
 }
 
 /**
  * Combined interface for group context value
  * @interface IGroupContextValue
  */
+/**
+ * Combined interface for group context value
+ * Provides state and operations for group management
+ * @interface IGroupContextValue
+ */
 export interface IGroupContextValue extends IGroupContextState, IGroupContextOperations {}
 
 // Export all types and interfaces
 export type {
+  // Response types
   IGroupResponse,
-  IGroup,
-  IGroupSettings,
-  IGroupSettingsResponse,
-  IUpdateGroupSettingsPayload,
-  IGroupMember,
   IGroupMemberResponse,
+  IGroupSettingsResponse,
+  
+  // Base interfaces
+  IGroup,
+  IGroupMember,
+  IGroupSettings,
   IGroupMemberUser,
+  
+  // Payload types
+  IUpdateGroupSettingsPayload,
   IAddGroupMemberPayload,
-  GroupRole,
+  
+  // Context types
   IGroupContextState,
-  IGroupContextOperations
+  IGroupContextOperations,
+  IGroupContextValue,
+  
+  // Enums and constants
+  GroupRole,
+  GroupOperation
 }

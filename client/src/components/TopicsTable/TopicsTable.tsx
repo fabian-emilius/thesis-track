@@ -1,7 +1,7 @@
-import React from 'react'
+import { type FC } from 'react'
 import { useNavigate } from 'react-router'
 import { Badge, Center, Group, Stack, Text } from '@mantine/core'
-import { DataTable, DataTableColumn } from 'mantine-datatable'
+import { DataTable, type DataTableColumn } from 'mantine-datatable'
 
 import { AvatarUserList } from '../AvatarUserList/AvatarUserList'
 import { useGroupContext } from '../../providers/GroupContext/hooks'
@@ -15,15 +15,15 @@ interface ITopicWithGroup extends ITopic {
   group?: IGroup
 }
 
-type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt'
+type TopicColumn = keyof typeof defaultColumnConfig
 
 export interface ITopicsTableProps {
-  columns?: TopicColumn[]
+  columns?: readonly TopicColumn[]
   extraColumns?: Partial<Record<TopicColumn, DataTableColumn<ITopicWithGroup>>>
   noBorder?: boolean
 }
 
-const TopicsTable = (props: ITopicsTableProps) => {
+const TopicsTable: React.FC<ITopicsTableProps> = (props) => {
   const {
     extraColumns = {},
     columns = ['title', 'types', 'supervisor', 'advisor'],
@@ -34,7 +34,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
   const { currentGroup } = useGroupContext()
   const { topics, page, setPage, limit } = useTopicsContext()
 
-  const columnConfig: Required<Record<TopicColumn, DataTableColumn<ITopicWithGroup>>> = {
+  const defaultColumnConfig: Record<string, DataTableColumn<ITopicWithGroup>> = {
     state: {
       accessor: 'state',
       title: 'State',
@@ -102,7 +102,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       ellipsis: true,
       render: (record) => formatDate(record.createdAt),
     },
-    ...(extraColumns as Record<TopicColumn, DataTableColumn<ITopicWithGroup>>),
+    ...extraColumns,
   }
 
   return (
@@ -121,7 +121,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       onPageChange={(x) => setPage(x - 1)}
       records={topics?.content as ITopicWithGroup[] | undefined}
       idAccessor='topicId'
-      columns={columns.map((column) => columnConfig[column as TopicColumn])}
+      columns={columns.map((column) => ({ ...defaultColumnConfig[column] }))}
       onRowClick={({ record }) => {
         const path = currentGroup
           ? `/groups/${currentGroup.slug}/topics/${record.topicId}`
@@ -133,5 +133,4 @@ const TopicsTable = (props: ITopicsTableProps) => {
 }
 
 export type { ITopicsTableProps, TopicColumn }
-export { TopicsTable }
-export default TopicsTable
+export { TopicsTable as default }

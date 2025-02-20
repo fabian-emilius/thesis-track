@@ -1,7 +1,9 @@
-import React from 'react'
-import { Card, Image, Text, Button, Group } from '@mantine/core'
+import { Card, Image, Text, Button, Group }
+
+export default GroupCard from '@mantine/core'
 import { Link } from 'react-router-dom'
 import { IGroup } from '../../providers/GroupContext/types'
+import placeholderImage from '../../assets/placeholder.svg'
 
 /**
  * Props for the GroupCard component
@@ -29,7 +31,7 @@ interface GroupCardProps {
  * <GroupCard group={group} />
  * ```
  */
-export const GroupCard: React.FC<GroupCardProps> = ({ group }) => {
+const GroupCard = ({ group }: GroupCardProps): JSX.Element => {
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       {group.logoUrl && (
@@ -38,7 +40,7 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group }) => {
             src={group.logoUrl}
             height={160}
             alt={group.name}
-            fallbackSrc="/placeholder.svg"
+            fallbackSrc={placeholderImage}
           />
         </Card.Section>
       )}

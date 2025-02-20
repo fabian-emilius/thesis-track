@@ -3,18 +3,18 @@ import React, { useState }
 export default GroupMemberManager from 'react'
 import { Table, Button, Group, Select, Text } from '@mantine/core'
 import { useGroupContext } from '../../providers/GroupContext/hooks'
-import { IGroupMember } from '../../providers/GroupContext/types'
+import { GroupRole } from '../../providers/GroupContext/types'
 import UserMultiSelect from '../UserMultiSelect/UserMultiSelect'
 
 interface GroupMemberManagerProps {
   groupId: string
-  members: Array<{ user: { id: string; name: string }; role: IGroupMember['role'] }>
+  members: Array<{ user: { id: string; firstName: string | null; lastName: string | null }; role: GroupRole }>
 }
 
 const GroupMemberManager: React.FC<GroupMemberManagerProps> = ({ groupId, members }) => {
   const { addGroupMember, removeGroupMember } = useGroupContext()
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
-  const [selectedRole, setSelectedRole] = useState<IGroupMember['role']>('advisor')
+  const [selectedRole, setSelectedRole] = useState<GroupRole>('advisor')
 
   const handleAddMember = async () => {
     if (selectedUser) {
@@ -36,7 +36,7 @@ const GroupMemberManager: React.FC<GroupMemberManagerProps> = ({ groupId, member
         <Select
           label="Role"
           value={selectedRole}
-          onChange={(value: IGroupMember['role']) => setSelectedRole(value)}
+          onChange={(value: string | null) => setSelectedRole(value as GroupRole)}
           data={[
             { value: 'supervisor', label: 'Supervisor' },
             { value: 'advisor', label: 'Advisor' },
@@ -60,7 +60,7 @@ const GroupMemberManager: React.FC<GroupMemberManagerProps> = ({ groupId, member
           {members.map((member) => (
             <Table.Tr key={member.user.id}>
               <Table.Td>
-                <Text>{member.user.name}</Text>
+                <Text>{[member.user.firstName, member.user.lastName].filter(Boolean).join(' ')}</Text>
               </Table.Td>
               <Table.Td>
                 <Text transform="capitalize">

@@ -1,6 +1,15 @@
 import React, { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react'
 import { GroupContext } from './context'
-import { IGroup, IGroupContextValue, IGroupMember, IGroupSettings, GroupOperation } from './types'
+import { 
+  IGroup,
+  IGroupResponse,
+  IGroupContextValue,
+  IGroupSettings,
+  IGroupSettingsResponse,
+  IAddGroupMemberPayload,
+  IUpdateGroupSettingsPayload,
+  GroupOperation
+} from './types'
 import { doRequest } from '../../requests/request'
 import { ApiError } from '../../requests/handler'
 
@@ -16,7 +25,7 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
     setError(undefined)
 
     try {
-      const response = await doRequest<IGroup[]>('/v2/groups', {
+      const response = await doRequest<IGroupResponse[]>('/v2/groups', {
         method: 'GET',
         requiresAuth: true,
       })
@@ -33,11 +42,11 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
     }
   }, [])
 
-  const createGroup = useCallback(async (group: Pick<IGroup, 'name' | 'description'>) => {
-    setOperationInProgress(GroupOperation.Create)
+  const createGroup = useCallback(async (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => {
+    setOperationInProgress('create')
     setError(undefined)
     try {
-      const response = await doRequest<IGroup>('/v2/groups', {
+      const response = await doRequest<IGroupResponse>('/v2/groups', {
         method: 'POST',
         requiresAuth: true,
         body: group,
@@ -56,11 +65,11 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
     }
   }, [])
 
-  const updateGroup = useCallback(async (groupId: string, group: Partial<Pick<IGroup, 'name' | 'description'>>) => {
-    setOperationInProgress(GroupOperation.Update)
+  const updateGroup = useCallback(async (groupId: string, group: Partial<IGroup>) => {
+    setOperationInProgress('update')
     setError(undefined)
     try {
-      const response = await doRequest<IGroup>(`/v2/groups/${groupId}`, {
+      const response = await doRequest<IGroupResponse>(`/v2/groups/${groupId}`, {
         method: 'PUT',
         requiresAuth: true,
         body: group,
@@ -83,7 +92,7 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
   }, [currentGroup])
 
   const deleteGroup = useCallback(async (groupId: string) => {
-    setOperationInProgress(GroupOperation.Delete)
+    setOperationInProgress('delete')
     setError(undefined)
     try {
       const response = await doRequest(`/v2/groups/${groupId}`, {
@@ -108,10 +117,10 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
   }, [currentGroup])
 
   const updateGroupSettings = useCallback(async (groupId: string, settings: IUpdateGroupSettingsPayload) => {
-    setOperationInProgress(GroupOperation.UpdateSettings)
+    setOperationInProgress('manage_settings')
     setError(undefined)
     try {
-      const response = await doRequest<IGroupSettings>(`/v2/groups/${groupId}/settings`, {
+      const response = await doRequest<IGroupSettingsResponse>(`/v2/groups/${groupId}/settings`, {
         method: 'PUT',
         requiresAuth: true,
         body: settings,
@@ -129,7 +138,7 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
   }, [])
 
   const addGroupMember = useCallback(async (groupId: string, { userId, role }: IAddGroupMemberPayload) => {
-    setOperationInProgress(GroupOperation.AddMember)
+    setOperationInProgress('manage_members')
     setError(undefined)
     try {
       const response = await doRequest(`/v2/groups/${groupId}/members`, {
@@ -150,7 +159,7 @@ const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
   }, [])
 
   const removeGroupMember = useCallback(async (groupId: string, userId: string) => {
-    setOperationInProgress(GroupOperation.RemoveMember)
+    setOperationInProgress('manage_members')
     setError(undefined)
     try {
       const response = await doRequest(`/v2/groups/${groupId}/members/${userId}`, {

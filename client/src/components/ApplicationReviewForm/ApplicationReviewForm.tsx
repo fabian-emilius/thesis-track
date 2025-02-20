@@ -17,7 +17,7 @@ import {
   Textarea,
   TextInput,
 } from '@mantine/core'
-import UserMultiSelect from '../UserMultiSelect/UserMultiSelect'
+import { UserMultiSelect, UserMultiSelectProps } from '../UserMultiSelect/UserMultiSelect'
 import { isNotEmptyUserList } from '../../utils/validation'
 import { showSimpleError, showSimpleSuccess } from '../../utils/notification'
 import { getApiResponseErrorMessage } from '../../requests/handler'
@@ -29,7 +29,7 @@ import LanguageSelect from '../LanguageSelect/LanguageSelect'
 
 interface IApplicationReviewFormProps {
   application: IApplication
-  onUpdate: (application: IApplication) => unknown
+  onUpdate: (application: IApplication) => void
 }
 
 interface IApplicationReviewForm {
@@ -51,7 +51,7 @@ const ApplicationReviewForm = (props: IApplicationReviewFormProps) => {
   const updateApplicationContext = useApplicationsContextUpdater()
 
   const form = useForm<IApplicationReviewForm>({
-    mode: 'controlled',
+    validateInputOnChange: true,
     initialValues: {
       applicationId: null,
       title: '',
@@ -63,7 +63,7 @@ const ApplicationReviewForm = (props: IApplicationReviewFormProps) => {
       notifyUser: true,
       closeTopic: false,
     },
-    validateInputOnBlur: true,
+    validateInputOnBlur: false,
     validate: {
       title: isNotEmpty('Thesis title must not be empty'),
       type: isNotEmpty('Thesis type must not be empty'),
@@ -275,15 +275,19 @@ const ApplicationReviewForm = (props: IApplicationReviewFormProps) => {
             required={true}
             groups={['supervisor']}
             maxValues={1}
+            value={form.values.supervisors}
+            onChange={(value) => form.setFieldValue('supervisors', value)}
+            error={form.errors.supervisors}
             initialUsers={application.topic?.supervisors}
-            {...form.getInputProps('supervisors')}
           />
           <UserMultiSelect
             label='Advisor(s)'
             required={true}
             groups={['advisor', 'supervisor']}
+            value={form.values.advisors}
+            onChange={(value) => form.setFieldValue('advisors', value)}
+            error={form.errors.advisors}
             initialUsers={application.topic?.advisors}
-            {...form.getInputProps('advisors')}
           />
 
           <Checkbox

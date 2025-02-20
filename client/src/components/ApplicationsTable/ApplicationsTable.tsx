@@ -1,7 +1,7 @@
 import React from 'react'
 import { IApplication, ApplicationState } from '../../requests/responses/application'
 import { DataTable, DataTableColumn } from 'mantine-datatable'
-import { ITopic } from '../../requests/responses/topic'
+
 import { Badge, Center, Group, Text, Tooltip } from '@mantine/core'
 import { formatApplicationState, formatDate, formatThesisType } from '../../utils/format'
 import { useApplicationsContext } from '../../providers/ApplicationsProvider/hooks'
@@ -18,10 +18,9 @@ type ApplicationColumn =
   | 'reviewed_at'
   | 'created_at'
   | 'group'
-  | string
 
 interface IApplicationsTableProps {
-  onApplicationClick: (application: IApplication) => unknown
+  onApplicationClick: (application: IApplication) => void
   columns?: ApplicationColumn[]
   extraColumns?: Record<string, DataTableColumn<IApplication>>
 }
@@ -36,7 +35,7 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
   const { applications, sort, setSort, page, setPage, limit } = useApplicationsContext()
   const { currentGroup } = useGroupContext()
 
-  const columnConfig: Record<ApplicationColumn, DataTableColumn<IApplication>> = {
+  const columnConfig: Record<ApplicationColumn, DataTableColumn<IApplication>> & Record<string, DataTableColumn<IApplication>> = {
     state: {
       accessor: 'state',
       title: 'State',
@@ -60,7 +59,7 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
         const group = application.topic?.group
         if (!group) return null
         return (
-          <Tooltip label={group.description} multiline width={200}>
+          <Tooltip label={group.description} multiline maw={200}>
             <Group gap="xs">
               {group.logoUrl && (
                 <img 
@@ -134,18 +133,20 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
         columnAccessor: sort.column,
       }}
       onSortStatusChange={(newSort) => {
-        setSort({
-          column: newSort.columnAccessor as IApplicationsSort['column'],
-          direction: newSort.direction,
-        })
+        if (newSort.columnAccessor) {
+          setSort({
+            column: newSort.columnAccessor as IApplicationsSort['column'],
+            direction: newSort.direction,
+          })
+        }
       }}
       records={applications?.content?.filter(app => 
-        !currentGroup || (app.topic?.group && app.topic.group.id === currentGroup.id)
+        !currentGroup?.id || app.topic?.group?.id === currentGroup.id
       )}
       idAccessor='applicationId'
       columns={columns.map((column) => columnConfig[column])}
       onRowClick={({ record: application }) => {
-        if (currentGroup && (!application.topic?.group || application.topic.group.id !== currentGroup.id)) {
+        if (currentGroup?.id && application.topic?.group?.id !== currentGroup.id) {
           return
         }
         onApplicationClick(application)

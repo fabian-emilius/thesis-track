@@ -11,6 +11,8 @@ import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import { useGroupContext } from '../../providers/GroupContext/hooks'
 import { IGroup } from '../../providers/GroupContext/types'
 
+type SortableColumns = 'startDate' | 'endDate' | 'createdAt'
+
 type ThesisColumn =
   | 'state'
   | 'supervisors'
@@ -24,7 +26,7 @@ type ThesisColumn =
 
 interface IThesesTableProps {
   columns?: ThesisColumn[]
-  extraColumns?: Record<string, DataTableColumn<IThesis>>
+  extraColumns?: Partial<Record<string, DataTableColumn<IThesis>>>
   groupContext?: boolean
 }
 
@@ -41,20 +43,20 @@ const ThesesTable = (props: IThesesTableProps) => {
   const navigate = useNavigate()
 
   const onThesisClick = useCallback((thesis: IThesis) => {
-    const thesisGroup = thesis.group as IGroup | undefined
+    const thesisGroup = (thesis.group as IGroup | null) ?? undefined
     const path = groupContext && thesisGroup 
       ? `/groups/${thesisGroup.slug}/theses/${thesis.thesisId}`
       : `/theses/${thesis.thesisId}`
     navigate(path)
   }, [groupContext, navigate])
 
-  const columnConfig: Record<ThesisColumn, DataTableColumn<IThesis>> = React.useMemo(() => ({
+  const columnConfig = React.useMemo<Record<ThesisColumn, DataTableColumn<IThesis>>>(() => ({
     group: {
       accessor: 'group',
       title: 'Group',
       width: 150,
       render: (thesis) => {
-        const group = thesis.group as IGroup | undefined
+        const group = (thesis.group as IGroup | null) ?? undefined
         return group ? (
           <Tooltip label={group.description} multiline w={200}>
             <Badge size="sm" variant="light" color="blue">
@@ -147,10 +149,13 @@ const ThesesTable = (props: IThesesTableProps) => {
         columnAccessor: sort.column,
       }}
       onSortStatusChange={(newSort: DataTableSortStatus) => {
-        setSort({
-          column: newSort.columnAccessor as IThesesSort['column'],
-          direction: newSort.direction,
-        })
+        const column = newSort.columnAccessor as SortableColumns
+        if (['startDate', 'endDate', 'createdAt'].includes(column)) {
+          setSort({
+            column,
+            direction: newSort.direction,
+          })
+        }
       }}
       records={theses?.content}
       idAccessor='thesisId'
