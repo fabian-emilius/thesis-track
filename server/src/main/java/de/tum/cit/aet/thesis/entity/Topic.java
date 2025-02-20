@@ -1,70 +1,47 @@
 package de.tum.cit.aet.thesis.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.type.SqlTypes;
 
-import java.time.Instant;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
-@Getter
-@Setter
 @Entity
 @Table(name = "topics")
+@Getter
+@Setter
 public class Topic {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "topic_id", nullable = false)
     private UUID id;
 
-    @NotNull
-    @Column(name = "title", nullable = false)
+    @Column(nullable = false)
     private String title;
 
-    @JdbcTypeCode(SqlTypes.ARRAY)
-    @Column(name = "thesis_types", columnDefinition = "text[]")
-    private Set<String> thesisTypes = new HashSet<>();
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    @NotNull
-    @Column(name = "problem_statement", nullable = false)
-    private String problemStatement;
-
-    @NotNull
-    @Column(name = "requirements", nullable = false)
-    private String requirements;
-
-    @NotNull
-    @Column(name = "goals", nullable = false)
-    private String goals;
-
-    @NotNull
-    @Column(name = "\"references\"", nullable = false)
-    private String references;
-
-    @Column(name = "closed_at")
-    private Instant closedAt;
-
-    @UpdateTimestamp
-    @NotNull
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    @CreationTimestamp
-    @NotNull
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
-    @NotNull
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by", nullable = false)
-    private User createdBy;
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
-    @OneToMany(mappedBy = "topic", fetch = FetchType.EAGER)
-    @OrderBy("position ASC")
-    private List<TopicRole> roles = new ArrayList<>();
+    @PrePersist
+    protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

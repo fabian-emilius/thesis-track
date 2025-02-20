@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,6 +29,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Profile("!test")   // NOTE: this is a workaround to avoid overlapping definitions during test execution
 public class WebSecurityConfig {
     private final JwtAuthConverter jwtAuthConverter;
+    private final GroupPermissionEvaluator groupPermissionEvaluator;
 
     @Value("${thesis-management.client.host}")
     private String clientHost;
@@ -34,6 +37,13 @@ public class WebSecurityConfig {
     @Bean
     protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
         return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
+    }
+
+    @Bean
+    public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+        expressionHandler.setPermissionEvaluator(groupPermissionEvaluator);
+        return expressionHandler;
     }
 
     @Bean
@@ -48,6 +58,8 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v2/published-presentations/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v2/calendar/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v2/avatars/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v2/groups").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v2/groups/*/logo").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/info").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
                         .anyRequest().authenticated()
