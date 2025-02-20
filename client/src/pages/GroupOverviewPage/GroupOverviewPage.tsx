@@ -21,8 +21,8 @@ const GroupOverviewPage: React.FC = () => {
           cols={3}
           spacing="lg"
           breakpoints={[
-            { maxWidth: 'md', cols: 2 },
-            { maxWidth: 'sm', cols: 1 },
+            { maxWidth: 'md', cols: 2, spacing: 'md' },
+            { maxWidth: 'sm', cols: 1, spacing: 'sm' },
           ]}
         >
           {userGroups.map((group) => (

@@ -37,3 +37,22 @@ export interface GroupContextType {
   isGroupAdmin: (groupId: string) => boolean;
   loading: boolean;
 }
+
+export interface ThesisWithGroup {
+  id: string;
+  groupId: string;
+  title: string;
+  type: string;
+  state: string;
+  student: { name: string };
+  advisor: { name: string };
+}
+
+export interface TopicWithGroup {
+  id: string;
+  groupId: string;
+  title: string;
+  type: string;
+  status: string;
+  supervisor: { name: string };
+}

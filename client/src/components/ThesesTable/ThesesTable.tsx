@@ -4,6 +4,7 @@ import { useThesesContext } from '../../providers/ThesesProvider/hooks';
 import { useGroupFilter } from '../../hooks/utility';
 import { Text } from '@mantine/core';
 import { useCurrentGroup } from '../../providers/GroupContext/hooks';
+import { ThesisWithGroup } from '../../types/group';
 
 /**
  * Component for displaying theses in a table format with group-based filtering
@@ -12,7 +13,7 @@ import { useCurrentGroup } from '../../providers/GroupContext/hooks';
 const ThesesTable: React.FC = () => {
   const { theses, loading } = useThesesContext();
   const currentGroup = useCurrentGroup();
-  const groupTheses = useGroupFilter(theses?.content);
+  const groupTheses = useGroupFilter<ThesisWithGroup>(theses?.content);
 
   if (!currentGroup) {
     return (
@@ -23,7 +24,7 @@ const ThesesTable: React.FC = () => {
   }
 
   return (
-    <DataTable
+    <DataTable<ThesisWithGroup>
       withBorder
       borderRadius="sm"
       withColumnBorders
@@ -38,7 +39,7 @@ const ThesesTable: React.FC = () => {
         { accessor: 'student.name', title: 'Student' },
         { accessor: 'advisor.name', title: 'Advisor' },
       ]}
-      onRowClick={(record: { id: string }) => {
+      onRowClick={(record) => {
         window.location.href = `/theses/${record.id}`;
       }}
     />

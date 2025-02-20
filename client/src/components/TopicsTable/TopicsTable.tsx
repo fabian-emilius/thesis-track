@@ -4,6 +4,7 @@ import { useTopicsContext } from '../../providers/TopicsProvider/hooks';
 import { useGroupFilter } from '../../hooks/utility';
 import { Text } from '@mantine/core';
 import { useCurrentGroup } from '../../providers/GroupContext/hooks';
+import { TopicWithGroup } from '../../types/group';
 
 /**
  * Component for displaying topics in a table format with group-based filtering
@@ -12,7 +13,7 @@ import { useCurrentGroup } from '../../providers/GroupContext/hooks';
 const TopicsTable: React.FC = () => {
   const { topics, loading } = useTopicsContext();
   const currentGroup = useCurrentGroup();
-  const groupTopics = useGroupFilter(topics?.content);
+  const groupTopics = useGroupFilter<TopicWithGroup>(topics?.content);
 
   if (!currentGroup) {
     return (
@@ -23,7 +24,7 @@ const TopicsTable: React.FC = () => {
   }
 
   return (
-    <DataTable
+    <DataTable<TopicWithGroup>
       withBorder
       borderRadius="sm"
       withColumnBorders
@@ -37,7 +38,7 @@ const TopicsTable: React.FC = () => {
         { accessor: 'supervisor.name', title: 'Supervisor' },
         { accessor: 'status', title: 'Status' },
       ]}
-      onRowClick={(record: { id: string }) => {
+      onRowClick={(record) => {
         window.location.href = `/topics/${record.id}`;
       }}
     />

@@ -10,11 +10,9 @@ import SelectTopicStep from './components/SelectTopicStep/SelectTopicStep';
 import MotivationStep from './components/MotivationStep/MotivationStep';
 import { useGroup } from '../../providers/GroupContext/hooks';
 import { useGroupApi } from '../../hooks/group';
+import { getApiResponseErrorMessage } from '../../requests/handler';
+import { showSimpleError } from '../../utils/notification';
 
-/**
- * Page component for creating or editing thesis applications
- * Implements a multi-step form with group selection, topic selection, and motivation
- */
 const ReplaceApplicationPage: React.FC = () => {
   const { topicId, applicationId } = useParams<{ topicId?: string; applicationId?: string }>();
   const [active, setActive] = useState(0);
@@ -25,45 +23,51 @@ const ReplaceApplicationPage: React.FC = () => {
 
   useEffect(() => {
     const fetchApplication = async () => {
-      if (applicationId) {
-        const response = await doRequest(`/v2/applications/${applicationId}`, {
-          method: 'GET',
-          requiresAuth: true,
-        });
+      try {
+        if (applicationId) {
+          const response = await doRequest(`/v2/applications/${applicationId}`, {
+            method: 'GET',
+            requiresAuth: true,
+          });
 
-        if (response.ok) {
-          const data = await response.json();
-          setApplication(data);
-          setSelectedTopic(data.topic);
-          
-          // Set the group from the application
-          if (data.groupId) {
-            const groupData = await fetchGroupById(data.groupId);
-            if (groupData) {
-              setCurrentGroup(groupData);
-              setActive(1); // Skip group selection for existing applications
+          if (response.ok) {
+            const data = await response.json() as IApplication;
+            setApplication(data);
+            setSelectedTopic(data.topic);
+            
+            if (data.groupId) {
+              const groupData = await fetchGroupById(data.groupId);
+              if (groupData) {
+                setCurrentGroup(groupData);
+                setActive(1); // Skip group selection for existing applications
+              }
             }
+          } else {
+            showSimpleError(getApiResponseErrorMessage(response));
+          }
+        } else if (topicId) {
+          const response = await doRequest(`/v2/topics/${topicId}`, {
+            method: 'GET',
+            requiresAuth: true,
+          });
+
+          if (response.ok) {
+            const data = await response.json() as ITopic;
+            setSelectedTopic(data);
+            
+            if (data.groupId) {
+              const groupData = await fetchGroupById(data.groupId);
+              if (groupData) {
+                setCurrentGroup(groupData);
+                setActive(1); // Skip group selection for pre-selected topics
+              }
+            }
+          } else {
+            showSimpleError(getApiResponseErrorMessage(response));
           }
         }
-      } else if (topicId) {
-        const response = await doRequest(`/v2/topics/${topicId}`, {
-          method: 'GET',
-          requiresAuth: true,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setSelectedTopic(data);
-          
-          // Set the group from the topic
-          if (data.groupId) {
-            const groupData = await fetchGroupById(data.groupId);
-            if (groupData) {
-              setCurrentGroup(groupData);
-              setActive(1); // Skip group selection for pre-selected topics
-            }
-          }
-        }
+      } catch (error) {
+        showSimpleError('Failed to load application data');
       }
     };
 

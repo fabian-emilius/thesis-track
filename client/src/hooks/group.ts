@@ -1,6 +1,7 @@
 import { Group } from '../types/group';
 import { doRequest } from '../requests/request';
 import { showSimpleError } from '../utils/notification';
+import { getApiResponseErrorMessage } from '../requests/handler';
 
 /**
  * Hook providing common group-related API operations
@@ -19,7 +20,8 @@ export const useGroupApi = () => {
       });
 
       if (response.ok) {
-        return await response.json();
+        const data = await response.json();
+        return data as Group;
       }
       return undefined;
     } catch (error) {
@@ -42,6 +44,10 @@ export const useGroupApi = () => {
         data,
       });
 
+      if (!response.ok) {
+        showSimpleError(getApiResponseErrorMessage(response));
+      }
+
       return response.ok;
     } catch (error) {
       showSimpleError('Failed to update group settings');
@@ -63,8 +69,10 @@ export const useGroupApi = () => {
       });
 
       if (response.ok) {
-        return await response.json();
+        const responseData = await response.json();
+        return responseData as Group;
       }
+      showSimpleError(getApiResponseErrorMessage(response));
       return undefined;
     } catch (error) {
       showSimpleError('Failed to create group');

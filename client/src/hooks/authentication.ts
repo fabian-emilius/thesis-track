@@ -1,65 +1,33 @@
-import { useContext } from 'react'
-import { AuthenticationContext } from '../providers/AuthenticationContext/context'
-import { useLocalStorage } from './local-storage'
+import { useContext } from 'react';
+import { AuthenticationContext } from '../providers/AuthenticationContext/context';
 
-export function useAuthenticationContext() {
-  const context = useContext(AuthenticationContext)
-
+/**
+ * Hook for accessing authentication context
+ * @returns Authentication context containing user information and auth state
+ */
+export const useAuthentication = () => {
+  const context = useContext(AuthenticationContext);
   if (!context) {
-    throw new Error('Authentication context not initialized')
+    throw new Error('useAuthentication must be used within an AuthenticationProvider');
   }
+  return context;
+};
 
-  return context
-}
+/**
+ * Hook for checking if the current user has a specific role
+ * @param role - Role to check for
+ * @returns Boolean indicating if user has the role
+ */
+export const useHasRole = (role: string): boolean => {
+  const { user } = useAuthentication();
+  return user?.roles?.includes(role) || false;
+};
 
-export function useUser() {
-  const context = useAuthenticationContext()
-
-  return context.user
-}
-
-export function useLoggedInUser() {
-  const user = useUser()
-  const auth = useAuthenticationContext()
-
-  if (!user) {
-    auth.login()
-
-    throw new Error('Authentication required')
-  }
-
-  return user
-}
-
-export interface IAuthenticationTokens {
-  access_token: string
-  refresh_token: string
-}
-
-export function useAuthenticationTokens() {
-  return useLocalStorage<IAuthenticationTokens>('authentication_tokens', { usingJson: true })
-}
-
-export function getAuthenticationTokens(): IAuthenticationTokens | undefined {
-  try {
-    const data = localStorage.getItem('authentication_tokens')
-
-    if (data) {
-      return JSON.parse(data)
-    }
-
-    return undefined
-  } catch {
-    return undefined
-  }
-}
-
-export function useHasGroupAccess(...groups: string[]) {
-  const user = useUser()
-
-  return user?.groups.some((group) => groups.includes(group)) ?? false
-}
-
-export function useManagementAccess() {
-  return useHasGroupAccess('admin', 'supervisor', 'advisor')
-}
+/**
+ * Hook for checking if the current user is authenticated
+ * @returns Boolean indicating if user is authenticated
+ */
+export const useIsAuthenticated = (): boolean => {
+  const { user } = useAuthentication();
+  return !!user;
+};
