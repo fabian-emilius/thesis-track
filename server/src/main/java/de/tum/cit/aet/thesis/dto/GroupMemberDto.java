@@ -5,17 +5,22 @@ import lombok.Data;
 
 import java.util.UUID;
 
+/**
+ * DTO for group member information.
+ */
 @Data
 public class GroupMemberDto {
     private UUID userId;
     private String role;
-    private LightUserDto user;
+    private String userName;
+    private String userEmail;
 
     public static GroupMemberDto from(GroupMember member) {
         GroupMemberDto dto = new GroupMemberDto();
         dto.setUserId(member.getUser().getId());
         dto.setRole(member.getRole());
-        dto.setUser(LightUserDto.from(member.getUser()));
+        dto.setUserName(member.getUser().getUsername());
+        dto.setUserEmail(member.getUser().getEmail());
         return dto;
     }
 }

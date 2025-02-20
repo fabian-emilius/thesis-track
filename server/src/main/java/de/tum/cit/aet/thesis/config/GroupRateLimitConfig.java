@@ -9,64 +9,24 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Duration;
 
 /**
- * Configuration for rate limiting different API operations.
- * Uses Bucket4j to implement token bucket algorithm for rate limiting.
- * Limits are configurable through application.yml properties.
+ * Configuration for group management rate limiting.
+ * Provides rate limiting buckets for group management operations.
  */
 @Configuration
-public class RateLimitConfig {
-
-    private final RateLimitProperties rateLimitProperties;
-
-    public RateLimitConfig(RateLimitProperties rateLimitProperties) {
-        this.rateLimitProperties = rateLimitProperties;
-    }
+public class GroupRateLimitConfig {
 
     /**
-     * Creates a rate limiter bucket with specified limits.
-     * @param limit Number of requests allowed in the time window
-     * @param windowMinutes Time window in minutes
-     * @return Configured rate limit bucket
-     */
-    private Bucket createBucket(int limit, int windowMinutes) {
-        return Bucket.builder()
-                .addLimit(Bandwidth.classic(limit, Refill.greedy(limit, Duration.ofMinutes(windowMinutes))))
-                .build();
-    }
-
-    /**
-     * Creates a rate limiter for group management operations.
-     * @return Bucket configured with rate limits for group operations
+     * Creates a rate limiting bucket for group management operations.
+     * Limits requests to prevent abuse of group management endpoints.
+     *
+     * @return Bucket configured with rate limits
      */
     @Bean
     public Bucket groupManagementBucket() {
-        return createBucket(
-            rateLimitProperties.getGroupOperationsLimit(),
-            rateLimitProperties.getGroupOperationsWindow()
-        );
-    }
-
-    /**
-     * Creates a rate limiter for user operations.
-     * @return Bucket configured with rate limits for user operations
-     */
-    @Bean
-    public Bucket userOperationsBucket() {
-        return createBucket(
-            rateLimitProperties.getUserOperationsLimit(),
-            rateLimitProperties.getUserOperationsWindow()
-        );
-    }
-
-    /**
-     * Creates a rate limiter for application operations.
-     * @return Bucket configured with rate limits for application operations
-     */
-    @Bean
-    public Bucket applicationOperationsBucket() {
-        return createBucket(
-            rateLimitProperties.getApplicationOperationsLimit(),
-            rateLimitProperties.getApplicationOperationsWindow()
-        );
+        // Allow 10 requests per minute for group management operations
+        Bandwidth limit = Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
+        return Bucket.builder()
+                .addLimit(limit)
+                .build();
     }
 }
