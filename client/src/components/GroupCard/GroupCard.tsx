@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, Text, Group as MantineGroup, Image, Button } from '@mantine/core';
-import { Group } from '../../types/group';
+import { Card, Text, Group, Image, Button } from '@mantine/core';
+import { Group as GroupType } from '../../types/group';
 
 interface GroupCardProps {
-  group: Group;
+  group: GroupType;
   showActions?: boolean;
 }
 
-export const GroupCard: React.FC<GroupCardProps> = ({ group, showActions = true }) => {
+const GroupCard: React.FC<GroupCardProps> = ({ group, showActions = true }) => {
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       {group.logoUrl && (
@@ -22,18 +22,18 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, showActions = true 
         </Card.Section>
       )}
 
-      <MantineGroup position="apart" mt="md" mb="xs">
+      <Group justify="space-between" mt="md" mb="xs">
         <Text fw={500} size="lg">
           {group.name}
         </Text>
-      </MantineGroup>
+      </Group>
 
       <Text size="sm" c="dimmed">
         {group.description}
       </Text>
 
       {showActions && (
-        <MantineGroup position="apart" mt="md">
+        <Group mt="md">
           <Button
             component={Link}
             to={`/groups/${group.slug}`}
@@ -43,8 +43,10 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, showActions = true 
           >
             View Group
           </Button>
-        </MantineGroup>
+        </Group>
       )}
     </Card>
   );
 };
+
+export default GroupCard;

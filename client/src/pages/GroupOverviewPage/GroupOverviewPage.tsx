@@ -1,9 +1,9 @@
 import React from 'react';
 import { Container, Title, SimpleGrid, Text } from '@mantine/core';
-import { GroupCard } from '../../components/GroupCard/GroupCard';
+import GroupCard from '../../components/GroupCard/GroupCard';
 import { useGroup } from '../../providers/GroupContext/hooks';
 
-export const GroupOverviewPage: React.FC = () => {
+const GroupOverviewPage: React.FC = () => {
   const { userGroups, loading } = useGroup();
 
   if (loading) {
@@ -33,3 +33,5 @@ export const GroupOverviewPage: React.FC = () => {
     </Container>
   );
 };
+
+export default GroupOverviewPage;

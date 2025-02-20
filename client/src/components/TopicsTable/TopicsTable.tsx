@@ -9,7 +9,7 @@ import { useCurrentGroup } from '../../providers/GroupContext/hooks';
  * Component for displaying topics in a table format with group-based filtering
  * Automatically filters topics based on the current group context
  */
-export const TopicsTable: React.FC = () => {
+const TopicsTable: React.FC = () => {
   const { topics, loading } = useTopicsContext();
   const currentGroup = useCurrentGroup();
   const groupTopics = useGroupFilter(topics?.content);
@@ -29,7 +29,7 @@ export const TopicsTable: React.FC = () => {
       withColumnBorders
       striped
       highlightOnHover
-      records={groupTopics}
+      records={groupTopics || []}
       fetching={loading}
       columns={[
         { accessor: 'title', title: 'Title' },
@@ -37,9 +37,11 @@ export const TopicsTable: React.FC = () => {
         { accessor: 'supervisor.name', title: 'Supervisor' },
         { accessor: 'status', title: 'Status' },
       ]}
-      onRowClick={(record) => {
+      onRowClick={(record: { id: string }) => {
         window.location.href = `/topics/${record.id}`;
       }}
     />
   );
 };
+
+export default TopicsTable;

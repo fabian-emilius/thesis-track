@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AuthenticatedArea from './layout/AuthenticatedArea/AuthenticatedArea'
 import PageLoader from '../components/PageLoader/PageLoader'
 
@@ -28,10 +28,10 @@ const ThesisPage = lazy(() => import('../pages/ThesisPage/ThesisPage'))
 const LandingPage = lazy(() => import('../pages/LandingPage/LandingPage'))
 
 // New group-related page imports
-const GroupOverviewPage = lazy(() => import('../pages/GroupOverviewPage/GroupOverviewPage'))
-const GroupLandingPage = lazy(() => import('../pages/GroupLandingPage/GroupLandingPage'))
-const GroupSettingsPage = lazy(() => import('../pages/GroupSettingsPage/GroupSettingsPage'))
-const AdminGroupPage = lazy(() => import('../pages/AdminGroupPage/AdminGroupPage'))
+const GroupOverviewPage = lazy(() => import('../pages/GroupOverviewPage'))
+const GroupLandingPage = lazy(() => import('../pages/GroupLandingPage'))
+const GroupSettingsPage = lazy(() => import('../pages/GroupSettingsPage'))
+const AdminGroupPage = lazy(() => import('../pages/AdminGroupPage'))
 
 const AppRoutes = () => {
   return (

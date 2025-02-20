@@ -1,10 +1,10 @@
 import React from 'react';
 import { Container, Title, Alert } from '@mantine/core';
 import { useAuthentication } from '../../hooks/authentication';
-import { GroupSettings } from '../../components/GroupSettings/GroupSettings';
+import GroupSettings from '../../components/GroupSettings/GroupSettings';
 import { Group } from '../../types/group';
 
-export const AdminGroupPage: React.FC = () => {
+const AdminGroupPage: React.FC = () => {
   const { user } = useAuthentication();
 
   if (!user?.isAdmin) {
@@ -38,3 +38,5 @@ export const AdminGroupPage: React.FC = () => {
     </Container>
   );
 };
+
+export default AdminGroupPage;

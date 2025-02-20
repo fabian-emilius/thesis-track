@@ -1,10 +1,10 @@
 import React from 'react';
-import { Container, Title, Stack, Group as MantineGroup, Button } from '@mantine/core';
+import { Container, Title, Stack, Group, Button } from '@mantine/core';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useCurrentGroup, useIsGroupAdmin } from '../../providers/GroupContext/hooks';
-import { GroupCard } from '../../components/GroupCard/GroupCard';
+import GroupCard from '../../components/GroupCard/GroupCard';
 
-export const GroupLandingPage: React.FC = () => {
+const GroupLandingPage: React.FC = () => {
   const { groupSlug } = useParams<{ groupSlug: string }>();
   const currentGroup = useCurrentGroup();
   const isAdmin = currentGroup ? useIsGroupAdmin(currentGroup.id) : false;
@@ -15,8 +15,8 @@ export const GroupLandingPage: React.FC = () => {
 
   return (
     <Container size="xl" py="xl">
-      <Stack spacing="xl">
-        <MantineGroup position="apart">
+      <Stack gap="xl">
+        <Group justify="space-between">
           <Title order={1}>{currentGroup.name}</Title>
           {isAdmin && (
             <Button
@@ -27,12 +27,12 @@ export const GroupLandingPage: React.FC = () => {
               Group Settings
             </Button>
           )}
-        </MantineGroup>
+        </Group>
 
         <GroupCard group={currentGroup} showActions={false} />
-
-        {/* Add group-specific content here */}
       </Stack>
     </Container>
   );
 };
+
+export default GroupLandingPage;

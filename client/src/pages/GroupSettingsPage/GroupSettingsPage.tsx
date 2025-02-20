@@ -2,9 +2,9 @@ import React from 'react';
 import { Container, Title, Alert } from '@mantine/core';
 import { useParams, Navigate } from 'react-router-dom';
 import { useCurrentGroup, useIsGroupAdmin } from '../../providers/GroupContext/hooks';
-import { GroupSettings } from '../../components/GroupSettings/GroupSettings';
+import GroupSettings from '../../components/GroupSettings/GroupSettings';
 
-export const GroupSettingsPage: React.FC = () => {
+const GroupSettingsPage: React.FC = () => {
   const { groupSlug } = useParams<{ groupSlug: string }>();
   const currentGroup = useCurrentGroup();
   const isAdmin = currentGroup ? useIsGroupAdmin(currentGroup.id) : false;
@@ -35,3 +35,5 @@ export const GroupSettingsPage: React.FC = () => {
     </Container>
   );
 };
+
+export default GroupSettingsPage;

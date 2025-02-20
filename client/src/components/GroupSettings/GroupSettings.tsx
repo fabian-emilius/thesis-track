@@ -2,14 +2,13 @@ import React from 'react';
 import { TextInput, Textarea, Stack, Button, ColorInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Group, GroupSettings as GroupSettingsType } from '../../types/group';
-import { UploadArea } from '../UploadArea/UploadArea';
 
 interface GroupSettingsProps {
   group: Group;
   onSave: (data: Partial<Group>) => Promise<void>;
 }
 
-export const GroupSettings: React.FC<GroupSettingsProps> = ({ group, onSave }) => {
+const GroupSettings: React.FC<GroupSettingsProps> = ({ group, onSave }) => {
   const form = useForm({
     initialValues: {
       name: group.name,
@@ -27,16 +26,9 @@ export const GroupSettings: React.FC<GroupSettingsProps> = ({ group, onSave }) =
     }
   };
 
-  const handleLogoUpload = async (files: File[]) => {
-    if (files.length > 0) {
-      // TODO: Implement logo upload
-      console.log('Logo upload:', files[0]);
-    }
-  };
-
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
-      <Stack spacing="md">
+      <Stack gap="md">
         <TextInput
           required
           label="Group Name"
@@ -68,15 +60,10 @@ export const GroupSettings: React.FC<GroupSettingsProps> = ({ group, onSave }) =
           {...form.getInputProps('settings.customization.secondaryColor')}
         />
 
-        <UploadArea
-          label="Group Logo"
-          accept="image/*"
-          maxFiles={1}
-          onDrop={handleLogoUpload}
-        />
-
         <Button type="submit">Save Settings</Button>
       </Stack>
     </form>
   );
 };
+
+export default GroupSettings;

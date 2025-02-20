@@ -9,7 +9,7 @@ import { useCurrentGroup } from '../../providers/GroupContext/hooks';
  * Component for displaying theses in a table format with group-based filtering
  * Automatically filters theses based on the current group context
  */
-export const ThesesTable: React.FC = () => {
+const ThesesTable: React.FC = () => {
   const { theses, loading } = useThesesContext();
   const currentGroup = useCurrentGroup();
   const groupTheses = useGroupFilter(theses?.content);
@@ -29,7 +29,7 @@ export const ThesesTable: React.FC = () => {
       withColumnBorders
       striped
       highlightOnHover
-      records={groupTheses}
+      records={groupTheses || []}
       fetching={loading}
       columns={[
         { accessor: 'title', title: 'Title' },
@@ -38,9 +38,11 @@ export const ThesesTable: React.FC = () => {
         { accessor: 'student.name', title: 'Student' },
         { accessor: 'advisor.name', title: 'Advisor' },
       ]}
-      onRowClick={(record) => {
+      onRowClick={(record: { id: string }) => {
         window.location.href = `/theses/${record.id}`;
       }}
     />
   );
 };
+
+export default ThesesTable;
