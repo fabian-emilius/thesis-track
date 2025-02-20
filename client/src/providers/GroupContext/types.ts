@@ -11,16 +11,28 @@
  * @property {string} createdAt - ISO timestamp of when the group was created
  * @property {string} updatedAt - ISO timestamp of the group's last update
  */
-export interface IGroup {
+/**
+ * API response interface for group data
+ * @interface IGroupResponse
+ */
+export interface IGroupResponse {
   id: string
   slug: string
   name: string
   description: string
-  logoUrl?: string
-  externalLink?: string
+  logoUrl: string | null
+  externalLink: string | null
   createdAt: string
   updatedAt: string
+  members: IGroupMemberResponse[]
+  settings: IGroupSettingsResponse
 }
+
+/**
+ * Base group interface without members and settings
+ * @interface IGroup
+ */
+export interface IGroup extends Omit<IGroupResponse, 'members' | 'settings'> {}
 
 /**
  * Configuration settings for a group's communication and workflow.
@@ -29,11 +41,28 @@ export interface IGroup {
  * @property {string} postAcceptanceInstructions - Instructions shown to students after thesis acceptance
  * @property {string} emailFooter - Standard footer text appended to all group emails
  */
-export interface IGroupSettings {
-  acceptanceEmailTemplate: string
-  postAcceptanceInstructions: string
-  emailFooter: string
+/**
+ * API response interface for group settings
+ * @interface IGroupSettingsResponse
+ */
+export interface IGroupSettingsResponse {
+  acceptanceEmailTemplate: string | null
+  postAcceptanceInstructions: string | null
+  emailFooter: string | null
+  updatedAt: string
 }
+
+/**
+ * Group settings without timestamp
+ * @interface IGroupSettings
+ */
+export interface IGroupSettings extends Omit<IGroupSettingsResponse, 'updatedAt'> {}
+
+/**
+ * Payload for updating group settings
+ * @interface IUpdateGroupSettingsPayload
+ */
+export interface IUpdateGroupSettingsPayload extends Partial<IGroupSettings> {}
 
 /**
  * Represents a member of a research group with their associated role.
@@ -44,10 +73,45 @@ export interface IGroupSettings {
  *   - advisor: Can advise students and review theses
  *   - group_admin: Has full administrative rights for the group
  */
-export interface IGroupMember {
-  userId: string
-  role: 'supervisor' | 'advisor' | 'group_admin'
+/**
+ * Available roles for group members
+ * @type {GroupRole}
+ */
+export type GroupRole = 'supervisor' | 'advisor' | 'group_admin'
+
+/**
+ * Light user information included in member response
+ * @interface IGroupMemberUser
+ */
+export interface IGroupMemberUser {
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+  avatar: string | null
 }
+
+/**
+ * API response interface for group member
+ * @interface IGroupMemberResponse
+ */
+export interface IGroupMemberResponse {
+  userId: string
+  role: GroupRole
+  joinedAt: string
+  user: IGroupMemberUser
+}
+
+/**
+ * Basic group member information
+ * @interface IGroupMember
+ */
+export interface IGroupMember extends Pick<IGroupMemberResponse, 'userId' | 'role'> {}
+
+/**
+ * Payload for adding new group member
+ * @interface IAddGroupMemberPayload
+ */
+export interface IAddGroupMemberPayload extends IGroupMember {}
 
 /**
  * Context value interface for managing groups within the application.
@@ -66,17 +130,42 @@ export interface IGroupMember {
  * @property {function} addGroupMember - Adds a new member to a group
  * @property {function} removeGroupMember - Removes a member from a group
  */
-export interface IGroupContextValue {
-  currentGroup?: IGroup
-  groups: IGroup[]
+export interface IGroupContextState {
+  currentGroup?: IGroupResponse
+  groups: IGroupResponse[]
   isLoading: boolean
   error?: string
-  setCurrentGroup: (group: IGroup | undefined) => void
+}
+
+export interface IGroupContextOperations {
+  setCurrentGroup: (group: IGroupResponse | undefined) => void
   fetchGroups: () => Promise<void>
-  createGroup: (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IGroup>
-  updateGroup: (groupId: string, group: Partial<IGroup>) => Promise<IGroup>
+  createGroup: (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<IGroupResponse>
+  updateGroup: (groupId: string, group: Partial<IGroup>) => Promise<IGroupResponse>
   deleteGroup: (groupId: string) => Promise<void>
-  updateGroupSettings: (groupId: string, settings: Partial<IGroupSettings>) => Promise<void>
-  addGroupMember: (groupId: string, userId: string, role: IGroupMember['role']) => Promise<void>
+  updateGroupSettings: (groupId: string, settings: IUpdateGroupSettingsPayload) => Promise<void>
+  addGroupMember: (groupId: string, payload: IAddGroupMemberPayload) => Promise<void>
   removeGroupMember: (groupId: string, userId: string) => Promise<void>
+}
+
+/**
+ * Combined interface for group context value
+ * @interface IGroupContextValue
+ */
+export interface IGroupContextValue extends IGroupContextState, IGroupContextOperations {}
+
+// Export all types and interfaces
+export type {
+  IGroupResponse,
+  IGroup,
+  IGroupSettings,
+  IGroupSettingsResponse,
+  IUpdateGroupSettingsPayload,
+  IGroupMember,
+  IGroupMemberResponse,
+  IGroupMemberUser,
+  IAddGroupMemberPayload,
+  GroupRole,
+  IGroupContextState,
+  IGroupContextOperations
 }

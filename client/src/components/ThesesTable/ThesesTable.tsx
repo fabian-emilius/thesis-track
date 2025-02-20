@@ -1,6 +1,6 @@
-import { DataTable, DataTableColumn } from 'mantine-datatable'
+import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
 import { formatDate, formatThesisType } from '../../utils/format'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useThesesContext } from '../../providers/ThesesProvider/hooks'
 import { IThesesSort } from '../../providers/ThesesProvider/context'
 import { useNavigate } from 'react-router'
@@ -21,17 +21,18 @@ type ThesisColumn =
   | 'group'
   | 'start_date'
   | 'end_date'
-  | string
 
 interface IThesesTableProps {
   columns?: ThesisColumn[]
   extraColumns?: Record<string, DataTableColumn<IThesis>>
+  groupContext?: boolean
 }
 
 const ThesesTable = (props: IThesesTableProps) => {
   const {
     columns = ['state', 'title', 'type', 'students', 'advisors', 'group', 'start_date', 'end_date'],
     extraColumns = {},
+    groupContext = true
   } = props
 
   const { theses, sort, setSort, page, setPage, limit } = useThesesContext()
@@ -39,15 +40,15 @@ const ThesesTable = (props: IThesesTableProps) => {
 
   const navigate = useNavigate()
 
-  const onThesisClick = (thesis: IThesis) => {
+  const onThesisClick = useCallback((thesis: IThesis) => {
     const thesisGroup = thesis.group as IGroup | undefined
-    const path = thesisGroup 
+    const path = groupContext && thesisGroup 
       ? `/groups/${thesisGroup.slug}/theses/${thesis.thesisId}`
       : `/theses/${thesis.thesisId}`
     navigate(path)
-  }
+  }, [groupContext, navigate])
 
-  const columnConfig: Record<ThesisColumn, DataTableColumn<IThesis>> = {
+  const columnConfig: Record<ThesisColumn, DataTableColumn<IThesis>> = React.useMemo(() => ({
     group: {
       accessor: 'group',
       title: 'Group',
@@ -125,7 +126,7 @@ const ThesesTable = (props: IThesesTableProps) => {
       render: (thesis) => formatDate(thesis.endDate, { withTime: false }),
     },
     ...extraColumns,
-  }
+  }), [extraColumns])
 
   return (
     <DataTable
@@ -145,7 +146,7 @@ const ThesesTable = (props: IThesesTableProps) => {
         direction: sort.direction,
         columnAccessor: sort.column,
       }}
-      onSortStatusChange={(newSort) => {
+      onSortStatusChange={(newSort: DataTableSortStatus) => {
         setSort({
           column: newSort.columnAccessor as IThesesSort['column'],
           direction: newSort.direction,
@@ -159,4 +160,5 @@ const ThesesTable = (props: IThesesTableProps) => {
   )
 }
 
+export type { IThesesTableProps, ThesisColumn }
 export default ThesesTable

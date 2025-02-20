@@ -1,38 +1,23 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Container, Title, Tabs, Stack, LoadingOverlay, Alert, Text } from '@mantine/core'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { GroupSettingsForm } from '../../components/GroupSettingsForm/GroupSettingsForm'
 import { GroupMemberManager } from '../../components/GroupMemberManager/GroupMemberManager'
 import { useGroupContext } from '../../providers/GroupContext/hooks'
 import { showSimpleSuccess, showSimpleError } from '../../utils/notification'
 import { doRequest } from '../../requests/request'
 import { IconAlertCircle } from '@tabler/icons-react'
+import { IGroupSettings, IGroup, IGroupMemberResponse } from '../../providers/GroupContext/types'
 
-interface GroupSettings {
-  acceptanceEmailTemplate: string
-  postAcceptanceInstructions: string
-  emailFooter: string
-}
+interface GroupUpdate extends Partial<Pick<IGroup, 'name' | 'description' | 'externalLink'>> {}
 
-interface GroupUpdate {
-  name: string
-  description: string
-  externalLink: string
-}
-
-interface GroupMember {
-  user: { id: string; name: string }
-  role: 'supervisor' | 'advisor' | 'group_admin'
-}
-
-export const GroupSettingsPage: React.FC = () => {
+export const GroupSettingsPage = () => {
   const { groupSlug } = useParams<{ groupSlug: string }>()
   const { groups, updateGroup, updateGroupSettings } = useGroupContext()
-  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [settings, setSettings] = useState<GroupSettings | null>(null)
-  const [members, setMembers] = useState<GroupMember[]>([])
+  const [settings, setSettings] = useState<IGroupSettings | null>(null)
+  const [members, setMembers] = useState<IGroupMemberResponse[]>([])
   const [isInitialLoading, setIsInitialLoading] = useState(true)
 
   const group = groups.find(g => g.slug === groupSlug)
@@ -44,11 +29,11 @@ export const GroupSettingsPage: React.FC = () => {
       try {
         setError(null)
         const [settingsResponse, membersResponse] = await Promise.all([
-          doRequest(`/v2/groups/${group.id}/settings`, {
+          doRequest<IGroupSettings>(`/v2/groups/${group.id}/settings`, {
             method: 'GET',
             requiresAuth: true,
           }),
-          doRequest<GroupMember[]>(`/v2/groups/${group.id}/members`, {
+          doRequest<IGroupMemberResponse[]>(`/v2/groups/${group.id}/members`, {
             method: 'GET',
             requiresAuth: true,
           })
@@ -71,7 +56,7 @@ export const GroupSettingsPage: React.FC = () => {
     void loadData()
   }, [group])
 
-  const handleSubmit = async (values: GroupSettings & GroupUpdate) => {
+  const handleSubmit = async (values: IGroupSettings & GroupUpdate) => {
     if (!group) return
 
     try {
@@ -83,7 +68,7 @@ export const GroupSettingsPage: React.FC = () => {
         externalLink: values.externalLink,
       }
 
-      const settingsUpdate: GroupSettings = {
+      const settingsUpdate: IGroupSettings = {
         acceptanceEmailTemplate: values.acceptanceEmailTemplate,
         postAcceptanceInstructions: values.postAcceptanceInstructions,
         emailFooter: values.emailFooter,

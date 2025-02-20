@@ -1,6 +1,7 @@
 import React from 'react'
-import { IApplication } from '../../requests/responses/application'
+import { IApplication, ApplicationState } from '../../requests/responses/application'
 import { DataTable, DataTableColumn } from 'mantine-datatable'
+import { ITopic } from '../../requests/responses/topic'
 import { Badge, Center, Group, Text, Tooltip } from '@mantine/core'
 import { formatApplicationState, formatDate, formatThesisType } from '../../utils/format'
 import { useApplicationsContext } from '../../providers/ApplicationsProvider/hooks'
@@ -55,24 +56,28 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
       accessor: 'topic.group.name',
       title: 'Group',
       width: 180,
-      render: (application) => (
-        <Tooltip label={application.topic?.group.description} multiline width={200}>
-          <Group gap="xs">
-            {application.topic?.group.logoUrl && (
-              <img 
-                src={application.topic.group.logoUrl} 
-                alt={application.topic.group.name} 
-                width={20} 
-                height={20} 
-                style={{ objectFit: 'contain' }}
-              />
-            )}
-            <Text size="sm" lineClamp={1}>
-              {application.topic?.group.name}
-            </Text>
-          </Group>
-        </Tooltip>
-      ),
+      render: (application) => {
+        const group = application.topic?.group
+        if (!group) return null
+        return (
+          <Tooltip label={group.description} multiline width={200}>
+            <Group gap="xs">
+              {group.logoUrl && (
+                <img 
+                  src={group.logoUrl} 
+                  alt={group.name} 
+                  width={20} 
+                  height={20} 
+                  style={{ objectFit: 'contain' }}
+                />
+              )}
+              <Text size="sm" lineClamp={1}>
+                {group.name}
+              </Text>
+            </Group>
+          </Tooltip>
+        )
+      },
     },
     user: {
       accessor: 'user.firstName',
@@ -135,12 +140,12 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
         })
       }}
       records={applications?.content?.filter(app => 
-      !currentGroup || app.topic?.group.id === currentGroup.id
-    )}
+        !currentGroup || (app.topic?.group && app.topic.group.id === currentGroup.id)
+      )}
       idAccessor='applicationId'
       columns={columns.map((column) => columnConfig[column])}
       onRowClick={({ record: application }) => {
-        if (currentGroup && application.topic?.group.id !== currentGroup.id) {
+        if (currentGroup && (!application.topic?.group || application.topic.group.id !== currentGroup.id)) {
           return
         }
         onApplicationClick(application)

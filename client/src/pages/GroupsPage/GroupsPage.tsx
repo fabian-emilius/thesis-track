@@ -1,10 +1,10 @@
-import React from 'react'
+import { type ReactElement } from 'react'
 import { Container, Title, Text, Stack } from '@mantine/core'
 import { GroupList } from '../../components/GroupList/GroupList'
 import { useGroupContext } from '../../providers/GroupContext/hooks'
-import { PageLoader } from '../../components/PageLoader/PageLoader'
+import { PageLoader } from '../../components/PageLoader'
 
-export const GroupsPage: React.FC = () => {
+export const GroupsPage = () => {
   const { groups, isLoading, error } = useGroupContext()
 
   if (isLoading) {
@@ -29,4 +29,4 @@ export const GroupsPage: React.FC = () => {
   )
 }
 
-export default GroupsPage
+export default GroupsPage as ReactElement

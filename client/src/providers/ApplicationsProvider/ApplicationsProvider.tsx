@@ -43,6 +43,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
 
   const [applications, setApplications] = useState<PaginationResponse<IApplication>>()
   const [page, setPage] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
 
   const previousContent = useRef<string[]>([])
 
@@ -82,8 +83,10 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
 
   useEffect(() => {
     setApplications(undefined)
+    setIsLoading(true)
 
-    if (!topics) {
+    if (!topics || !currentGroup?.groupId) {
+      setIsLoading(false)
       return
     }
 
@@ -100,7 +103,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
           fetchAll: fetchAll ? 'true' : 'false',
           previous: previousContent.current.join(','),
           search: debouncedSearch,
-          groupId: currentGroup?.groupId,
+          groupId: currentGroup?.groupId ?? '',
           state: adjustedFilters.states?.join(',') ?? '',
           type: adjustedFilters.types?.join(',') ?? '',
           topic:
@@ -124,6 +127,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
         if (!res.ok) {
           showSimpleError(getApiResponseErrorMessage(res))
 
+          setIsLoading(false)
           return setApplications({
             content: [],
             totalPages: 0,
@@ -136,6 +140,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
 
         previousContent.current.push(...res.data.content.map((item) => item.applicationId))
         setApplications(res.data)
+        setIsLoading(false)
       },
     )
   }, [
@@ -147,7 +152,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
     adjustedFilters.topics?.join(','),
     adjustedFilters.types?.join(','),
     debouncedSearch,
-    !topics,
+    topics,
     currentGroup?.groupId,
   ])
 
@@ -155,6 +160,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
     return {
       topics,
       applications,
+      isLoading,
       filters: adjustedFilters,
       setFilters: (value) => {
         setPage(0)
@@ -174,21 +180,22 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
             return undefined
           }
 
-          const index = prev.content.findIndex(
+          const newContent = [...prev.content]
+          const index = newContent.findIndex(
             (x) => x.applicationId === newApplication.applicationId,
           )
 
           if (index >= 0) {
-            prev.content[index] = newApplication
+            newContent[index] = newApplication
           }
 
-          return { ...prev }
+          return { ...prev, content: newContent }
         })
       },
     }
-  }, [user.userId, topics, applications, adjustedFilters, sort, page, limit])
+  }, [user.userId, topics, applications, adjustedFilters, sort, page, limit, isLoading])
 
-  if (hideIfEmpty && page === 0 && (!applications || applications.content.length === 0)) {
+  if (!isLoading && hideIfEmpty && page === 0 && (!applications || applications.content.length === 0)) {
     return <>{emptyComponent}</>
   }
 

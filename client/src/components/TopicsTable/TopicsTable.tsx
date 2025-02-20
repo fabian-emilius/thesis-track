@@ -1,23 +1,25 @@
+import React from 'react'
+import { useNavigate } from 'react-router'
+import { Badge, Center, Group, Stack, Text } from '@mantine/core'
 import { DataTable, DataTableColumn } from 'mantine-datatable'
-import { formatDate, formatThesisType } from '../../utils/format'
-import { useTopicsContext } from '../../providers/TopicsProvider/hooks'
+
+import { AvatarUserList } from '../AvatarUserList/AvatarUserList'
 import { useGroupContext } from '../../providers/GroupContext/hooks'
+import { useTopicsContext } from '../../providers/TopicsProvider/hooks'
+import { formatDate, formatThesisType } from '../../utils/format'
+
 import { ITopic } from '../../requests/responses/topic'
 import { IGroup } from '../../providers/GroupContext/types'
 
 interface ITopicWithGroup extends ITopic {
   group?: IGroup
 }
-import { useNavigate } from 'react-router'
-import { Badge, Center, Group, Stack, Text } from '@mantine/core'
-import AvatarUserList from '../AvatarUserList/AvatarUserList'
-import React from 'react'
 
-type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | string
+type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt'
 
-interface ITopicsTableProps {
+export interface ITopicsTableProps {
   columns?: TopicColumn[]
-  extraColumns?: Record<string, DataTableColumn<ITopicWithGroup>>
+  extraColumns?: Partial<Record<TopicColumn, DataTableColumn<ITopicWithGroup>>>
   noBorder?: boolean
 }
 
@@ -32,12 +34,13 @@ const TopicsTable = (props: ITopicsTableProps) => {
   const { currentGroup } = useGroupContext()
   const { topics, page, setPage, limit } = useTopicsContext()
 
-  const columnConfig: Record<TopicColumn, DataTableColumn<ITopicWithGroup>> = {
+  const columnConfig: Required<Record<TopicColumn, DataTableColumn<ITopicWithGroup>>> = {
     state: {
       accessor: 'state',
       title: 'State',
       textAlign: 'center',
       width: 100,
+      sortable: true,
       render: (topic) => (
         <Center>
           {topic.closedAt ? <Badge color='red'>Closed</Badge> : <Badge color='gray'>Open</Badge>}
@@ -99,7 +102,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       ellipsis: true,
       render: (record) => formatDate(record.createdAt),
     },
-    ...extraColumns,
+    ...(extraColumns as Record<TopicColumn, DataTableColumn<ITopicWithGroup>>),
   }
 
   return (
@@ -118,7 +121,7 @@ const TopicsTable = (props: ITopicsTableProps) => {
       onPageChange={(x) => setPage(x - 1)}
       records={topics?.content as ITopicWithGroup[] | undefined}
       idAccessor='topicId'
-      columns={columns.map((column) => columnConfig[column])}
+      columns={columns.map((column) => columnConfig[column as TopicColumn])}
       onRowClick={({ record }) => {
         const path = currentGroup
           ? `/groups/${currentGroup.slug}/topics/${record.topicId}`
@@ -129,4 +132,6 @@ const TopicsTable = (props: ITopicsTableProps) => {
   )
 }
 
+export type { ITopicsTableProps, TopicColumn }
+export { TopicsTable }
 export default TopicsTable

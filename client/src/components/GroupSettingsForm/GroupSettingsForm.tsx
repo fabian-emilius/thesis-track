@@ -1,13 +1,13 @@
 import React from 'react'
 import { TextInput, Textarea, Button, Stack, Group } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { IGroup, IGroupSettings } from '../../providers/GroupContext/types'
+import { IGroup, IGroupSettings, IUpdateGroupSettingsPayload } from '../../providers/GroupContext/types'
 import { EmailTemplateEditor } from '../EmailTemplateEditor/EmailTemplateEditor'
 
-interface GroupSettingsFormProps {
+export interface GroupSettingsFormProps {
   group?: IGroup
   settings?: IGroupSettings
-  onSubmit: (values: Partial<IGroup & IGroupSettings>) => Promise<void>
+  onSubmit: (values: IUpdateGroupSettingsPayload & Partial<IGroup>) => Promise<void>
   isLoading?: boolean
 }
 
@@ -17,7 +17,7 @@ export const GroupSettingsForm: React.FC<GroupSettingsFormProps> = ({
   onSubmit,
   isLoading,
 }) => {
-  const form = useForm({
+  const form = useForm<IUpdateGroupSettingsPayload & Partial<IGroup>>({
     initialValues: {
       name: group?.name || '',
       description: group?.description || '',

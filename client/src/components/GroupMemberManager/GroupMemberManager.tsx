@@ -1,22 +1,24 @@
-import React, { useState } from 'react'
+import React, { useState }
+
+export default GroupMemberManager from 'react'
 import { Table, Button, Group, Select, Text } from '@mantine/core'
 import { useGroupContext } from '../../providers/GroupContext/hooks'
 import { IGroupMember } from '../../providers/GroupContext/types'
-import { UserMultiSelect } from '../UserMultiSelect/UserMultiSelect'
+import UserMultiSelect from '../UserMultiSelect/UserMultiSelect'
 
 interface GroupMemberManagerProps {
   groupId: string
   members: Array<{ user: { id: string; name: string }; role: IGroupMember['role'] }>
 }
 
-export const GroupMemberManager: React.FC<GroupMemberManagerProps> = ({ groupId, members }) => {
+const GroupMemberManager: React.FC<GroupMemberManagerProps> = ({ groupId, members }) => {
   const { addGroupMember, removeGroupMember } = useGroupContext()
   const [selectedUser, setSelectedUser] = useState<string | null>(null)
   const [selectedRole, setSelectedRole] = useState<IGroupMember['role']>('advisor')
 
   const handleAddMember = async () => {
     if (selectedUser) {
-      await addGroupMember(groupId, selectedUser, selectedRole)
+      await addGroupMember(groupId, { userId: selectedUser, role: selectedRole })
       setSelectedUser(null)
     }
   }
@@ -26,9 +28,10 @@ export const GroupMemberManager: React.FC<GroupMemberManagerProps> = ({ groupId,
       <Group mb="lg">
         <UserMultiSelect
           label="Add Member"
-          maxSelectedValues={1}
+          maxValues={1}
           value={selectedUser ? [selectedUser] : []}
           onChange={(value) => setSelectedUser(value[0] || null)}
+          groups={[groupId]}
         />
         <Select
           label="Role"

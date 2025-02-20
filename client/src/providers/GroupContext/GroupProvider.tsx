@@ -4,9 +4,9 @@ import { IGroup, IGroupContextValue, IGroupMember, IGroupSettings, GroupOperatio
 import { doRequest } from '../../requests/request'
 import { ApiError } from '../../requests/handler'
 
-export const GroupProvider: React.FC<PropsWithChildren> = ({ children }) => {
-  const [groups, setGroups] = useState<IGroup[]>([])
-  const [currentGroup, setCurrentGroup] = useState<IGroup | undefined>()
+const GroupProvider: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
+  const [groups, setGroups] = useState<IGroupResponse[]>([])
+  const [currentGroup, setCurrentGroup] = useState<IGroupResponse | undefined>()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | undefined>()
   const [operationInProgress, setOperationInProgress] = useState<GroupOperation | undefined>()
@@ -27,13 +27,13 @@ export const GroupProvider: React.FC<PropsWithChildren> = ({ children }) => {
         throw new ApiError(response)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch groups')
+      setError(err instanceof ApiError ? err.message : 'Failed to fetch groups')
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  const createGroup = useCallback(async (group: Omit<IGroup, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const createGroup = useCallback(async (group: Pick<IGroup, 'name' | 'description'>) => {
     setOperationInProgress(GroupOperation.Create)
     setError(undefined)
     try {
@@ -56,7 +56,7 @@ export const GroupProvider: React.FC<PropsWithChildren> = ({ children }) => {
     }
   }, [])
 
-  const updateGroup = useCallback(async (groupId: string, group: Partial<IGroup>) => {
+  const updateGroup = useCallback(async (groupId: string, group: Partial<Pick<IGroup, 'name' | 'description'>>) => {
     setOperationInProgress(GroupOperation.Update)
     setError(undefined)
     try {
@@ -107,7 +107,7 @@ export const GroupProvider: React.FC<PropsWithChildren> = ({ children }) => {
     }
   }, [currentGroup])
 
-  const updateGroupSettings = useCallback(async (groupId: string, settings: Partial<IGroupSettings>) => {
+  const updateGroupSettings = useCallback(async (groupId: string, settings: IUpdateGroupSettingsPayload) => {
     setOperationInProgress(GroupOperation.UpdateSettings)
     setError(undefined)
     try {
@@ -128,7 +128,7 @@ export const GroupProvider: React.FC<PropsWithChildren> = ({ children }) => {
     }
   }, [])
 
-  const addGroupMember = useCallback(async (groupId: string, userId: string, role: IGroupMember['role']) => {
+  const addGroupMember = useCallback(async (groupId: string, { userId, role }: IAddGroupMemberPayload) => {
     setOperationInProgress(GroupOperation.AddMember)
     setError(undefined)
     try {
@@ -196,3 +196,5 @@ export const GroupProvider: React.FC<PropsWithChildren> = ({ children }) => {
     </GroupContext.Provider>
   )
 }
+
+export default GroupProvider

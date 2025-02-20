@@ -2,7 +2,7 @@ import { ITopic } from '../../../../requests/responses/topic'
 import { isNotEmpty, useForm } from '@mantine/form'
 import { Accordion, Button, Select, Stack, TextInput } from '@mantine/core'
 import DocumentEditor from '../../../../components/DocumentEditor/DocumentEditor'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { doRequest } from '../../../../requests/request'
 import { showSimpleError } from '../../../../utils/notification'
 import { getApiResponseErrorMessage } from '../../../../requests/handler'
@@ -13,20 +13,20 @@ import { IApplication } from '../../../../requests/responses/application'
 import TopicAccordionItem from '../../../../components/TopicAccordionItem/TopicAccordionItem'
 import { formatThesisType } from '../../../../utils/format'
 
-interface IMotivationStepProps {
+export interface IMotivationStepProps {
   topic: ITopic | undefined
   application: IApplication | undefined
-  onComplete: () => unknown
+  onComplete: () => void
 }
 
-interface IMotivationStepForm {
+export interface IMotivationStepForm {
   thesisTitle: string
   thesisType: string | null
   desiredStartDate: DateValue
   motivation: string
 }
 
-const MotivationStep = (props: IMotivationStepProps) => {
+export const MotivationStep = (props: IMotivationStepProps): React.ReactElement => {
   const { topic, application, onComplete } = props
 
   const [loading, setLoading] = useState(false)
@@ -145,4 +145,5 @@ const MotivationStep = (props: IMotivationStepProps) => {
   )
 }
 
-export default MotivationStep
+export default MotivationStep;
+export type { IMotivationStepForm, IMotivationStepProps };
