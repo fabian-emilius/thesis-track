@@ -32,33 +32,44 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Collection<GrantedAuthority> authorities = Stream.concat(
                 jwtGrantedAuthoritiesConverter.convert(jwt).stream(),
-                extractResourceRoles(jwt).stream()).collect(Collectors.toSet());
+                Stream.concat(
+                    extractResourceRoles(jwt).stream(),
+                    extractGroupRoles(jwt).stream()
+                )
+            ).collect(Collectors.toSet());
 
         return new JwtAuthenticationToken(jwt, authorities, jwt.getClaim("preferred_username"));
     }
 
     private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
-        // Retrieve the resource access claim as a nested map structure
         Map<String, Map<String, Collection<String>>> resourceAccess = jwt.getClaim("resource_access");
         if (resourceAccess == null) {
             return Set.of();
         }
 
-        // Get the client-specific resource and its roles
         var resourceObject = resourceAccess.get(config.getClientId());
         if (resourceObject == null) {
             return Set.of();
         }
 
-        // Get the roles from the resource object
         var resourceRoles = resourceObject.get("roles");
         if (resourceRoles == null) {
             return Set.of();
         }
 
-        // Convert roles into GrantedAuthority objects
         return resourceRoles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toSet());
+    }
+
+    private Collection<? extends GrantedAuthority> extractGroupRoles(Jwt jwt) {
+        Map<String, Object> groups = jwt.getClaim("groups");
+        if (groups == null) {
+            return Set.of();
+        }
+
+        return groups.entrySet().stream()
+                .map(entry -> new SimpleGrantedAuthority("GROUP_" + entry.getKey() + "_" + entry.getValue()))
                 .collect(Collectors.toSet());
     }
 }

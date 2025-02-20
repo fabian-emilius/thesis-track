@@ -73,6 +73,7 @@ public class ThesisService {
             String searchQuery,
             ThesisState[] states,
             String[] types,
+            UUID groupId,
             int page,
             int limit,
             String sortBy,
@@ -90,6 +91,7 @@ public class ThesisService {
                 searchQueryFilter,
                 statesFilter,
                 typesFilter,
+                groupId,
                 PageRequest.of(page, limit, Sort.by(order))
         );
     }
@@ -104,6 +106,7 @@ public class ThesisService {
             List<UUID> advisorIds,
             List<UUID> studentIds,
             Application application,
+            Group group,
             boolean notifyUser
     ) {
         Thesis thesis = new Thesis();
@@ -119,6 +122,7 @@ public class ThesisService {
         thesis.setState(ThesisState.PROPOSAL);
         thesis.setApplication(application);
         thesis.setCreatedAt(Instant.now());
+        thesis.setGroup(group);
 
         thesis = thesisRepository.save(thesis);
 
@@ -172,8 +176,12 @@ public class ThesisService {
             List<UUID> studentIds,
             List<UUID> advisorIds,
             List<UUID> supervisorIds,
-            List<ThesisStatePayload> states
+            List<ThesisStatePayload> states,
+            UUID groupId
     ) {
+        if (groupId != null && !thesis.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Thesis not found in group");
+        }
         thesis.setTitle(thesisTitle);
         thesis.setType(thesisType);
         thesis.setLanguage(language);
@@ -306,7 +314,10 @@ public class ThesisService {
     }
 
     @Transactional
-    public Thesis uploadProposal(User uploadingUser, Thesis thesis, MultipartFile proposalFile) {
+    public Thesis uploadProposal(User uploadingUser, Thesis thesis, MultipartFile proposalFile, UUID groupId) {
+        if (groupId != null && !thesis.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Thesis not found in group");
+        }
         ThesisProposal proposal = new ThesisProposal();
 
         proposal.setThesis(thesis);
@@ -367,7 +378,10 @@ public class ThesisService {
     /* WRITING */
 
     @Transactional
-    public Thesis submitThesis(Thesis thesis) {
+    public Thesis submitThesis(Thesis thesis, UUID groupId) {
+        if (groupId != null && !thesis.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Thesis not found in group");
+        }
         if (thesis.getLatestFile("THESIS").isEmpty()) {
             throw new ResourceInvalidParametersException("Thesis file not uploaded yet");
         }
@@ -424,8 +438,12 @@ public class ThesisService {
             String summary,
             String positives,
             String negatives,
-            String gradeSuggestion
+            String gradeSuggestion,
+            UUID groupId
     ) {
+        if (groupId != null && !thesis.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Thesis not found in group");
+        }
         ThesisAssessment assessment = new ThesisAssessment();
 
         assessment.setThesis(thesis);
@@ -492,7 +510,10 @@ public class ThesisService {
 
     /* GRADING */
     @Transactional
-    public Thesis gradeThesis(Thesis thesis, String finalGrade, String finalFeedback, ThesisVisibility visibility) {
+    public Thesis gradeThesis(Thesis thesis, String finalGrade, String finalFeedback, ThesisVisibility visibility, UUID groupId) {
+        if (groupId != null && !thesis.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Thesis not found in group");
+        }
         thesis.setState(ThesisState.GRADED);
         thesis.setVisibility(visibility);
         thesis.setFinalGrade(finalGrade);
@@ -506,7 +527,10 @@ public class ThesisService {
     }
 
     @Transactional
-    public Thesis completeThesis(Thesis thesis) {
+    public Thesis completeThesis(Thesis thesis, UUID groupId) {
+        if (groupId != null && !thesis.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException("Thesis not found in group");
+        }
         thesis.setState(ThesisState.FINISHED);
 
         saveStateChange(thesis, ThesisState.FINISHED, Instant.now());
@@ -537,15 +561,22 @@ public class ThesisService {
                         ThesisState.GRADED
                 ),
                 null,
+                null,
                 PageRequest.ofSize(1)
         );
 
         return theses.getTotalElements() > 0;
     }
 
-    public Thesis findById(UUID thesisId) {
-        return thesisRepository.findById(thesisId)
+    public Thesis findById(UUID thesisId, UUID groupId) {
+        Thesis thesis = thesisRepository.findById(thesisId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Thesis with id %s not found.", thesisId)));
+        
+        if (groupId != null && !thesis.getGroup().getId().equals(groupId)) {
+            throw new ResourceNotFoundException(String.format("Thesis with id %s not found in group.", thesisId));
+        }
+        
+        return thesis;
     }
 
     private void assignThesisRoles(
