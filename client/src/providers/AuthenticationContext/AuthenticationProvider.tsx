@@ -4,6 +4,7 @@ import {
   IAuthenticationContext,
   IDecodedAccessToken,
   IDecodedRefreshToken,
+  IGroupRole,
 } from './context'
 import Keycloak from 'keycloak-js'
 import { GLOBAL_CONFIG } from '../../config/global'
@@ -26,6 +27,7 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
 
   const [universityId, setUniversityId] = useState<string>()
   const [user, setUser] = useState<IUser>()
+  const [groups, setGroups] = useState<IGroupRole[]>([])
   const [authenticationTokens, setAuthenticationTokens] = useAuthenticationTokens()
   const {
     signal: readySignal,
@@ -141,10 +143,18 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
 
     if (authenticationTokens?.access_token) {
       const decodedAccessToken = jwtDecode<IDecodedAccessToken>(authenticationTokens.access_token)
-
       setUniversityId(decodedAccessToken['preferred_username'] || undefined)
+      
+      const userGroups = Object.entries(decodedAccessToken.resource_access || {})
+        .filter(([key]) => key.startsWith('group_'))
+        .map(([key, value]) => ({
+          groupId: key.replace('group_', ''),
+          roles: value.roles || []
+        }));
+      setGroups(userGroups || []);
     } else {
       setUniversityId(undefined)
+      setGroups([])
     }
   }, [authenticationTokens?.access_token, isReady])
 
@@ -173,7 +183,13 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
     return {
       isAuthenticated: !!authenticationTokens?.access_token,
       user: authenticationTokens?.access_token ? user : undefined,
-      groups: [],
+      groups,
+      userGroup: groups[0],
+      hasGroupPermission: (permission: string) => {
+        const currentGroup = groups[0];
+        if (!currentGroup) return false;
+        return currentGroup.roles.includes(permission) || currentGroup.roles.includes('group_admin');
+      },
       updateInformation: async (data, avatar, examinationReport, cv, degreeReport) => {
         const formData = new FormData()
 
@@ -235,6 +251,7 @@ const AuthenticationProvider = (props: PropsWithChildren) => {
     }
   }, [
     user,
+    groups,
     !!authenticationTokens?.access_token,
     authenticationTokens?.refresh_token,
     location.origin,

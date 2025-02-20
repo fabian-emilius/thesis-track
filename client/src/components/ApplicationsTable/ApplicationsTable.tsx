@@ -1,9 +1,10 @@
 import React from 'react'
 import { IApplication } from '../../requests/responses/application'
 import { DataTable, DataTableColumn } from 'mantine-datatable'
-import { Badge, Center } from '@mantine/core'
+import { Badge, Center, Group, Text, Tooltip } from '@mantine/core'
 import { formatApplicationState, formatDate, formatThesisType } from '../../utils/format'
 import { useApplicationsContext } from '../../providers/ApplicationsProvider/hooks'
+import { useGroupContext } from '../../providers/GroupContext/hooks'
 import { IApplicationsSort } from '../../providers/ApplicationsProvider/context'
 import { ApplicationStateColor } from '../../config/colors'
 import AvatarUser from '../AvatarUser/AvatarUser'
@@ -15,6 +16,7 @@ type ApplicationColumn =
   | 'thesis_type'
   | 'reviewed_at'
   | 'created_at'
+  | 'group'
   | string
 
 interface IApplicationsTableProps {
@@ -26,11 +28,12 @@ interface IApplicationsTableProps {
 const ApplicationsTable = (props: IApplicationsTableProps) => {
   const {
     onApplicationClick,
-    columns = ['state', 'thesis_title', 'thesis_type', 'user', 'created_at'],
+    columns = ['state', 'thesis_title', 'thesis_type', 'user', 'group', 'created_at'],
     extraColumns = {},
   } = props
 
   const { applications, sort, setSort, page, setPage, limit } = useApplicationsContext()
+  const { currentGroup } = useGroupContext()
 
   const columnConfig: Record<ApplicationColumn, DataTableColumn<IApplication>> = {
     state: {
@@ -47,6 +50,29 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
           </Center>
         )
       },
+    },
+    group: {
+      accessor: 'topic.group.name',
+      title: 'Group',
+      width: 180,
+      render: (application) => (
+        <Tooltip label={application.topic?.group.description} multiline width={200}>
+          <Group gap="xs">
+            {application.topic?.group.logoUrl && (
+              <img 
+                src={application.topic.group.logoUrl} 
+                alt={application.topic.group.name} 
+                width={20} 
+                height={20} 
+                style={{ objectFit: 'contain' }}
+              />
+            )}
+            <Text size="sm" lineClamp={1}>
+              {application.topic?.group.name}
+            </Text>
+          </Group>
+        </Tooltip>
+      ),
     },
     user: {
       accessor: 'user.firstName',
@@ -108,10 +134,17 @@ const ApplicationsTable = (props: IApplicationsTableProps) => {
           direction: newSort.direction,
         })
       }}
-      records={applications?.content}
+      records={applications?.content?.filter(app => 
+      !currentGroup || app.topic?.group.id === currentGroup.id
+    )}
       idAccessor='applicationId'
       columns={columns.map((column) => columnConfig[column])}
-      onRowClick={({ record: application }) => onApplicationClick(application)}
+      onRowClick={({ record: application }) => {
+        if (currentGroup && application.topic?.group.id !== currentGroup.id) {
+          return
+        }
+        onApplicationClick(application)
+      }}
     />
   )
 }

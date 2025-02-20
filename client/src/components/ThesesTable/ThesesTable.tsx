@@ -6,8 +6,10 @@ import { IThesesSort } from '../../providers/ThesesProvider/context'
 import { useNavigate } from 'react-router'
 import { IThesis } from '../../requests/responses/thesis'
 import ThesisStateBadge from '../ThesisStateBadge/ThesisStateBadge'
-import { Center } from '@mantine/core'
+import { Center, Badge, Tooltip } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
+import { useGroupContext } from '../../providers/GroupContext/hooks'
+import { IGroup } from '../../providers/GroupContext/types'
 
 type ThesisColumn =
   | 'state'
@@ -16,6 +18,7 @@ type ThesisColumn =
   | 'students'
   | 'type'
   | 'title'
+  | 'group'
   | 'start_date'
   | 'end_date'
   | string
@@ -27,19 +30,39 @@ interface IThesesTableProps {
 
 const ThesesTable = (props: IThesesTableProps) => {
   const {
-    columns = ['state', 'title', 'type', 'students', 'advisors', 'start_date', 'end_date'],
+    columns = ['state', 'title', 'type', 'students', 'advisors', 'group', 'start_date', 'end_date'],
     extraColumns = {},
   } = props
 
   const { theses, sort, setSort, page, setPage, limit } = useThesesContext()
+  const { currentGroup } = useGroupContext()
 
   const navigate = useNavigate()
 
   const onThesisClick = (thesis: IThesis) => {
-    navigate(`/theses/${thesis.thesisId}`)
+    const thesisGroup = thesis.group as IGroup | undefined
+    const path = thesisGroup 
+      ? `/groups/${thesisGroup.slug}/theses/${thesis.thesisId}`
+      : `/theses/${thesis.thesisId}`
+    navigate(path)
   }
 
   const columnConfig: Record<ThesisColumn, DataTableColumn<IThesis>> = {
+    group: {
+      accessor: 'group',
+      title: 'Group',
+      width: 150,
+      render: (thesis) => {
+        const group = thesis.group as IGroup | undefined
+        return group ? (
+          <Tooltip label={group.description} multiline w={200}>
+            <Badge size="sm" variant="light" color="blue">
+              {group.name}
+            </Badge>
+          </Tooltip>
+        ) : null
+      },
+    },
     state: {
       accessor: 'state',
       title: 'State',

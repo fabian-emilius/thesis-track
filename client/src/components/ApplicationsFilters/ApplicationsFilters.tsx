@@ -1,7 +1,8 @@
-import { Grid, MultiSelect, Select, TextInput } from '@mantine/core'
+import { Grid, MultiSelect, Select, TextInput, Text, Stack } from '@mantine/core'
 import { MagnifyingGlass } from 'phosphor-react'
 import { ApplicationState } from '../../requests/responses/application'
 import { useApplicationsContext } from '../../providers/ApplicationsProvider/hooks'
+import { useGroupContext } from '../../providers/GroupContext/hooks'
 import React from 'react'
 import { formatApplicationState, formatThesisType } from '../../utils/format'
 import { GLOBAL_CONFIG } from '../../config/global'
@@ -14,9 +15,18 @@ const ApplicationsFilters = (props: IApplicationsFiltersProps) => {
   const { size = 'xl' } = props
 
   const { topics, filters, setFilters, sort, setSort } = useApplicationsContext()
+  const { currentGroup } = useGroupContext()
 
   return (
     <Grid gutter='sm'>
+      {currentGroup && (
+        <Grid.Col span={12}>
+          <Stack gap="xs">
+            <Text size="sm" fw={500}>Filtering applications for group:</Text>
+            <Text>{currentGroup.name}</Text>
+          </Stack>
+        </Grid.Col>
+      )}
       <Grid.Col span={12}>
         <TextInput
           placeholder='Search applications...'

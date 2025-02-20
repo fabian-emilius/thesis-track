@@ -1,9 +1,15 @@
 import { DataTable, DataTableColumn } from 'mantine-datatable'
 import { formatDate, formatThesisType } from '../../utils/format'
 import { useTopicsContext } from '../../providers/TopicsProvider/hooks'
+import { useGroupContext } from '../../providers/GroupContext/hooks'
 import { ITopic } from '../../requests/responses/topic'
+import { IGroup } from '../../providers/GroupContext/types'
+
+interface ITopicWithGroup extends ITopic {
+  group?: IGroup
+}
 import { useNavigate } from 'react-router'
-import { Badge, Center, Stack, Text } from '@mantine/core'
+import { Badge, Center, Group, Stack, Text } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
 import React from 'react'
 
@@ -11,7 +17,7 @@ type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'cre
 
 interface ITopicsTableProps {
   columns?: TopicColumn[]
-  extraColumns?: Record<string, DataTableColumn<ITopic>>
+  extraColumns?: Record<string, DataTableColumn<ITopicWithGroup>>
   noBorder?: boolean
 }
 
@@ -23,10 +29,10 @@ const TopicsTable = (props: ITopicsTableProps) => {
   } = props
 
   const navigate = useNavigate()
-
+  const { currentGroup } = useGroupContext()
   const { topics, page, setPage, limit } = useTopicsContext()
 
-  const columnConfig: Record<TopicColumn, DataTableColumn<ITopic>> = {
+  const columnConfig: Record<TopicColumn, DataTableColumn<ITopicWithGroup>> = {
     state: {
       accessor: 'state',
       title: 'State',
@@ -42,6 +48,16 @@ const TopicsTable = (props: ITopicsTableProps) => {
       accessor: 'title',
       title: 'Title',
       cellsStyle: () => ({ minWidth: 200 }),
+      render: (topic) => (
+        <Group gap="xs">
+          <Text>{topic.title}</Text>
+          {topic.group && topic.group.id !== currentGroup?.id && (
+            <Badge size="sm" variant="light">
+              {topic.group.name}
+            </Badge>
+          )}
+        </Group>
+      ),
     },
     types: {
       accessor: 'thesisTypes',
@@ -100,10 +116,15 @@ const TopicsTable = (props: ITopicsTableProps) => {
       recordsPerPage={limit}
       page={page + 1}
       onPageChange={(x) => setPage(x - 1)}
-      records={topics?.content}
+      records={topics?.content as ITopicWithGroup[] | undefined}
       idAccessor='topicId'
       columns={columns.map((column) => columnConfig[column])}
-      onRowClick={({ record }) => navigate(`/topics/${record.topicId}`)}
+      onRowClick={({ record }) => {
+        const path = currentGroup
+          ? `/groups/${currentGroup.slug}/topics/${record.topicId}`
+          : `/topics/${record.topicId}`
+        navigate(path)
+      }}
     />
   )
 }

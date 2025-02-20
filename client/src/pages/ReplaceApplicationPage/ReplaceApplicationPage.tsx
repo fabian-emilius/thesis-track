@@ -1,101 +1,49 @@
-import { useNavigate, useParams } from 'react-router'
-import { useTopic } from '../../hooks/fetcher'
-import { Card, Center, Stack, Stepper, Text, Title } from '@mantine/core'
-import { useEffect, useState } from 'react'
-import SelectTopicStep from './components/SelectTopicStep/SelectTopicStep'
-import StudentInformationStep from './components/StudentInformationStep/StudentInformationStep'
-import MotivationStep from './components/MotivationStep/MotivationStep'
-import TopicsProvider from '../../providers/TopicsProvider/TopicsProvider'
-import { IApplication } from '../../requests/responses/application'
-import { doRequest } from '../../requests/request'
-import { usePageTitle } from '../../hooks/theme'
+import React, { useState } from 'react'
+import { Container, Stepper, Title } from '@mantine/core'
+import { useNavigate, useParams } from 'react-router-dom'
+import { GroupSelectionStep } from './components/GroupSelectionStep/GroupSelectionStep'
+import { MotivationStep } from './components/MotivationStep/MotivationStep'
+import { useGroupContext } from '../../providers/GroupContext/hooks'
 
-const ReplaceApplicationPage = () => {
-  const { topicId, applicationId } = useParams<{ topicId: string; applicationId: string }>()
-
-  usePageTitle('Submit Application')
-
-  const [application, setApplication] = useState<IApplication>()
-
-  useEffect(() => {
-    setApplication(undefined)
-
-    if (applicationId) {
-      return doRequest<IApplication>(
-        `/v2/applications/${applicationId}`,
-        {
-          method: 'GET',
-          requiresAuth: true,
-        },
-        (res) => {
-          if (res.ok) {
-            setApplication(res.data)
-          }
-        },
-      )
-    }
-  }, [applicationId])
-
+export const ReplaceApplicationPage: React.FC = () => {
   const navigate = useNavigate()
-  const topic = useTopic(topicId)
+  const { groupId } = useParams<{ groupId?: string }>()
+  const { groups } = useGroupContext()
+  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(groupId)
+  const [active, setActive] = useState(groupId ? 1 : 0)
 
-  const [step, setStep] = useState(0)
-
-  const updateStep = (value: number) => {
-    if (value > step) {
-      return
+  const handleGroupSelect = (groupId: string) => {
+    setSelectedGroupId(groupId)
+    setActive(1)
+    const group = groups.find(g => g.id === groupId)
+    if (group) {
+      navigate(`/groups/${group.slug}/submit-application`)
     }
+  }
 
-    if (value === 0 && topicId) {
-      navigate(`/submit-application`, { replace: true })
+  const handleComplete = () => {
+    const group = groups.find(g => g.id === selectedGroupId)
+    if (group) {
+      navigate(`/groups/${group.slug}/applications`)
     }
-
-    window.scrollTo(0, 0)
-    setStep(value)
   }
 
   return (
-    <Stack>
-      <Title>{applicationId ? 'Edit Application' : 'Submit Application'}</Title>
-      <Stepper active={Math.max(step, topicId || applicationId ? 1 : 0)} onStepClick={updateStep}>
-        <Stepper.Step label='First Step' description='Select Topic'>
-          <TopicsProvider limit={100}>
-            <SelectTopicStep
-              onComplete={(x) => {
-                navigate(`/submit-application/${x?.topicId || ''}`, { replace: true })
-                setStep(1)
-              }}
-            />
-          </TopicsProvider>
+    <Container size="xl">
+      <Title order={1} mb="xl">
+        Submit Thesis Application
+      </Title>
+
+      <Stepper active={active} allowNextStepsSelect={false}>
+        <Stepper.Step label="Select Group" description="Choose a research group">
+          <GroupSelectionStep onGroupSelect={handleGroupSelect} />
         </Stepper.Step>
-        <Stepper.Step label='Second step' description='Update Information'>
-          <StudentInformationStep onComplete={() => setStep(2)} />
+
+        <Stepper.Step label="Application" description="Provide application details">
+          <MotivationStep onComplete={handleComplete} />
         </Stepper.Step>
-        <Stepper.Step label='Final step' description='Submit your Application'>
-          <MotivationStep
-            onComplete={() => setStep(3)}
-            topic={topic || undefined}
-            application={application}
-          />
-        </Stepper.Step>
-        <Stepper.Completed>
-          <Center style={{ height: '50vh' }}>
-            <Card withBorder p='xl'>
-              <Stack gap='sm'>
-                <Text ta='center'>
-                  {application
-                    ? 'Your application was successfully updated!'
-                    : 'Your application was successfully submitted!'}
-                </Text>
-                <Text ta='center' size='sm' c='muted'>
-                  We will contact you as soon as we have reviewed your application.
-                </Text>
-              </Stack>
-            </Card>
-          </Center>
-        </Stepper.Completed>
       </Stepper>
-    </Stack>
+    </Container>
   )
 }
 

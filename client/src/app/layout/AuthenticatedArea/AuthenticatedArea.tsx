@@ -10,9 +10,11 @@ import {
   Stack,
   Text,
   Tooltip,
+  Select,
 } from '@mantine/core'
 import * as classes from './AuthenticatedArea.module.css'
-import { Link, useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useGroupContext } from '../../../providers/GroupContext/hooks'
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks'
 import {
   CaretDoubleLeft,
@@ -51,43 +53,50 @@ const links: Array<{
   label: string
   icon: any
   groups: string[] | undefined
+  requiresGroup?: boolean
 }> = [
-  { link: '/dashboard', label: 'Dashboard', icon: NewspaperClipping, groups: undefined },
+  { link: '/dashboard', label: 'Dashboard', icon: NewspaperClipping, groups: undefined, requiresGroup: false },
   {
     link: '/presentations',
     label: 'Presentations',
     icon: Presentation,
     groups: undefined,
+    requiresGroup: true,
   },
   {
     link: '/submit-application',
     label: 'Submit Application',
     icon: PaperPlaneTilt,
     groups: undefined,
+    requiresGroup: true,
   },
   {
     link: '/applications',
     label: 'Review Applications',
     icon: Scroll,
     groups: ['admin', 'advisor', 'supervisor'],
+    requiresGroup: true,
   },
   {
     link: '/topics',
     label: 'Manage Topics',
     icon: FolderSimplePlus,
     groups: ['admin', 'advisor', 'supervisor'],
+    requiresGroup: true,
   },
   {
     link: '/theses',
     label: 'Browse Theses',
     icon: Table,
     groups: undefined,
+    requiresGroup: true,
   },
   {
     link: '/overview',
     label: 'Theses Overview',
     icon: Kanban,
     groups: ['admin', 'advisor', 'supervisor'],
+    requiresGroup: true,
   },
 ]
 
@@ -102,7 +111,13 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
 
   const navigate = useNavigate()
   const user = useUser()
+  const { currentGroup, groups = [], setCurrentGroup } = useGroupContext()
   const [opened, { toggle, close }] = useDisclosure()
+
+  const getGroupPath = (path: string): string => {
+    if (!currentGroup || !path.startsWith('/')) return path
+    return `/${currentGroup.slug}${path}`
+  }
 
   const minimizeAnimationDuration = 200
   const [minimizedState, setMinimized] = useLocalStorage<boolean>('navigation_minimized', {
@@ -184,7 +199,17 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
               >
                 Thesis Management
               </Text>
-              <ColorSchemeToggleButton ml='auto' />
+              {groups?.length > 0 && (
+                <Select
+                  placeholder="Select Group"
+                  value={currentGroup?.id}
+                  onChange={(value) => setCurrentGroup(groups.find(g => g.id === value))}
+                  data={groups.map(g => ({ value: g.id, label: g.name }))}
+                  ml="auto"
+                  clearable={false}
+                />
+              )}
+              <ColorSchemeToggleButton ml={!groups?.length ? 'auto' : undefined} />
             </Group>
           )}
           {!minimized && <Divider my='sm' />}
@@ -201,9 +226,9 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
             .map((item) => (
               <Link
                 className={minimized ? classes.minimizedLink : classes.fullLink}
-                data-active={location.pathname.startsWith(item.link) || undefined}
+                data-active={location.pathname.startsWith(item.requiresGroup ? getGroupPath(item.link) : item.link) || undefined}
                 key={item.label}
-                to={item.link}
+                to={item.requiresGroup ? getGroupPath(item.link) : item.link}
               >
                 <Tooltip label={item.label} disabled={!minimized} position='right' offset={15}>
                   <item.icon className={classes.linkIcon} size={25} />
@@ -260,8 +285,9 @@ const AuthenticatedArea = (props: PropsWithChildren<IAuthenticatedAreaProps>) =>
         <div className={classes.mainHeight}>
           {auth.user ? (
             <Suspense fallback={<PageLoader />}>
-              {!requiredGroups ||
-              requiredGroups.some((role) => auth.user?.groups.includes(role)) ? (
+              {(!requiredGroups ||
+                requiredGroups.some((role) => auth.user?.groups.includes(role))) &&
+              (!location.pathname.includes(`/${currentGroup?.slug}/`) || currentGroup) ? (
                 <ContentContainer size={size}>{children}</ContentContainer>
               ) : (
                 <Center className={classes.fullHeight}>

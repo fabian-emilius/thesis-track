@@ -1,7 +1,8 @@
-import { Center, Checkbox, Grid, Stack } from '@mantine/core'
+import { Center, Checkbox, Grid, Stack, Text } from '@mantine/core'
 import { GLOBAL_CONFIG } from '../../config/global'
 import React from 'react'
 import { useTopicsContext } from '../../providers/TopicsProvider/hooks'
+import { useGroupContext } from '../../providers/GroupContext/hooks'
 import { formatThesisType } from '../../utils/format'
 
 interface ITopicsFiltersProps {
@@ -12,17 +13,25 @@ const TopicsFilters = (props: ITopicsFiltersProps) => {
   const { visible } = props
 
   const { filters, setFilters } = useTopicsContext()
+  const { selectedGroup } = useGroupContext()
 
   return (
     <Stack>
+      {selectedGroup && (
+        <Text size="sm" c="dimmed" mb="xs">
+          Filtering topics for group: {selectedGroup.name}
+        </Text>
+      )}
       {visible.includes('closed') && (
         <Checkbox
           label='Show Closed Topics'
           checked={!!filters.includeClosed}
           onChange={(e) => {
-            setFilters({
+            setFilters((prev) => ({
+              ...prev,
               includeClosed: e.target.checked,
-            })
+              groupId: selectedGroup?.id,
+            }))
           }}
         />
       )}
@@ -36,9 +45,11 @@ const TopicsFilters = (props: ITopicsFiltersProps) => {
                   checked={!!filters.types?.includes(key)}
                   onChange={(e) => {
                     setFilters((prev) => ({
+                      ...prev,
                       types: [...(prev.types || []), key].filter(
                         (row) => e.target.checked || row !== key,
                       ),
+                      groupId: selectedGroup?.id,
                     }))
                   }}
                 />

@@ -4,10 +4,17 @@ import { IUser } from '../../requests/responses/user'
 import { IUpdateUserInformationPayload } from '../../requests/payloads/user'
 import { PartialNull } from '../../utils/validation'
 
+export interface IGroupRole {
+  groupId: string
+  roles: string[]
+}
+
 export interface IAuthenticationContext {
   isAuthenticated: boolean
   user: IUser | undefined
-  groups: string[]
+  groups: IGroupRole[]
+  userGroup: IGroupRole | undefined
+  hasGroupPermission: (permission: string) => boolean
   updateInformation: (
     data: PartialNull<IUpdateUserInformationPayload>,
     avatar: File | undefined,

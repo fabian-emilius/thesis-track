@@ -6,6 +6,7 @@ import { PaginationResponse } from '../../requests/responses/pagination'
 import { useDebouncedValue } from '@mantine/hooks'
 import { showSimpleError } from '../../utils/notification'
 import { getApiResponseErrorMessage } from '../../requests/handler'
+import { useGroupContext } from '../GroupContext/hooks'
 
 interface IThesesProviderProps {
   fetchAll?: boolean
@@ -16,12 +17,14 @@ interface IThesesProviderProps {
 
 const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
   const { children, fetchAll = false, limit, hideIfEmpty = false, defaultStates } = props
+  const { currentGroup } = useGroupContext()
 
   const [theses, setTheses] = useState<PaginationResponse<IThesis>>()
   const [page, setPage] = useState(0)
 
   const [filters, setFilters] = useState<IThesesFilters>({
     states: defaultStates,
+    groupId: currentGroup?.id,
   })
   const [sort, setSort] = useState<IThesesSort>({
     column: 'startDate',
@@ -43,6 +46,7 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
           search: debouncedSearch,
           state: filters.states?.join(',') ?? '',
           type: filters.types?.join(',') ?? '',
+          groupId: filters.groupId ?? '',
           page,
           limit,
           sortBy: sort.column,
@@ -73,8 +77,15 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
     sort,
     filters.states?.join(','),
     filters.types?.join(','),
+    filters.groupId,
     debouncedSearch,
   ])
+
+  useEffect(() => {
+    if (currentGroup?.id !== filters.groupId) {
+      setFilters(prev => ({ ...prev, groupId: currentGroup?.id }))
+    }
+  }, [currentGroup, filters.groupId])
 
   const contextState = useMemo<IThesesContext>(() => {
     return {
@@ -108,7 +119,7 @@ const ThesesProvider = (props: PropsWithChildren<IThesesProviderProps>) => {
         })
       },
     }
-  }, [theses, filters, sort, page, limit])
+  }, [theses, filters, sort, page, limit, filters.groupId])
 
   if (hideIfEmpty && page === 0 && (!theses || theses.content.length === 0)) {
     return <></>

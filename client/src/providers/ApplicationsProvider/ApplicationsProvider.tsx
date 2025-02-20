@@ -7,6 +7,7 @@ import {
   IApplicationsFilters,
   IApplicationsSort,
 } from './context'
+import { useGroupContext } from '../GroupContext/hooks'
 import { ApplicationState, IApplication } from '../../requests/responses/application'
 import { useDebouncedValue } from '@mantine/hooks'
 import { showSimpleError } from '../../utils/notification'
@@ -38,6 +39,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
 
   const user = useLoggedInUser()
   const topics = useAllTopics()
+  const { currentGroup } = useGroupContext()
 
   const [applications, setApplications] = useState<PaginationResponse<IApplication>>()
   const [page, setPage] = useState(0)
@@ -98,6 +100,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
           fetchAll: fetchAll ? 'true' : 'false',
           previous: previousContent.current.join(','),
           search: debouncedSearch,
+          groupId: currentGroup?.groupId,
           state: adjustedFilters.states?.join(',') ?? '',
           type: adjustedFilters.types?.join(',') ?? '',
           topic:
@@ -145,6 +148,7 @@ const ApplicationsProvider = (props: PropsWithChildren<IApplicationsProviderProp
     adjustedFilters.types?.join(','),
     debouncedSearch,
     !topics,
+    currentGroup?.groupId,
   ])
 
   const contextState = useMemo<IApplicationsContext>(() => {
