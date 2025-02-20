@@ -1,6 +1,6 @@
 import { DataTable, DataTableColumn } from 'mantine-datatable'
 import { formatDate, formatThesisType } from '../../utils/format'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useThesesContext } from '../../providers/ThesesProvider/hooks'
 import { IThesesSort } from '../../providers/ThesesProvider/context'
 import { useNavigate } from 'react-router'
@@ -8,6 +8,7 @@ import { IThesis } from '../../requests/responses/thesis'
 import ThesisStateBadge from '../ThesisStateBadge/ThesisStateBadge'
 import { Center } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
+import { useGroupContext } from '../../providers/GroupContext/context'
 
 type ThesisColumn =
   | 'state'
@@ -23,17 +24,28 @@ type ThesisColumn =
 interface IThesesTableProps {
   columns?: ThesisColumn[]
   extraColumns?: Record<string, DataTableColumn<IThesis>>
+  groupId?: string
 }
 
 const ThesesTable = (props: IThesesTableProps) => {
   const {
     columns = ['state', 'title', 'type', 'students', 'advisors', 'start_date', 'end_date'],
     extraColumns = {},
+    groupId,
   } = props
 
-  const { theses, sort, setSort, page, setPage, limit } = useThesesContext()
+  const { theses, sort, setSort, page, setPage, limit, setFilters } = useThesesContext()
+  const { currentGroup } = useGroupContext()
 
   const navigate = useNavigate()
+
+  // Update filters when groupId changes
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      groupId: groupId || currentGroup?.id,
+    }))
+  }, [groupId, currentGroup, setFilters])
 
   const onThesisClick = (thesis: IThesis) => {
     navigate(`/theses/${thesis.thesisId}`)

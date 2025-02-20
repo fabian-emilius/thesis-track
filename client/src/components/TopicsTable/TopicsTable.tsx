@@ -5,7 +5,8 @@ import { ITopic } from '../../requests/responses/topic'
 import { useNavigate } from 'react-router'
 import { Badge, Center, Stack, Text } from '@mantine/core'
 import AvatarUserList from '../AvatarUserList/AvatarUserList'
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useGroupContext } from '../../providers/GroupContext/context'
 
 type TopicColumn = 'title' | 'types' | 'advisor' | 'supervisor' | 'state' | 'createdAt' | string
 
@@ -13,6 +14,7 @@ interface ITopicsTableProps {
   columns?: TopicColumn[]
   extraColumns?: Record<string, DataTableColumn<ITopic>>
   noBorder?: boolean
+  groupId?: string
 }
 
 const TopicsTable = (props: ITopicsTableProps) => {
@@ -20,11 +22,20 @@ const TopicsTable = (props: ITopicsTableProps) => {
     extraColumns = {},
     columns = ['title', 'types', 'supervisor', 'advisor'],
     noBorder = false,
+    groupId,
   } = props
 
   const navigate = useNavigate()
+  const { currentGroup } = useGroupContext()
+  const { topics, page, setPage, limit, setFilters } = useTopicsContext()
 
-  const { topics, page, setPage, limit } = useTopicsContext()
+  // Update filters when groupId changes
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      groupId: groupId || currentGroup?.id,
+    }))
+  }, [groupId, currentGroup, setFilters])
 
   const columnConfig: Record<TopicColumn, DataTableColumn<ITopic>> = {
     state: {
