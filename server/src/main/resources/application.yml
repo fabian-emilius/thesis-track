@@ -73,6 +73,11 @@ server:
   servlet:
     context-path: /api
 
+data-retention:
+  user-data-years: ${DATA_RETENTION_YEARS:10}
+  schedule: ${DATA_RETENTION_SCHEDULE:"0 0 2 * * *"}
+  batch-size: ${DATA_RETENTION_BATCH_SIZE:100}
+
 thesis-management:
   keycloak:
     host: ${KEYCLOAK_HOST:http://localhost:8081}
