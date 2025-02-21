@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import de.tum.cit.aet.thesis.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -29,4 +30,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     @Query("SELECT DISTINCT u FROM User u LEFT JOIN UserGroup g ON (u.id = g.id.userId) WHERE g.id.group IN :roles")
     List<User> getRoleMembers(@Param("roles") Set<String> roles);
+
+    // GDPR-related queries
+    List<User> findByLastActivityDateBeforeAndScheduledDeletionDateIsNull(LocalDateTime cutoffDate);
+    
+    List<User> findByScheduledDeletionDateBefore(LocalDateTime date);
 }

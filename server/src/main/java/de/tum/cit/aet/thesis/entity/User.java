@@ -13,6 +13,7 @@ import org.hibernate.type.SqlTypes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Getter
@@ -91,6 +92,16 @@ public class User {
     @Column(name = "joined_at", nullable = false)
     private Instant joinedAt;
 
+    // GDPR-related fields
+    @Column(name = "last_activity_date")
+    private LocalDateTime lastActivityDate;
+
+    @Column(name = "scheduled_deletion_date")
+    private LocalDateTime scheduledDeletionDate;
+
+    @Column(name = "deletion_notified_at")
+    private LocalDateTime deletionNotifiedAt;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<UserGroup> groups = new HashSet<>();
 
@@ -159,5 +170,12 @@ public class User {
         }
 
         return true;
+    }
+
+    /**
+     * Updates the last activity date to the current time
+     */
+    public void updateLastActivity() {
+        this.lastActivityDate = LocalDateTime.now();
     }
 }

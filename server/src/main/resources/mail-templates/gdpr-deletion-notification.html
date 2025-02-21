@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>GDPR Data Deletion Notice</title>
+</head>
+<body>
+    <div th:replace="~{fragments/salutation :: salutation}"></div>
+
+    <p>We are writing to inform you that your account in the Thesis Management System has been inactive for an extended period.</p>
+
+    <p>In accordance with our data protection policies and GDPR requirements, your account and associated personal data are scheduled for deletion on:
+        <strong th:text="${#temporals.format(scheduledDeletionDate, 'dd.MM.yyyy')}">01.01.2024</strong>
+    </p>
+
+    <p>If you wish to prevent this deletion and maintain your account:</p>
+    <ul>
+        <li>Simply log in to your account before the scheduled deletion date</li>
+        <li>This will reset your account's activity timer</li>
+    </ul>
+
+    <p>If no action is taken, your account will be automatically deleted and your personal data will be anonymized. Academic records will be preserved but will no longer be personally identifiable.</p>
+
+    <p>Thank you for your understanding.</p>
+
+    <div th:replace="~{fragments/notification-settings :: settings}"></div>
+</body>
+</html>
