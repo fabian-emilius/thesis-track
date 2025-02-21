@@ -102,6 +102,9 @@ public class User {
     @Column(name = "deletion_notified_at")
     private LocalDateTime deletionNotifiedAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<UserGroup> groups = new HashSet<>();
 

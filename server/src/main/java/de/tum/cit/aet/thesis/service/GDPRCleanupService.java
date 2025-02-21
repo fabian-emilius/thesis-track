@@ -32,7 +32,7 @@ public class GDPRCleanupService {
     private final UserRepository userRepository;
     private final GDPRDeletionLogRepository gdprDeletionLogRepository;
     private final MailingService mailingService;
-    private final UploadService uploadService;
+    private final FileService fileService;
 
     @Value("${gdpr.retention.years:10}")
     private int retentionYears;
@@ -174,7 +174,7 @@ public class GDPRCleanupService {
 
         try {
             if (Files.exists(userFilesPath)) {
-                uploadService.deleteDirectory(userFilesPath);
+                fileService.deleteDirectory(userFilesPath);
                 log.info("Successfully deleted files for user {}", user.getId());
             }
         } catch (Exception e) {
