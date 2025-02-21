@@ -91,11 +91,26 @@ public class User {
     @Column(name = "joined_at", nullable = false)
     private Instant joinedAt;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    private Set<UserGroup> groups = new HashSet<>();
-
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<NotificationSetting> notificationSettings = new ArrayList<>();
+
+    public boolean hasGroupRole(UUID groupId, String role) {
+        return getGroupRoles().stream()
+                .anyMatch(groupRole -> groupRole.getGroup().getId().equals(groupId) &&
+                        groupRole.getRole().equalsIgnoreCase(role));
+    }
+
+    public boolean hasAnyGroupRole(UUID groupId, String... roles) {
+        for (String role : roles) {
+            if (hasGroupRole(groupId, role)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<GroupRole> groupRoles = new HashSet<>();
 
     public InternetAddress getEmail() {
         try {
@@ -129,26 +144,6 @@ public class User {
         } catch (NoSuchAlgorithmException e) {
             return null;
         }
-    }
-
-    public boolean hasAnyGroup(String...groups) {
-        for (String group : groups) {
-            for (UserGroup userGroup : getGroups()) {
-                if (userGroup.getId().getGroup().equals(group)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public boolean hasFullAccess(User user) {
-        if (user.hasAnyGroup("admin", "supervisor", "advisor")) {
-            return true;
-        }
-
-        return id.equals(user.getId());
     }
 
     public boolean isNotificationEnabled(String name) {

@@ -149,3 +149,37 @@ UPDATE thesis_comments SET upload_name = filename;
 --changeset emilius:07-cleanup-17
 ALTER TABLE theses ADD COLUMN language TEXT NOT NULL DEFAULT 'ENGLISH';
 ALTER TABLE theses ADD COLUMN metadata JSONB NOT NULL DEFAULT '{"titles":{},"credits":{}}';
+
+--changeset emilius:07-cleanup-18
+CREATE TABLE groups (
+    group_id UUID PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    logo_url TEXT,
+    website_url TEXT,
+    mail_footer TEXT,
+    acceptance_text TEXT,
+    acceptance_instructions TEXT,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    created_by UUID NOT NULL,
+    FOREIGN KEY (created_by) REFERENCES users (user_id)
+);
+
+--changeset emilius:07-cleanup-19
+CREATE TABLE group_roles (
+    group_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    role TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (group_id, user_id),
+    FOREIGN KEY (group_id) REFERENCES groups (group_id),
+    FOREIGN KEY (user_id) REFERENCES users (user_id)
+);
+
+--changeset emilius:07-cleanup-20
+ALTER TABLE topics ADD COLUMN group_id UUID REFERENCES groups (group_id);
+ALTER TABLE theses ADD COLUMN group_id UUID REFERENCES groups (group_id);
+ALTER TABLE applications ADD COLUMN group_id UUID REFERENCES groups (group_id);

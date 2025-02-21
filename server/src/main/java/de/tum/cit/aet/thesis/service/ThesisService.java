@@ -84,8 +84,16 @@ public class ThesisService {
         Set<ThesisState> statesFilter = states == null || states.length == 0 ? null : new HashSet<>(Arrays.asList(states));
         Set<String> typesFilter = types == null || types.length == 0 ? null : new HashSet<>(Arrays.asList(types));
 
-        return thesisRepository.searchTheses(
-                userId,
+        // Fetch user's group IDs
+        List<UUID> userGroupIds = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"))
+                .getGroups()
+                .stream()
+                .map(group -> group.getId().getGroupId())
+                .toList();
+
+        return thesisRepository.searchThesesByGroups(
+                userGroupIds,
                 visibilities,
                 searchQueryFilter,
                 statesFilter,
@@ -104,9 +112,12 @@ public class ThesisService {
             List<UUID> advisorIds,
             List<UUID> studentIds,
             Application application,
+            UUID groupId,
             boolean notifyUser
     ) {
         Thesis thesis = new Thesis();
+
+        thesis.setGroupId(groupId);
 
         thesis.setTitle(thesisTitle);
         thesis.setType(thesisType);
@@ -544,8 +555,22 @@ public class ThesisService {
     }
 
     public Thesis findById(UUID thesisId) {
-        return thesisRepository.findById(thesisId)
+        Thesis thesis = thesisRepository.findById(thesisId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Thesis with id %s not found.", thesisId)));
+
+        // Check if the user has access to the thesis's group
+        List<UUID> userGroupIds = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"))
+                .getGroups()
+                .stream()
+                .map(group -> group.getId().getGroupId())
+                .toList();
+
+        if (!userGroupIds.contains(thesis.getGroupId())) {
+            throw new ResourceInvalidParametersException("Access denied: User does not belong to the thesis's group.");
+        }
+
+        return thesis;
     }
 
     private void assignThesisRoles(

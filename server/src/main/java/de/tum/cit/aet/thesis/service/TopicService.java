@@ -51,10 +51,11 @@ public class TopicService {
         String searchQueryFilter = searchQuery == null || searchQuery.isEmpty() ? null : searchQuery.toLowerCase();
         String[] typesFilter = types == null || types.length == 0 ? null : types;
 
-        return topicRepository.searchTopics(
+        return topicRepository.searchTopicsByGroup(
                 typesFilter,
                 includeClosed,
                 searchQueryFilter,
+                userGroupId,
                 PageRequest.of(page, limit, Sort.by(order))
         );
     }
@@ -62,6 +63,7 @@ public class TopicService {
     @Transactional
     public Topic createTopic(
             User creator,
+            UUID groupId,
             String title,
             Set<String> thesisTypes,
             String problemStatement,
@@ -72,6 +74,7 @@ public class TopicService {
             List<UUID> advisorIds
     ) {
         Topic topic = new Topic();
+        topic.setGroupId(groupId);
 
         topic.setTitle(title);
         topic.setThesisTypes(thesisTypes);
@@ -103,6 +106,9 @@ public class TopicService {
             List<UUID> supervisorIds,
             List<UUID> advisorIds
     ) {
+        if (topic.getGroupId() == null) {
+            throw new ResourceInvalidParametersException("Group ID cannot be null.");
+        }
         topic.setTitle(title);
         topic.setThesisTypes(thesisTypes);
         topic.setProblemStatement(problemStatement);
@@ -116,9 +122,15 @@ public class TopicService {
         return topicRepository.save(topic);
     }
 
-    public Topic findById(UUID topicId) {
-        return topicRepository.findById(topicId)
+    public Topic findById(UUID topicId, UUID userGroupId) {
+        Topic topic = topicRepository.findById(topicId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Topic with id %s not found.", topicId)));
+
+        if (!topic.getGroupId().equals(userGroupId)) {
+            throw new ResourceNotFoundException("You do not have access to this topic.");
+        }
+
+        return topic;
     }
 
     private void assignTopicRoles(Topic topic, User assigner, List<UUID> advisorIds, List<UUID> supervisorIds) {

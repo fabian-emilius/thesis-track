@@ -76,20 +76,27 @@ public class ApplicationService {
                 topicsFilter,
                 typesFilter,
                 includeSuggestedTopics,
-                PageRequest.of(page, limit, Sort.by(order))
+                PageRequest.of(page, limit, Sort.by(order)),
+                user.getGroupIds() // Restrict to user's groups
         );
     }
 
     @Transactional
-    public Application createApplication(User user, UUID topicId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
+    public Application createApplication(User user, UUID topicId, UUID groupId, String thesisTitle, String thesisType, Instant desiredStartDate, String motivation) {
         Topic topic = topicId == null ? null : topicService.findById(topicId);
 
         if (topic != null && topic.getClosedAt() != null) {
             throw new ResourceInvalidParametersException("This topic is already closed. You cannot submit new applications for it.");
         }
 
+        // Validate group access
+        if (groupId == null || !user.hasGroupAccess(groupId)) {
+            throw new ResourceInvalidParametersException("Invalid or inaccessible group ID.");
+        }
+
         Application application = new Application();
         application.setUser(user);
+        application.setGroupId(groupId);
 
         application.setTopic(topic);
         application.setThesisTitle(thesisTitle);
@@ -222,7 +229,8 @@ public class ApplicationService {
         List<Application> result = new ArrayList<>();
 
         for (Application application : applications) {
-            if (application.getState() != ApplicationState.NOT_ASSESSED) {
+            // Ensure group context is respected
+            if (application.getState() != ApplicationState.NOT_ASSESSED || !closer.hasGroupAccess(application.getGroupId())) {
                 continue;
             }
 
@@ -276,8 +284,15 @@ public class ApplicationService {
         return applicationRepository.existsPendingApplication(user.getId(), topicId);
     }
 
-    public Application findById(UUID applicationId) {
-        return applicationRepository.findById(applicationId)
+    public Application findById(UUID applicationId, User user) {
+        Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Application with id %s not found.", applicationId)));
+
+        // Ensure user has access to the application's group
+        if (!user.hasGroupAccess(application.getGroupId())) {
+            throw new ResourceNotFoundException("You do not have access to this application.");
+        }
+
+        return application;
     }
 }
