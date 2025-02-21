@@ -91,6 +91,14 @@ public class User {
     @Column(name = "joined_at", nullable = false)
     private Instant joinedAt;
 
+    @NotNull
+    @Column(name = "last_activity_at", nullable = false)
+    @UpdateTimestamp
+    private Instant lastActivityAt;
+
+    @Column(name = "scheduled_deletion_at")
+    private Instant scheduledDeletionAt;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<UserGroup> groups = new HashSet<>();
 
@@ -159,5 +167,10 @@ public class User {
         }
 
         return true;
+    }
+
+    public boolean isEligibleForDeletion() {
+        final long TEN_YEARS_IN_SECONDS = 10L * 365 * 24 * 60 * 60;
+        return lastActivityAt != null && lastActivityAt.plusSeconds(TEN_YEARS_IN_SECONDS).isBefore(Instant.now());
     }
 }
