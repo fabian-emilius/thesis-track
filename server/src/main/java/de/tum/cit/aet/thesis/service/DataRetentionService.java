@@ -3,7 +3,7 @@ package de.tum.cit.aet.thesis.service;
 import de.tum.cit.aet.thesis.entity.User;
 import de.tum.cit.aet.thesis.repository.UserRepository;
 import de.tum.cit.aet.thesis.exception.DataRetentionException;
-import de.tum.cit.aet.thesis.service.audit.DataRetentionAuditService;
+import de.tum.cit.aet.thesis.service.DataRetentionAuditService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
