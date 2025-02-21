@@ -6,6 +6,7 @@ import de.tum.cit.aet.thesis.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,17 +50,30 @@ public class UserDataRetentionService {
             List<User> usersToProcess = findUsersForDeletion();
             log.info("Found {} users for data retention processing", usersToProcess.size());
 
+            int totalBatches = (usersToProcess.size() + config.getBatchSize() - 1) / config.getBatchSize();
+            int processedUsers = 0;
+            int failedUsers = 0;
+
             for (int i = 0; i < usersToProcess.size(); i += config.getBatchSize()) {
                 int endIndex = Math.min(i + config.getBatchSize(), usersToProcess.size());
                 List<User> batch = usersToProcess.subList(i, endIndex);
-                processBatch(batch);
+                
+                try {
+                    processBatch(batch);
+                    processedUsers += batch.size();
+                } catch (Exception e) {
+                    failedUsers += batch.size();
+                    log.error("Failed to process batch {}/{}", (i / config.getBatchSize()) + 1, totalBatches, e);
+                }
+
                 log.info("Processed batch {}/{} ({} users)", 
                     (i / config.getBatchSize()) + 1,
-                    (usersToProcess.size() + config.getBatchSize() - 1) / config.getBatchSize(),
+                    totalBatches,
                     batch.size());
             }
 
-            log.info("Completed user data retention process - Processed {} users", usersToProcess.size());
+            log.info("Completed user data retention process - Successfully processed: {}, Failed: {}", 
+                processedUsers, failedUsers);
         } catch (Exception e) {
             log.error("Error during data retention process", e);
             throw new RuntimeException("Data retention process failed", e);
@@ -73,9 +87,14 @@ public class UserDataRetentionService {
      */
     @Transactional(readOnly = true)
     public List<User> findUsersForDeletion() {
-        Instant cutoffDate = Instant.now().minus(config.getUserDataYears(), ChronoUnit.YEARS);
-        log.debug("Finding users for deletion with cutoff date: {}", cutoffDate);
-        return userRepository.findUsersForDeletion(cutoffDate);
+        try {
+            Instant cutoffDate = Instant.now().minus(config.getUserDataYears(), ChronoUnit.YEARS);
+            log.debug("Finding users for deletion with cutoff date: {}", cutoffDate);
+            return userRepository.findUsersForDeletion(cutoffDate);
+        } catch (DataAccessException e) {
+            log.error("Database error while finding users for deletion", e);
+            throw new RuntimeException("Failed to query users for deletion", e);
+        }
     }
 
     /**
@@ -84,7 +103,6 @@ public class UserDataRetentionService {
      *
      * @param users List of users to process
      */
-    @Transactional
     protected void processBatch(List<User> users) {
         for (User user : users) {
             try {
@@ -92,7 +110,7 @@ public class UserDataRetentionService {
                 log.info("Successfully processed user: {}", user.getId());
             } catch (Exception e) {
                 log.error("Error processing user: {}", user.getId(), e);
-                // Continue with next user despite error
+                throw new RuntimeException("Failed to process user: " + user.getId(), e);
             }
         }
     }

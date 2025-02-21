@@ -103,6 +103,29 @@ public class UploadService {
         }
     }
 
+    /**
+     * Deletes a file from the upload directory.
+     *
+     * @param filename The name of the file to delete
+     * @throws UploadException if the file cannot be deleted or if the filename is invalid
+     */
+    public void deleteFile(String filename) {
+        try {
+            if (filename == null || filename.isEmpty()) {
+                return; // Skip if filename is null or empty
+            }
+
+            if (filename.contains("..")) {
+                throw new UploadException("Cannot delete file with relative path outside current directory");
+            }
+
+            Path filePath = rootLocation.resolve(filename);
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new UploadException("Failed to delete file: " + filename, e);
+        }
+    }
+
     private String computeFileHash(MultipartFile file) throws IOException, NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (InputStream inputStream = file.getInputStream()) {
