@@ -12,11 +12,13 @@ import de.tum.cit.aet.thesis.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,7 +79,8 @@ public class UserDataRetentionService {
         logger.info("Identifying users joined before {} for GDPR data deletion", cutoffDate);
         
         // Find users who joined before the cutoff date and haven't been updated since the cutoff date
-        return userRepository.findByJoinedAtBeforeAndUpdatedAtBefore(cutoffDate, cutoffDate, batchSize);
+        // Use PageRequest to limit the number of users processed in a single batch
+        return userRepository.findByJoinedAtBeforeAndUpdatedAtBefore(cutoffDate, cutoffDate, PageRequest.of(0, batchSize));
     }
     
     /**
@@ -85,7 +88,6 @@ public class UserDataRetentionService {
      * 
      * @return The number of users processed
      */
-    @Transactional
     public int processUserDataDeletion() {
         List<User> usersToProcess = identifyUsersForDeletion();
         
@@ -96,20 +98,31 @@ public class UserDataRetentionService {
         
         logger.info("Processing {} users for GDPR data deletion", usersToProcess.size());
         
+        int successCount = 0;
+        List<UUID> failedUserIds = new ArrayList<>();
+        
         for (User user : usersToProcess) {
             try {
                 anonymizeUserData(user);
+                successCount++;
                 logger.info("Successfully anonymized user data for user ID: {}", user.getId());
             } catch (Exception e) {
-                logger.error("Error processing user ID: {} for GDPR deletion", user.getId(), e);
+                failedUserIds.add(user.getId());
+                logger.error("Error processing user ID: {} for GDPR deletion: {}", user.getId(), e.getMessage(), e);
             }
         }
         
-        return usersToProcess.size();
+        if (!failedUserIds.isEmpty()) {
+            logger.warn("Failed to process {} users for GDPR deletion: {}", failedUserIds.size(), failedUserIds);
+        }
+        
+        logger.info("GDPR data deletion completed. Successfully processed: {}, Failed: {}", successCount, failedUserIds.size());
+        return successCount;
     }
     
     /**
      * Anonymizes or deletes user data in compliance with GDPR requirements.
+     * Each user is processed in a separate transaction to prevent failures from affecting other users.
      * 
      * @param user The user whose data should be anonymized/deleted
      */
@@ -142,8 +155,12 @@ public class UserDataRetentionService {
         // Delete CV file if exists
         if (user.getCvFilename() != null && !user.getCvFilename().isEmpty()) {
             try {
-                uploadService.deleteFile(user.getCvFilename());
-                logger.info("Deleted CV file: {} for user ID: {}", user.getCvFilename(), user.getId());
+                boolean deleted = uploadService.deleteFile(user.getCvFilename());
+                if (deleted) {
+                    logger.info("Deleted CV file: {} for user ID: {}", user.getCvFilename(), user.getId());
+                } else {
+                    logger.warn("Failed to delete CV file: {} for user ID: {}", user.getCvFilename(), user.getId());
+                }
             } catch (Exception e) {
                 logger.error("Error deleting CV file: {} for user ID: {}", user.getCvFilename(), user.getId(), e);
             }
@@ -152,8 +169,12 @@ public class UserDataRetentionService {
         // Delete degree file if exists
         if (user.getDegreeFilename() != null && !user.getDegreeFilename().isEmpty()) {
             try {
-                uploadService.deleteFile(user.getDegreeFilename());
-                logger.info("Deleted degree file: {} for user ID: {}", user.getDegreeFilename(), user.getId());
+                boolean deleted = uploadService.deleteFile(user.getDegreeFilename());
+                if (deleted) {
+                    logger.info("Deleted degree file: {} for user ID: {}", user.getDegreeFilename(), user.getId());
+                } else {
+                    logger.warn("Failed to delete degree file: {} for user ID: {}", user.getDegreeFilename(), user.getId());
+                }
             } catch (Exception e) {
                 logger.error("Error deleting degree file: {} for user ID: {}", user.getDegreeFilename(), user.getId(), e);
             }
@@ -162,8 +183,12 @@ public class UserDataRetentionService {
         // Delete examination file if exists
         if (user.getExaminationFilename() != null && !user.getExaminationFilename().isEmpty()) {
             try {
-                uploadService.deleteFile(user.getExaminationFilename());
-                logger.info("Deleted examination file: {} for user ID: {}", user.getExaminationFilename(), user.getId());
+                boolean deleted = uploadService.deleteFile(user.getExaminationFilename());
+                if (deleted) {
+                    logger.info("Deleted examination file: {} for user ID: {}", user.getExaminationFilename(), user.getId());
+                } else {
+                    logger.warn("Failed to delete examination file: {} for user ID: {}", user.getExaminationFilename(), user.getId());
+                }
             } catch (Exception e) {
                 logger.error("Error deleting examination file: {} for user ID: {}", user.getExaminationFilename(), user.getId(), e);
             }
@@ -172,8 +197,12 @@ public class UserDataRetentionService {
         // Delete avatar if exists and is not a Gravatar URL
         if (user.getAvatar() != null && !user.getAvatar().isEmpty() && !user.getAvatar().contains("gravatar.com")) {
             try {
-                uploadService.deleteFile(user.getAvatar());
-                logger.info("Deleted avatar file: {} for user ID: {}", user.getAvatar(), user.getId());
+                boolean deleted = uploadService.deleteFile(user.getAvatar());
+                if (deleted) {
+                    logger.info("Deleted avatar file: {} for user ID: {}", user.getAvatar(), user.getId());
+                } else {
+                    logger.warn("Failed to delete avatar file: {} for user ID: {}", user.getAvatar(), user.getId());
+                }
             } catch (Exception e) {
                 logger.error("Error deleting avatar file: {} for user ID: {}", user.getAvatar(), user.getId(), e);
             }
@@ -205,5 +234,8 @@ public class UserDataRetentionService {
         // Mark as anonymized in custom data
         user.getCustomData().put("anonymized", "true");
         user.getCustomData().put("anonymized_at", Instant.now().toString());
+        
+        // If we want to track GDPR compliance, we can add original deletion date
+        user.getCustomData().put("gdpr_processed_at", Instant.now().toString());
     }
 }

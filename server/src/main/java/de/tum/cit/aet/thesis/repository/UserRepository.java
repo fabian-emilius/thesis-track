@@ -34,13 +34,16 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     /**
      * Finds users who joined before a specified date and haven't been updated since another date.
      * Used for identifying users whose data should be deleted for GDPR compliance.
+     * Does not return users who have already been anonymized (have 'anonymized' flag in customData).
      *
      * @param joinedBefore Users who joined before this date
      * @param updatedBefore Users who haven't been updated since this date
-     * @param limit Maximum number of users to return
+     * @param pageable Pagination parameters
      * @return List of users matching the criteria
      */
-    @Query(value = "SELECT u FROM User u WHERE u.joinedAt < :joinedBefore AND u.updatedAt < :updatedBefore ORDER BY u.joinedAt ASC")
+    @Query(value = "SELECT u FROM User u WHERE u.joinedAt < :joinedBefore AND u.updatedAt < :updatedBefore " +
+           "AND (u.customData IS NULL OR NOT EXISTS (SELECT 1 FROM u.customData cd WHERE KEY(cd) = 'anonymized' AND VALUE(cd) = 'true')) " +
+           "ORDER BY u.joinedAt ASC")
     List<User> findByJoinedAtBeforeAndUpdatedAtBefore(
             @Param("joinedBefore") Instant joinedBefore,
             @Param("updatedBefore") Instant updatedBefore,
