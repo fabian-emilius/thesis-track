@@ -103,6 +103,29 @@ public class UploadService {
         }
     }
 
+    /**
+     * Deletes a file from the upload directory.
+     * Used for GDPR compliance when anonymizing user data.
+     * 
+     * @param filename The name of the file to delete
+     * @return true if the file was deleted successfully, false otherwise
+     */
+    public boolean deleteFile(String filename) {
+        try {
+            if (filename == null || filename.isEmpty() || filename.contains("..")) {
+                return false;
+            }
+            
+            Path filePath = rootLocation.resolve(filename);
+            if (Files.exists(filePath)) {
+                return Files.deleteIfExists(filePath);
+            }
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private String computeFileHash(MultipartFile file) throws IOException, NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (InputStream inputStream = file.getInputStream()) {

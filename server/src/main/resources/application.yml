@@ -98,3 +98,8 @@ thesis-management:
   storage:
     upload-location: ${UPLOAD_FOLDER:uploads}
   scientific-writing-guide: ${SCIENTIFIC_WRITING_GUIDE:}
+  data-retention:
+    enabled: ${DATA_RETENTION_ENABLED:true}
+    user-data-years: ${DATA_RETENTION_YEARS:10}
+    schedule: ${DATA_RETENTION_SCHEDULE:0 0 2 * * *}
+    batch-size: ${DATA_RETENTION_BATCH_SIZE:100}
