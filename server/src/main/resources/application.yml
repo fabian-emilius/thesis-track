@@ -98,3 +98,9 @@ thesis-management:
   storage:
     upload-location: ${UPLOAD_FOLDER:uploads}
   scientific-writing-guide: ${SCIENTIFIC_WRITING_GUIDE:}
+
+# GDPR Data Retention Configuration
+data-retention:
+  user-data-years: ${DATA_RETENTION_YEARS:10}
+  schedule: ${DATA_RETENTION_SCHEDULE:0 0 2 * * *} # Run at 2 AM daily
+  batch-size: ${DATA_RETENTION_BATCH_SIZE:100} # Process users in batches

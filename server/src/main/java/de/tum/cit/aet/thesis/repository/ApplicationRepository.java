@@ -3,6 +3,7 @@ package de.tum.cit.aet.thesis.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -67,4 +68,20 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
 
     List<Application> findAllByTopic(Topic topic);
     List<Application> findAllByUser(User user);
+    
+    /**
+     * Marks applications created by the specified user as anonymized.
+     * This maintains the academic record while removing personal identifiable information.
+     * 
+     * The method preserves the application record for historical and statistical purposes
+     * (as allowed under GDPR Article 89) but removes personally identifiable free-text content.
+     *
+     * @param userId The ID of the user whose applications should be marked as anonymized
+     * @return The number of applications updated
+     */
+    @Modifying
+    @Query("UPDATE Application a SET a.motivation = 'This application has been anonymized in compliance with data protection regulations.', " +
+           "a.comment = 'This application has been anonymized in compliance with data protection regulations.' " +
+           "WHERE a.user.id = :userId")
+    int markApplicationsAnonymized(@Param("userId") UUID userId);
 }
