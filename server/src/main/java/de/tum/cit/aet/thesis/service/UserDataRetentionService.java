@@ -4,9 +4,6 @@ import de.tum.cit.aet.thesis.entity.User;
 import de.tum.cit.aet.thesis.repository.ApplicationRepository;
 import de.tum.cit.aet.thesis.repository.ThesisCommentRepository;
 import de.tum.cit.aet.thesis.repository.ThesisPresentationRepository;
-import de.tum.cit.aet.thesis.repository.ThesisRepository;
-import de.tum.cit.aet.thesis.repository.ThesisRoleRepository;
-import de.tum.cit.aet.thesis.repository.UserGroupRepository;
 import de.tum.cit.aet.thesis.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +27,7 @@ import java.util.UUID;
 public class UserDataRetentionService {
 
     private final UserRepository userRepository;
-    private final UserGroupRepository userGroupRepository;
     private final ApplicationRepository applicationRepository;
-    private final ThesisRepository thesisRepository;
-    private final ThesisRoleRepository thesisRoleRepository;
     private final ThesisCommentRepository thesisCommentRepository;
     private final ThesisPresentationRepository thesisPresentationRepository;
     private final UploadService uploadService;
@@ -181,9 +175,6 @@ public class UserDataRetentionService {
         user.setExaminationFilename(null);
         user.setAvatar(null);
         user.setCustomData(null);
-        
-        // Set fields that track user activity
-        user.setUpdatedAt(Instant.now());
     }
 
     /**

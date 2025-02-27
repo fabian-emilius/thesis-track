@@ -4,9 +4,6 @@ import de.tum.cit.aet.thesis.entity.User;
 import de.tum.cit.aet.thesis.repository.ApplicationRepository;
 import de.tum.cit.aet.thesis.repository.ThesisCommentRepository;
 import de.tum.cit.aet.thesis.repository.ThesisPresentationRepository;
-import de.tum.cit.aet.thesis.repository.ThesisRepository;
-import de.tum.cit.aet.thesis.repository.ThesisRoleRepository;
-import de.tum.cit.aet.thesis.repository.UserGroupRepository;
 import de.tum.cit.aet.thesis.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,16 +40,7 @@ public class UserDataRetentionServiceTest {
     private UserRepository userRepository;
     
     @Mock
-    private UserGroupRepository userGroupRepository;
-    
-    @Mock
     private ApplicationRepository applicationRepository;
-    
-    @Mock
-    private ThesisRepository thesisRepository;
-    
-    @Mock
-    private ThesisRoleRepository thesisRoleRepository;
     
     @Mock
     private ThesisCommentRepository thesisCommentRepository;
