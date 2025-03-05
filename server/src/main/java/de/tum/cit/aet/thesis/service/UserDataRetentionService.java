@@ -4,12 +4,18 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import de.tum.cit.aet.thesis.entity.User;
 import de.tum.cit.aet.thesis.repository.UserRepository;
 import de.tum.cit.aet.thesis.repository.UserGroupRepository;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -32,6 +38,9 @@ public class UserDataRetentionService {
 
     @Value("${data-retention.batch-size:100}")
     private int batchSize;
+
+    @Value("${thesis-management.storage.upload-location:uploads}")
+    private String uploadLocation;
 
     @Autowired
     public UserDataRetentionService(
@@ -68,7 +77,10 @@ public class UserDataRetentionService {
         Instant cutoffDate = Instant.now().minus(userDataRetentionYears, ChronoUnit.YEARS);
         log.info("Processing users joined before {}", cutoffDate);
         
-        List<User> usersToProcess = findUsersForDeletion(cutoffDate);
+        // Use the repository method to efficiently find eligible users
+        List<User> usersToProcess = userRepository.findUsersInactiveOlderThan(cutoffDate);
+        log.info("Found {} users eligible for data deletion", usersToProcess.size());
+        
         AtomicInteger processedCount = new AtomicInteger(0);
         
         // Process users in batches to avoid overwhelming the system
@@ -88,24 +100,6 @@ public class UserDataRetentionService {
         }
         
         return processedCount.get();
-    }
-
-    /**
-     * Finds users eligible for data deletion based on join date and last update date.
-     * 
-     * @param cutoffDate the date before which users are eligible for deletion
-     * @return list of users eligible for deletion
-     */
-    private List<User> findUsersForDeletion(Instant cutoffDate) {
-        List<User> eligibleUsers = new ArrayList<>();
-        userRepository.findAll().forEach(user -> {
-            // Check if the user joined before cutoff date and hasn't been updated recently
-            if (user.getJoinedAt().isBefore(cutoffDate) && user.getUpdatedAt().isBefore(cutoffDate)) {
-                eligibleUsers.add(user);
-            }
-        });
-        log.info("Found {} users eligible for data deletion", eligibleUsers.size());
-        return eligibleUsers;
     }
 
     /**
@@ -188,11 +182,30 @@ public class UserDataRetentionService {
     private void deleteFile(String filename) {
         try {
             if (filename != null && !filename.isEmpty()) {
-                // Using Java's File API to delete the file since UploadService doesn't have a delete method
-                java.nio.file.Path filePath = java.nio.file.Paths.get(
-                        ((org.springframework.core.io.FileSystemResource) uploadService.load(filename)).getPath()
-                );
-                java.nio.file.Files.deleteIfExists(filePath);
+                // First try using the upload service to access the file
+                try {
+                    Resource resource = uploadService.load(filename);
+                    try {
+                        // Get the file path and delete it if it exists
+                        Path filePath = Paths.get(resource.getURI());
+                        if (Files.deleteIfExists(filePath)) {
+                            log.info("Successfully deleted file: {}", filename);
+                            return;
+                        }
+                    } catch (IOException e) {
+                        log.warn("Could not delete file via URI: {}, trying direct path", filename);
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not access file via UploadService: {}, trying direct path", filename);
+                }
+                
+                // Fallback to direct file access if resource approach fails
+                Path directPath = Paths.get(uploadLocation, filename);
+                if (Files.deleteIfExists(directPath)) {
+                    log.info("Successfully deleted file via direct path: {}", filename);
+                } else {
+                    log.warn("File not found at expected location: {}", directPath);
+                }
             }
         } catch (Exception e) {
             log.error("Failed to delete file: {}", filename, e);

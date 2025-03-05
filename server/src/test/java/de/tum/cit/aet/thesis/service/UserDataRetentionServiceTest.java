@@ -7,13 +7,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.test.util.ReflectionTestUtils;
 import de.tum.cit.aet.thesis.entity.User;
 import de.tum.cit.aet.thesis.repository.UserGroupRepository;
 import de.tum.cit.aet.thesis.repository.UserRepository;
 
-import java.nio.file.Path;
+import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -41,12 +41,16 @@ public class UserDataRetentionServiceTest {
 
     private User oldUser;
     private User recentUser;
+    private Instant cutoffDate;
 
     @BeforeEach
     public void setup() {
         // Set test configuration values
         ReflectionTestUtils.setField(userDataRetentionService, "userDataRetentionYears", 10);
         ReflectionTestUtils.setField(userDataRetentionService, "batchSize", 50);
+        ReflectionTestUtils.setField(userDataRetentionService, "uploadLocation", "uploads");
+
+        cutoffDate = Instant.now().minus(10, ChronoUnit.YEARS);
 
         // Create test users
         oldUser = new User();
@@ -74,28 +78,10 @@ public class UserDataRetentionServiceTest {
     }
 
     @Test
-    public void testFindUsersForDeletion() {
-        // Mock the repository to return our test users
-        when(userRepository.findAll()).thenReturn(Arrays.asList(oldUser, recentUser));
-
-        // Use reflection to access the private method
-        Instant cutoffDate = Instant.now().minus(10, ChronoUnit.YEARS);
-        List<User> result = (List<User>) ReflectionTestUtils.invokeMethod(
-                userDataRetentionService, 
-                "findUsersForDeletion", 
-                cutoffDate);
-
-        // Verify results
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(oldUser.getId(), result.get(0).getId());
-    }
-
-    @Test
-    public void testAnonymizeUserData() {
-        // Mock file system resource for file deletion
-        FileSystemResource mockResource = mock(FileSystemResource.class);
-        when(mockResource.getPath()).thenReturn("/temp/old-cv.pdf");
+    public void testAnonymizeUserData() throws Exception {
+        // Mock resource for file deletion
+        Resource mockResource = mock(Resource.class);
+        when(mockResource.getURI()).thenReturn(new URI("file:/temp/old-cv.pdf"));
         when(uploadService.load(anyString())).thenReturn(mockResource);
 
         // Capture the saved user
@@ -127,13 +113,14 @@ public class UserDataRetentionServiceTest {
     }
 
     @Test
-    public void testProcessUsersForDeletion() {
+    public void testProcessUsersForDeletion() throws Exception {
         // Mock repository to return our test users
-        when(userRepository.findAll()).thenReturn(Arrays.asList(oldUser, recentUser));
+        when(userRepository.findUsersInactiveOlderThan(any(Instant.class)))
+            .thenReturn(List.of(oldUser));
 
-        // Mock file system resource for file deletion
-        FileSystemResource mockResource = mock(FileSystemResource.class);
-        when(mockResource.getPath()).thenReturn("/temp/test.pdf");
+        // Mock resource for file deletion
+        Resource mockResource = mock(Resource.class);
+        when(mockResource.getURI()).thenReturn(new URI("file:/temp/test.pdf"));
         when(uploadService.load(anyString())).thenReturn(mockResource);
 
         // Call the method under test
