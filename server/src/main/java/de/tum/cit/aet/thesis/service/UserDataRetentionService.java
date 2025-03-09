@@ -206,8 +206,12 @@ public class UserDataRetentionService {
     private void deleteFileIfExists(String filename, String fileType, UUID userId) {
         if (filename != null && !filename.isEmpty()) {
             try {
-                uploadService.deleteFile(filename);
-                log.debug("Deleted {} file for user ID: {}", fileType, userId);
+                boolean deleted = uploadService.deleteFile(filename);
+                if (deleted) {
+                    log.debug("Deleted {} file for user ID: {}", fileType, userId);
+                } else {
+                    log.warn("File {} not found for user ID: {}", fileType, userId);
+                }
             } catch (Exception e) {
                 log.warn("Failed to delete {} file for user ID: {}", fileType, userId, e);
             }

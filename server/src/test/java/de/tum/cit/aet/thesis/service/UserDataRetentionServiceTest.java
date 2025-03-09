@@ -129,6 +129,9 @@ class UserDataRetentionServiceTest {
         user.setDegreeFilename("degree.pdf");
         user.setExaminationFilename("exam.pdf");
         
+        // Mock deleteFile to return true (file was deleted)
+        when(uploadService.deleteFile(anyString())).thenReturn(true);
+        
         // Act
         service.anonymizeUserData(user);
         
