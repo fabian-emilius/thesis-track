@@ -1,6 +1,7 @@
 package de.tum.cit.aet.thesis.service;
 
 import de.tum.cit.aet.thesis.entity.*;
+import de.tum.cit.aet.thesis.entity.jsonb.ThesisMetadata;
 import de.tum.cit.aet.thesis.repository.*;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -148,7 +150,12 @@ public class UserDataRetentionService {
             // Delete physical files
             for (String filePath : filePathsToDelete) {
                 try {
-                    uploadService.deleteFile(filePath);
+                    // Use File API to delete files since UploadService doesn't have a deleteFile method
+                    File fileToDelete = new File(uploadService.getRootLocation().resolve(filePath).toString());
+                    if (!fileToDelete.delete() && fileToDelete.exists()) {
+                        log.warn("Failed to delete file: {}", filePath);
+                        partialFailure = true;
+                    }
                 } catch (Exception e) {
                     log.error("Error deleting file: {}", filePath, e);
                     partialFailure = true;
@@ -197,7 +204,8 @@ public class UserDataRetentionService {
      * Delete notification settings for a user
      */
     private int deleteNotificationSettings(User user) {
-        List<NotificationSetting> settings = notificationSettingRepository.findByUser(user);
+        // Use notificationSettings from User entity since there's no findByUser in repo
+        List<NotificationSetting> settings = user.getNotificationSettings();
         int count = settings.size();
         notificationSettingRepository.deleteAll(settings);
         return count;
@@ -207,7 +215,8 @@ public class UserDataRetentionService {
      * Delete user group associations
      */
     private int deleteUserGroups(User user) {
-        List<UserGroup> userGroups = userGroupRepository.findByUser(user);
+        // Use groups from User entity since there's no findByUser in repo
+        Set<UserGroup> userGroups = user.getGroups();
         int count = userGroups.size();
         userGroupRepository.deleteAll(userGroups);
         return count;
@@ -237,7 +246,7 @@ public class UserDataRetentionService {
         // Add thesis files uploaded by this user
         List<ThesisFile> thesisFiles = thesisFileRepository.findByUploadedBy(user);
         for (ThesisFile file : thesisFiles) {
-            filePaths.add(file.getPath());
+            filePaths.add(file.getFilename()); // Using getFilename() instead of getPath()
         }
         
         thesisFileRepository.deleteAll(thesisFiles);
@@ -283,11 +292,20 @@ public class UserDataRetentionService {
         List<Thesis> theses = thesisRepository.findThesesByStudentId(user.getId());
         int count = theses.size();
         
-        // We don't delete theses but mark them as anonymized
+        // We don't delete theses but mark them as anonymized by updating metadata
         for (Thesis thesis : theses) {
-            // Set student-related fields to null or "ANONYMOUS"
-            thesis.getMetadata().setAnonymized(true);
-            thesis.getMetadata().setStudentMatriculationNumber("ANONYMIZED");
+            // Create a new metadata object with anonymized info
+            Map<String, String> titles = thesis.getMetadata().titles();
+            Map<UUID, Number> credits = thesis.getMetadata().credits();
+            
+            // Add anonymization flag to titles map
+            titles.put("anonymized", "true");
+            titles.put("studentMatriculationNumber", "ANONYMIZED");
+            
+            // Create new metadata with updated information
+            ThesisMetadata newMetadata = new ThesisMetadata(titles, credits);
+            thesis.setMetadata(newMetadata);
+            
             thesisRepository.save(thesis);
         }
         

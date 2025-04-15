@@ -2,7 +2,7 @@
 
 -- changeset author:system:08_data_retention
 
--- Add retention_start_date column to users table
+-- Add retention_start_date column to users table (initially nullable)
 ALTER TABLE users ADD COLUMN retention_start_date TIMESTAMP;
 
 -- Create data_deletion_audit table
@@ -22,7 +22,8 @@ CREATE INDEX idx_data_deletion_audit_deletion_date ON data_deletion_audit(deleti
 CREATE INDEX idx_data_deletion_audit_user_id ON data_deletion_audit(user_id);
 
 -- Update existing users to set retention_start_date to joined_at
-UPDATE users SET retention_start_date = joined_at;
+-- (for existing users, consider joined_at as the start of retention period)
+UPDATE users SET retention_start_date = joined_at WHERE retention_start_date IS NULL;
 
 -- Once all existing data is migrated, make retention_start_date NOT NULL
 ALTER TABLE users ALTER COLUMN retention_start_date SET NOT NULL;

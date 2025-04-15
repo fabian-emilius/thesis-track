@@ -37,6 +37,14 @@ public class UploadService {
         }
     }
 
+    /**
+     * Get the root location for uploaded files
+     * @return Path to upload directory
+     */
+    public Path getRootLocation() {
+        return this.rootLocation;
+    }
+
     public String store(MultipartFile file, Integer maxSize, UploadFileType type) {
         try {
             if (file.isEmpty()) {
