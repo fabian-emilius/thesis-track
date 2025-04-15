@@ -8,7 +8,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import de.tum.cit.aet.thesis.constants.ThesisCommentType;
 import de.tum.cit.aet.thesis.entity.ThesisComment;
+import de.tum.cit.aet.thesis.entity.User;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -23,4 +25,11 @@ public interface ThesisCommentRepository extends JpaRepository<ThesisComment, UU
             @Param("commentType") ThesisCommentType commentType,
             Pageable page
     );
+    
+    /**
+     * Find all comments created by a specific user
+     * @param createdBy The creator
+     * @return List of comments
+     */
+    List<ThesisComment> findByCreatedBy(User createdBy);
 }

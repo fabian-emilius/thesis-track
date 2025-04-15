@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import de.tum.cit.aet.thesis.constants.ThesisPresentationState;
 import de.tum.cit.aet.thesis.constants.ThesisPresentationVisibility;
 import de.tum.cit.aet.thesis.entity.ThesisPresentation;
+import de.tum.cit.aet.thesis.entity.User;
 
 import java.time.Instant;
 import java.util.List;
@@ -34,4 +35,11 @@ public interface ThesisPresentationRepository extends JpaRepository<ThesisPresen
     List<ThesisPresentation> findAllPresentations(
             @Param("visibilities") Set<ThesisPresentationVisibility> visibilities
     );
+    
+    /**
+     * Find all presentations created by a specific user
+     * @param createdBy The creator
+     * @return List of presentations
+     */
+    List<ThesisPresentation> findByCreatedBy(User createdBy);
 }

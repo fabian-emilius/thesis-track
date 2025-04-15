@@ -98,3 +98,8 @@ thesis-management:
   storage:
     upload-location: ${UPLOAD_FOLDER:uploads}
   scientific-writing-guide: ${SCIENTIFIC_WRITING_GUIDE:}
+  retention:
+    period:
+      years: ${RETENTION_PERIOD_YEARS:10}  # User data retention period in years
+    batch:
+      size: ${RETENTION_BATCH_SIZE:10}   # Number of users to process in each batch

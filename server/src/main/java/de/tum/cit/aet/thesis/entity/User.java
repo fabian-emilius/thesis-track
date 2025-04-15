@@ -80,6 +80,10 @@ public class User {
 
     @Column(name = "enrolled_at")
     private Instant enrolledAt;
+    
+    @NotNull
+    @Column(name = "retention_start_date", nullable = false)
+    private Instant retentionStartDate;
 
     @UpdateTimestamp
     @NotNull

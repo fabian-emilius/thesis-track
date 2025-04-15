@@ -50,4 +50,12 @@ public interface ThesisRepository extends JpaRepository<Thesis, UUID> {
             @Param("roleNames") Set<ThesisRoleName> roleNames,
             @Param("states") Set<ThesisState> states
     );
+    
+    /**
+     * Find all theses where the given user is a student
+     * @param studentId The student's ID
+     * @return List of theses where user is a student
+     */
+    @Query("SELECT t FROM Thesis t JOIN ThesisRole r ON t.id = r.thesis.id WHERE r.user.id = :studentId AND r.id.role = 'STUDENT'")
+    List<Thesis> findThesesByStudentId(@Param("studentId") UUID studentId);
 }
